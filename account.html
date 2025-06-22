@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Education Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the app */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        /* Dark mode styles */
+        .dark body {
+            background-color: #1a202c; /* Dark gray background */
+            color: #e2e8f0; /* Light text color */
+        }
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #6b7280; /* Gray text */
+        }
+        .tab-button.active {
+            border-bottom-color: #007aff; /* Primary color from your notes app */
+            color: #1a202c; /* Dark text for active tab */
+        }
+        .dark .tab-button.active {
+            color: #e2e8f0; /* Light text for active tab in dark mode */
+        }
+        .tab-button:hover:not(.active) {
+            color: #4a5568; /* Slightly darker gray on hover */
+        }
+        .dark .tab-button:hover:not(.active) {
+            color: #a0aec0; /* Slightly lighter gray on hover in dark mode */
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .dark .card {
+            background-color: #2d3748; /* Darker background for cards */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .progress-bar-container {
+            background-color: #e2e8f0;
+            border-radius: 9999px; /* Fully rounded */
+            height: 12px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .dark .progress-bar-container {
+            background-color: #4a5568;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #007aff; /* Primary color */
+            border-radius: 9999px;
+            transition: width 0.5s ease-in-out;
+        }
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .dark .setting-item {
+            border-bottom-color: #4a5568;
+        }
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 28px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        .dark .slider {
+             background-color: #718096; /* Gray-500 in dark mode */
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #007aff; /* Primary color */
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+        .btn-action {
+            background-color: #007aff;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-action:hover {
+            background-color: color-mix(in srgb, #007aff 80%, black);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #4a5568;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+        .dark .btn-secondary {
+            background-color: #4a5568;
+            color: #e2e8f0;
+        }
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+        .dark .btn-secondary:hover {
+            background-color: #6b7280;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <!-- Header -->
+    <header
+        class="flex justify-between items-center p-4 bg-white border-b dark:bg-gray-800 dark:border-gray-700 h-[80px] w-full">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                <a href="../../Revision.html" class="hover:underline">Revision Notes</a> / <span id="subject-title">Accounts</span>
+            </h1>
+            <p class="text-xs text-gray-500 mt-1">Your comprehensive revision guide</p>
+            
+        </div>
+       <script src="header.js"></script> <!-- Right side editing tools (removed as not applicable for accounts page) -->
+    </header>
+
+    <!-- Main Content Wrapper to handle sidebar and main area side-by-side -->
+    <div class="flex flex-1 flex-col lg:flex-row overflow-hidden w-full">
+        <!-- Left Sidebar -->
+        <aside class="w-full lg:w-80 bg-white dark:bg-gray-800 p-6 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center lg:items-start space-y-6 shadow-lg lg:shadow-none">
+            <!-- Profile Picture / Avatar -->
+            <div class="w-32 h-32 rounded-full bg-blue-500 dark:bg-blue-600 flex items-center justify-center text-white text-4xl font-bold mb-4">
+                JS
+            </div>
+            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">John Smith</h2>
+            <p class="text-gray-600 dark:text-gray-400 text-sm">john.smith@example.com</p>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex flex-col w-full space-y-3">
+                <button class="btn-secondary w-full text-center rounded-lg py-3 text-lg font-semibold flex items-center justify-center transition duration-200">
+                    <i class="fas fa-pencil-alt mr-3 text-xl"></i> Edit Profile
+                </button>
+                <button class="btn-secondary w-full text-center rounded-lg py-3 text-lg font-semibold flex items-center justify-center transition duration-200">
+                    <i class="fas fa-chart-line mr-3 text-xl"></i> View Analytics
+                </button>
+            </div>
+
+            <!-- Larger Info Box -->
+            <div class="card w-full mt-6 p-4">
+                <h3 class="font-semibold text-lg mb-2">Upcoming Features</h3>
+                <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-2">
+                    <li class="flex items-center"><i class="fas fa-star text-yellow-500 mr-2"></i> Interactive Quizzes</li>
+                    <li class="flex items-center"><i class="fas fa-star text-yellow-500 mr-2"></i> Community Forum</li>
+                    <li class="flex items-center"><i class="fas fa-star text-yellow-500 mr-2"></i> Personalized Study Plans</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-6 bg-gray-50 dark:bg-gray-900 overflow-y-auto">
+            <div class="max-w-4xl mx-auto">
+                <!-- Tabs Navigation -->
+                <div class="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+                    <button id="progress-tab-button" class="tab-button active" onclick="showTab('progress')">Progress</button>
+                    <button id="account-tab-button" class="tab-button" onclick="showTab('account')">Account</button>
+                    <button id="settings-tab-button" class="tab-button" onclick="showTab('settings')">Settings</button>
+                </div>
+
+                <!-- Tab Content -->
+                <div id="tab-content">
+                    <!-- Progress Tab Content -->
+                    <div id="progress-tab" class="tab-pane active">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">Your Progress Across Subjects</h2>
+
+                        <!-- IGCSE Section -->
+                        <div class="card mb-6">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">IGCSE</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Chinese</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">75% Complete</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 75%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- IAL Section -->
+                        <div class="card mb-6">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">IAL</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-medium">Biology</span>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">60% Complete</span>
+                                    </div>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar" style="width: 60%;"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-medium">Physics</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">45% Complete</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 45%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Chemistry</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">88% Complete</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 88%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Math</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">70% Complete</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 70%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- IELTS Section -->
+                    <div class="card mb-6">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">IELTS</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Speaking</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">50% Complete</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 50%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Listening</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">90% Complete</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 90%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Reading</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">80% Complete</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 80%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between">
+                                    <span class="font-medium">Writing</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">30% Complete</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 30%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Tab Content -->
+                <div id="account-tab" class="tab-pane hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">Account Details</h2>
+
+                    <div class="card mb-6">
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">Account Type:</span>
+                                <span class="text-green-600 dark:text-green-400 font-semibold">Paid Account</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">Subscription Expires In:</span>
+                                <span class="text-gray-800 dark:text-gray-200">245 Days</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">Current Plan:</span>
+                                <span class="text-gray-800 dark:text-gray-200">Premium Annual</span>
+                            </div>
+                            <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <button class="btn-action w-full">Upgrade / Change Plan</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Billing Information</h3>
+                        <p class="text-gray-700 dark:text-gray-300 mb-4">No billing information on file. Please subscribe to a paid plan.</p>
+                        <button class="btn-secondary">Add Payment Method</button>
+                    </div>
+                </div>
+
+                <!-- Settings Tab Content -->
+                <div id="settings-tab" class="tab-pane hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">Settings</h2>
+
+                    <div class="card">
+                        <div class="space-y-2">
+                            <div class="setting-item">
+                                <span class="font-medium">Dark Mode</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="darkModeToggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <span class="font-medium">Email Notifications</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <span class="font-medium">Push Notifications</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <span class="font-medium">Language</span>
+                                <select class="px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                                    <option>English</option>
+                                    <option>Chinese</option>
+                                    <option>Spanish</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <span class="font-medium">Change Password</span>
+                                <button class="btn-secondary text-sm">Update</button>
+                            </div>
+                            <div class="setting-item">
+                                <span class="font-medium text-red-500">Delete Account</span>
+                                <button class="btn-secondary text-sm bg-red-100 hover:bg-red-200 dark:bg-red-700 dark:hover:bg-red-600 text-red-700 dark:text-red-200">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Function to handle tab switching
+        function showTab(tabId) {
+            // Get all tab buttons and tab panes
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            // Deactivate all tab buttons and hide all tab panes
+            tabButtons.forEach(button => button.classList.remove('active'));
+            tabPanes.forEach(pane => pane.classList.add('hidden'));
+
+            // Activate the clicked tab button and show its corresponding tab pane
+            document.getElementById(`${tabId}-tab-button`).classList.add('active');
+            document.getElementById(`${tabId}-tab`).classList.remove('hidden');
+        }
+
+        // Dark mode toggle functionality
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        // Set initial state based on system preference or saved state
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            darkModeToggle.checked = true;
+        } else {
+            document.documentElement.classList.remove('dark');
+            darkModeToggle.checked = false;
+        }
+
+        darkModeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // Initial call to display the progress tab when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            showTab('progress');
+            // Update the subject title in the header
+            const subjectTitle = document.getElementById('subject-title');
+            if (subjectTitle) {
+                subjectTitle.textContent = 'Accounts';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1917 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Teach</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.17/marked.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF3B30',
+                        biology: '#0FBD8C',
+                        chemistry: '#FF8585',
+                        physics: '#4081FF',
+                        math: '#FFAB1A',
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #333;
+            overflow: hidden;
+        }
+
+        em {
+            background-color: #ffff0064;
+        }
+
+        .chat-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-bottom: 80px;
+            font-size: 14px;
+        }
+
+        .message-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            max-width: 90%;
+        }
+
+        .message {
+            padding: 0.75rem 1rem;
+            border-radius: 1.25rem;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease-out;
+            flex-shrink: 1;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            color: #1a202c;
+            padding: 0px;
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .ai-newchapter-message, .ai-newsection-message {
+            margin: 10px 0px 10px 0px;
+            align-self: flex-start;
+            background-color: white;
+            color: #00000050;
+            border-radius: 1.25rem;
+            border: 5px solid #007aff;
+            line-height: 1.5em;
+            font-weight: 900;
+            max-width: 100%;
+            padding: 15px;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: #007bff;
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .ai-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 9999px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+
+        .input-area {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-top: 1px solid #e2e8f0;
+            background-color: white;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            border: 1px solid #cbd5e0;
+            border-radius: 9999px;
+            padding: 0.75rem 1.25rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .chat-input:focus {
+            border-color: #3182ce;
+        }
+
+        .send-button {
+            background-color: #007bff;
+            color: white;
+            border-radius: 9999px;
+            padding: 0.75rem;
+            width: 50px;
+            margin-left: 0.5rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .send-button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+
+        .send-button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            text-align: center;
+            font-size: 0.875rem;
+            padding: 0.5rem;
+            color: #4a5568;
+            display: none;
+        }
+
+        .error-message {
+            color: #e53e3e;
+        }
+
+        .action-buttons {
+            position: absolute;
+            bottom: 80px;
+            left: 40%;
+            transform: translateX(-50%);
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 9999px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            width: fit-content;
+        }
+
+        .action-button {
+            height: 30px;
+            padding: 0 15px;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .action-button:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        .action-button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+            opacity: 0.7;
+            border-color: #00000000;
+            color: white;
+        }
+
+        .action-button:active {
+            transform: scale(0.98);
+        }
+
+        .explain-button {
+            background-color: white;
+            border: 2px solid #007aff;
+            color: #007aff;
+        }
+
+        .quiz-button {
+            background-color: white;
+            border: 2px solid #007aff;
+            color: #007aff;
+        }
+
+        .next-button {
+            background-color: #007aff;
+            color: white;
+        }
+
+        .ending-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 2rem;
+            background-color: #f8f9fa;
+        }
+
+        .ending-screen h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 1rem;
+        }
+
+        .ending-screen p {
+            font-size: 1.125rem;
+            color: #4a5568;
+            margin-bottom: 2rem;
+        }
+
+        .ending-screen-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .syllabus-selection {
+            width: 250px;
+            flex-shrink: 0;
+            background-color: #fff;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+        }
+
+        .syllabus-selection h3 {
+            font-weight: 600;
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .syllabus-selection ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .syllabus-selection li {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .syllabus-selection li:hover {
+            background-color: #f7fafc;
+        }
+
+        .syllabus-selection li.active {
+            background-color: #e2e8f0;
+            font-weight: 500;
+        }
+
+        /* Chapter progress bar styling */
+        .chapter-progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .chapter-progress-bar {
+            height: 10px;
+            background-color: #007aff;
+            width: 0%;
+            border-radius: 5px;
+            transition: width 0.3s ease-in-out;
+        }
+
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            .syllabus-selection {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+                max-height: 200px;
+            }
+
+            .main-content {
+                flex-direction: column;
+            }
+        }
+
+        /* Typing indicator CSS */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.75rem 1rem;
+            background-color: #e2e8f0;
+            border-radius: 1.25rem;
+            max-width: 100px;
+            margin-top: 0.5rem;
+            animation: fadeIn 0.3s ease-out;
+            align-self: flex-start;
+            color: #1a202c;
+            margin-left: 32px;
+        }
+
+        .typing-indicator .avatar-placeholder {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #ccc;
+            flex-shrink: 0;
+            margin-right: 0.75rem;
+        }
+
+        .typing-indicator .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #888;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body class="flex flex-col h-screen">
+    <!-- Header -->
+    <header class="flex justify-between items-center p-4 bg-white border-b dark:bg-gray-800 dark:border-gray-700 h-[80px]">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">AI Teach</h1>
+            <p class="text-xs text-gray-500 mt-1">Your personal AI tutor</p>
+        </div>
+        <div class="flex items-center space-x-2">
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Left Pane: Subject, Unit, and Chapter Selection -->
+        <div class="syllabus-selection flex flex-col items-center p-4 dark:bg-gray-800 dark:border-gray-700">
+            <h3 class="w-full text-center text-xl mb-4 text-gray-800 dark:text-gray-200">Subjects</h3>
+            <ul id="subject-list" class="w-full mb-4">
+                <!-- Subject buttons will be dynamically added here -->
+            </ul>
+
+            <select id="unit-select"
+                class="p-2 w-full mt-6 mx-0 border border-gray-300 rounded-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                <!-- Unit options will be dynamically added here -->
+            </select>
+
+            <!-- Chapter Selection Section -->
+            <div id="chapter-selection-section" class="w-full mt-4 p-2 border border-gray-300 rounded-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 hidden">
+                <h4 class="font-semibold text-gray-800 dark:text-gray-200 mb-2">Chapter</h4>
+                <select id="chapter-select"
+                    class="p-2 w-full border border-gray-300 rounded-md bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200">
+                    <!-- Chapter options will be dynamically added here -->
+                </select>
+                <div class="chapter-progress-container mt-2">
+                    <div id="chapter-progress-bar" class="chapter-progress-bar"></div>
+                </div>
+                <div class="flex justify-between mt-2">
+                    <button id="prev-chapter-btn" class="action-button explain-button w-1/2 mr-1">Previous</button>
+                    <button id="next-chapter-btn" class="action-button next-button w-1/2 ml-1">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Pane: Chatbot Interface -->
+        <div class="flex-1 flex flex-col relative">
+            <div class="chat-container flex-1 bg-gray-100 dark:bg-gray-800 px-[100px]" id="chat-container">
+                <!-- Chat messages will be appended here -->
+                <div id="ai-typing-indicator" class="typing-indicator hidden">
+                    <div class="ai-avatar"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+
+            <!-- Chat Action Buttons -->
+            <div class="action-buttons hidden" id="action-buttons-container">
+                <button class="action-button explain-button" id="explain-btn">Explain</button>
+                <button class="action-button quiz-button" id="quiz-btn">Quiz</button>
+                <button class="action-button next-button" id="next-btn">Next Paragraph</button>
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="input-area">
+                <input type="text" id="chat-input" class="chat-input" placeholder="Type your message..." />
+                <button class="send-button" id="send-button">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+                <button class="send-button bg-gray-500 hover:bg-gray-600 ml-2" id="voice-input-btn">
+                    <i class="fas fa-microphone"></i>
+                </button>
+            </div>
+            <div id="status-message" class="status-message"></div>
+        </div>
+    </div>
+
+    <!-- Ending Screen Overlay -->
+    <div id="ending-screen" class="fixed inset-0 ending-screen hidden">
+        <h2>Unit Completed! 🎉</h2>
+        <p>You've successfully completed all chapters and sections in this unit. Great job!</p>
+        <div class="ending-screen-buttons">
+            <button id="restart-unit-btn" class="btn-primary">Restart Unit</button>
+            <button id="next-unit-btn" class="btn-primary ml-4">Next Unit</button>
+        </div>
+    </div>
+
+    <script>
+        // Placeholder for dynamically loaded unit content.
+        // In a real scenario, you would dynamically load these JS files
+        // based on the selected subject and unit.
+        // For demonstration, here's an example structure for Chemistry Unit 1:
+        const CHEMISTRY_UNIT_1_CONTENT = `
+# Unit 1: Structure, Bonding and Introduction to Organic Chemistry
+
+## 1. Formulae, Equations and Amount of Substance
+
+### 1.1 Chemical Terms and Definitions
+
+* Atom: The smallest part of an element that can exist
+* Element: A substance made up of only one type of atom
+* Ion: An atom or group of atoms with a positive or negative charge
+* Molecule: A group of atoms bonded together
+* Compound: A substance formed when two or more elements are chemically combined
+* Empirical formula: The simplest whole number ratio of atoms of each element in a compound
+* Molecular formula: The actual number of atoms of each element in a molecule
+
+### 1.2 The Mole Concept
+
+* The mole (mol) is the unit for amount of substance
+* One mole contains 6.02 × 10²³ particles (Avogadro constant, L)
+* Relative atomic mass (A_r) is based on the ¹²C scale where carbon-12 is defined as exactly 12
+* Relative molecular/formula mass (M_r) is calculated by adding the relative atomic masses of all atoms in a molecule/formula
+* Molar mass is the mass per mole of a substance in g mol⁻¹
+
+### 1.3 Chemical Calculations
+
+* Concentration of solutions can be calculated in:
+    * mol dm⁻³ = amount of solute (mol) ÷ volume of solution (dm³)
+    * g dm⁻³ = mass of solute (g) ÷ volume of solution (dm³)
+* Empirical formula calculations:
+    * Convert mass to moles (divide by molar mass)
+    * Find the simplest whole number ratio
+* Reacting masses:
+    * Use balanced equations to calculate masses of reactants/products
+    * moles = mass (g) ÷ molar mass (g mol⁻¹)
+* Gas volumes:
+    * At RTP (room temperature and pressure), one mole of any gas occupies about 24 dm³
+    * Using the ideal gas equation: pV = nRT
+
+### 1.4 Yields and Atom Economy
+
+* Percentage yield:
+    * (Actual yield ÷ Theoretical yield) × 100%
+* Atom economy:
+    * (Molar mass of desired product ÷ Sum of molar masses of all products) × 100%
+    * Measures efficiency in terms of atoms used
+
+## 2. Atomic Structure and the Periodic Table
+
+### 2.1 Atomic Structure
+
+* Atoms consist of:
+    * Protons: Positive charge, relative mass 1, in nucleus
+    * Neutrons: No charge, relative mass 1, in nucleus
+    * Electrons: Negative charge, relative mass 1/1840, in shells around nucleus
+* Atomic (proton) number (Z): Number of protons in the nucleus
+* Mass number (A): Sum of protons and neutrons
+* Isotopes: Atoms of the same element with different numbers of neutrons
+
+### 2.2 Mass Spectrometry
+
+* Mass spectrometer can be used to:
+    * Determine isotopic composition of elements
+    * Calculate relative atomic mass
+    * Identify molecules by molecular mass
+    * Detect ions with 2+ charge
+* Relative peak heights in mass spectra can be predicted based on isotopic abundance
+
+### 2.3 Electronic Structure
+
+* Ionization energy: Energy required to remove an electron from an atom/ion
+    * First, second, and third ionization energies involve removing successive electrons
+    * All ionization processes are endothermic
+* Orbitals:
+    * An orbital can hold up to two electrons with opposite spins
+    * s-orbitals: Spherical shape
+    * p-orbitals: Dumbbell shape
+    * d-orbitals: More complex shapes
+    * Orbitals fill according to the Aufbau principle (lowest energy first)
+* Electronic configuration:
+    * Written using s, p, d notation (e.g., 1s² 2s² 2p⁶)
+    * Or using electron-in-boxes notation
+
+### 2.4 Periodic Table Trends
+
+* Blocks in the Periodic Table:
+    * s-block: Groups 1 and 2
+    * p-block: Groups 3-7 and 0
+    * d-block: Transition elements
+* Periodic trends:
+    * Melting/boiling points vary across periods due to changes in structure and bonding
+    * Ionization energy generally increases across a period and decreases down a group
+    * First ionization energies show evidence of electron sub-shells
+
+## 3. Bonding and Structure
+
+### 3.1 Ionic Bonding
+
+* Evidence for ions:
+    * Physical properties of ionic compounds
+    * Electron density maps
+    * Migration of ions in electric fields
+* Ionic bond formation:
+    * Metal atoms lose electrons to form cations
+    * Non-metal atoms gain electrons to form anions
+    * Strong electrostatic attraction between oppositely charged ions
+* Factors affecting ionic bond strength:
+    * Ionic charge (higher charge = stronger bond)
+    * Ionic radius (smaller radius = stronger bond)
+* Polarization:
+    * Small, highly charged cations can distort (polarize) anions
+    * Leads to some covalent character in ionic bonds
+
+### 3.2 Covalent Bonding
+
+* Covalent bond: Strong electrostatic attraction between two nuclei and the shared pair of electrons
+
+* Types of covalent bonds:
+    * Single bond: One shared pair of electrons
+    * Double bond: Two shared pairs of electrons
+    * Triple bond: Three shared pairs of electrons
+    * Dative covalent (coordinate) bond: Both electrons donated by one atom
+* Carbon structures:
+    * Diamond: Tetrahedral arrangement, very hard
+    * Graphite: Layers of hexagonal rings, conducts electricity
+    * Graphene: Single layer of graphite, excellent conductor
+* Electronegativity:
+    * Measure of an atom's attraction for bonding electrons
+    * Leads to bond polarity when atoms of different electronegativities bond
+    * Very large electronegativity differences result in ionic bonding
+
+### 3.3 Shapes of Molecules
+
+* Electron-pair repulsion theory:
+    * Pairs of electrons around an atom repel each other
+    * Arrange themselves to minimize repulsion
+    * Determines the shape of molecules
+* Common molecular shapes:
+    * Linear: 2 bonding pairs (180°) - e.g., BeCl₂
+    * Trigonal planar: 3 bonding pairs (120°) - e.g., BCl₃
+    * Tetrahedral: 4 bonding pairs (109.5°) - e.g., CH₄
+    * Pyramidal: 3 bonding pairs, 1 lone pair - e.g., NH₃
+    * Angular/bent: 2 bonding pairs, 2 lone pairs - e.g., H₂O
+    * Octahedral: 6 bonding pairs (90°) - e.g., SF₆
+
+### 3.4 Metallic Bonding
+
+* Metallic structure:
+    * Positive metal ions in a lattice
+    * Surrounded by a 'sea' of delocalized electrons
+* Metallic bond: Strong electrostatic attraction between positive ions and delocalized electrons
+
+* Properties explained by metallic bonding:
+    * High electrical conductivity (mobile electrons)
+    * High thermal conductivity
+    * Malleability and ductility (layers can slide)
+    * High melting points (strong bonds)
+
+## 4. Introductory Organic Chemistry and Alkanes
+
+### 4.1 Introduction to Organic Chemistry
+
+* Hazard vs. Risk:
+    * Hazard: Potential of a substance to cause harm
+    * Risk: Likelihood of the hazard causing harm
+* Reducing risks:
+    * Working on smaller scale
+    * Using specific precautions
+    * Using alternative, less hazardous substances
+* Key concepts:
+    * Homologous series: Families of compounds with the same functional group
+    * Functional group: Atom/group of atoms responsible for characteristic reactions
+* IUPAC nomenclature:
+    * Systematic way of naming organic compounds
+    * Based on the longest carbon chain
+    * Prefixes for compounds up to C₁₀
+* Types of reactions:
+    * Addition: Two molecules combine to form one
+    * Substitution: One atom/group replaces another
+    * Oxidation: Loss of electrons/gain of oxygen/loss of hydrogen
+    * Reduction: Gain of electrons/loss of oxygen/gain of hydrogen
+    * Polymerization: Many small molecules join to form a polymer
+* Bond breaking:
+    * Homolytic: Each atom retains one electron, forms radicals
+    * Heterolytic: One atom keeps both electrons, forms ions
+
+### 4.2 Alkanes
+
+* Structure:
+    * General formula: C_n H_{2n+2}
+    * Cycloalkanes: C_n H_{2n}
+    * Saturated hydrocarbons (single bonds only)
+* Isomerism:
+    * Structural isomers: Same molecular formula, different structures
+    * More possible isomers with increasing carbon atoms
+* Sources and uses:
+    * Obtained from crude oil by fractional distillation
+    * Used primarily as fuels
+    * Cracking and reforming create smaller molecules and branched alkanes
+* Environmental impact:
+    * Combustion produces pollutants:
+        * Carbon monoxide (toxic)
+        * Oxides of nitrogen and sulfur (cause acid rain)
+        * Carbon particulates and unburned hydrocarbons
+        * Carbon dioxide (greenhouse gas)
+* Alternative fuels:
+    * Development driven by sustainability concerns
+    * Carbon neutrality (CO₂ released = CO₂ absorbed)
+* Reactions:
+    * Combustion: Complete combustion gives CO₂ and H₂O
+    * Halogenation: Reaction with halogens via free radical substitution
+* Free radical substitution mechanism:
+    * Initiation: Formation of free radicals (X• radicals from X₂)
+    * Propagation: Chain reaction consuming reactants and generating products
+    * Termination: Free radicals combine to stop the chain reaction
+
+## 5. Alkenes
+
+### 5.1 Structure and Isomerism
+
+* Structure:
+    * General formula: C_n H_{2n}
+    * Contain a carbon-carbon double bond (C=C)
+    * Double bond consists of a strong σ (sigma) bond and a weaker π (pi) bond
+    * Unsaturated hydrocarbons
+* Geometric isomerism:
+    * Restricted rotation around C=C double bond
+    * Cis-isomer: Same groups on same side of double bond
+    * Trans-isomer: Same groups on opposite sides
+    * E-Z system: Based on priority of groups (Cahn-Ingold-Prelog rules)
+        * E (entgegen): Higher priority groups on opposite sides
+        * Z (zusammen): Higher priority groups on same side
+
+### 5.2 Reactions of Alkenes
+
+* Addition reactions:
+    * Hydrogenation: Addition of H₂ with nickel catalyst → alkane
+    * Halogenation: Addition of X₂ → dihalogenoalkane
+    * Hydrohalogenation: Addition of HX → monohalogenoalkane
+    * Hydration: Addition of H₂O with acid catalyst → alcohol
+    * Oxidation: With acidified KMnO₄ → diol
+* Qualitative test:
+    * Addition of bromine or bromine water
+    * Color change from orange/brown to colorless indicates C=C bond
+* Electrophilic addition mechanism:
+    * π-electrons attract electrophiles
+    * For unsymmetrical alkenes (e.g., propene):
+        * Markovnikov's rule: H attaches to carbon with more H atoms
+        * Based on stability of carbocation intermediate (3° > 2° > 1°)
+
+### 5.3 Polymers
+
+* Addition polymerization:
+    * Alkenes join together through their double bonds
+    * No small molecules eliminated
+    * Monomer: Starting molecule (alkene)
+    * Polymer: Large molecule made of many repeated units
+* Environmental issues:
+    * Most addition polymers are non-biodegradable
+    * Solutions include:
+        * Developing biodegradable polymers
+        * Removing toxic gases during incineration
+        * Recycling
+`;
+
+        const CHEMISTRY_UNIT_2_CONTENT = `
+# Unit 2: Energetics, Group Chemistry, Halogenoalkanes and Alcohols
+
+## 1. Energetics
+
+### 1.1 Enthalpy Change
+
+* Enthalpy (H): A measure of the total energy of a system.
+* Enthalpy change (ΔH): The heat energy change measured at constant pressure.
+* Standard conditions: 100 kPa (1 atm) and 298 K (25 °C).
+* Exothermic reactions: Release heat to surroundings (ΔH < 0), e.g., combustion.
+* Endothermic reactions: Absorb heat from surroundings (ΔH > 0), e.g., thermal decomposition.
+
+### 1.2 Calorimetry
+
+* Calorimetry: Experimental method to measure enthalpy changes.
+* Heat absorbed/released (Q) = mcΔT, where:
+    * m = mass of substance (usually water)
+    * c = specific heat capacity (e.g., for water, 4.18 J g⁻¹ K⁻¹)
+    * ΔT = temperature change
+* Assumptions in calorimetry:
+    * No heat loss to surroundings.
+    * Specific heat capacity of solution is same as water.
+    * Density of solution is same as water.
+
+### 1.3 Hess's Law
+
+* Hess's Law: The total enthalpy change for a reaction is independent of the route taken, provided the initial and final conditions are the same.
+* Applications:
+    * Calculating enthalpy changes that cannot be measured directly.
+    * Using enthalpy of formation (ΔH_f): ΔH_reaction = ΣΔH_f(products) - ΣΔH_f(reactants).
+    * Using enthalpy of combustion (ΔH_c): ΔH_reaction = ΣΔH_c(reactants) - ΣΔH_c(products).
+
+### 1.4 Bond Enthalpies
+
+* Bond enthalpy: The energy required to break one mole of a specific type of bond in the gaseous state.
+* Average bond enthalpy: Average energy required to break a particular bond in different chemical environments.
+* Calculations using bond enthalpies: ΔH_reaction = Σ(bond enthalpies of bonds broken) - Σ(bond enthalpies of bonds formed).
+* Limitations: Average values, so calculated ΔH values are estimates.
+
+## 2. Group Chemistry (Groups 2 and 17)
+
+### 2.1 Group 2 Elements (Alkaline Earth Metals)
+
+* Trends down Group 2:
+    * Atomic radius increases.
+    * First ionization energy decreases.
+    * Melting points generally decrease (except Mg).
+    * Reactivity increases.
+* Reactions:
+    * With water: Form metal hydroxide and hydrogen gas. Reactivity increases down the group.
+    * With oxygen: Form metal oxides.
+    * With dilute acids: Form salt and hydrogen gas.
+* Solubility of Group 2 compounds:
+    * Hydroxides: Solubility increases down the group (Mg(OH)₂ sparingly soluble, Ba(OH)₂ soluble).
+    * Sulfates: Solubility decreases down the group (MgSO₄ soluble, BaSO₄ insoluble).
+
+### 2.2 Group 17 Elements (Halogens)
+
+* Physical trends down Group 17:
+    * Color deepens (F₂ pale yellow, Cl₂ green-yellow, Br₂ red-brown, I₂ grey-black).
+    * Melting and boiling points increase.
+    * Physical state changes from gas (F₂, Cl₂) to liquid (Br₂) to solid (I₂).
+* Chemical trends down Group 17:
+    * Electronegativity decreases.
+    * Reactivity (as oxidizing agents) decreases.
+* Displacement reactions: A more reactive halogen displaces a less reactive halide from its solution (e.g., Cl₂ + 2KBr → 2KCl + Br₂).
+* Reactions with halide ions in solution: Test for halide ions using acidified silver nitrate solution.
+    * AgCl(s) white precipitate (soluble in dilute NH₃)
+    * AgBr(s) cream precipitate (soluble in conc. NH₃)
+    * AgI(s) yellow precipitate (insoluble in conc. NH₃)
+
+## 3. Halogenoalkanes
+
+### 3.1 Structure and Properties
+
+* Halogenoalkanes: Organic compounds containing at least one halogen atom (F, Cl, Br, I) bonded to an alkyl group.
+* Polarity of C-X bond: Halogen is more electronegative than carbon, creating a polar bond (δ+ C - X δ-).
+* Boiling points: Generally increase with increasing number of halogen atoms and increasing size of halogen atom.
+* Uses: Solvents, refrigerants (historically CFCs), fire retardants.
+
+### 3.2 Nucleophilic Substitution
+
+* Nucleophile: An electron-pair donor (e.g., OH⁻, CN⁻, NH₃, H₂O).
+* Nucleophilic substitution: Reaction where a nucleophile replaces the halogen atom.
+* Mechanism (SN1 vs SN2):
+    * SN1 (unimolecular): Two-step process, carbocation intermediate, favored by tertiary halogenoalkanes.
+    * SN2 (bimolecular): One-step process, transition state, favored by primary halogenoalkanes.
+* Factors affecting reaction rate:
+    * Nature of halogen: C-I bond is weakest, so iodoalkanes react fastest. C-F bond is strongest, fluoroalkanes react slowest.
+    * Concentration of nucleophile (for SN2).
+
+### 3.3 Hydrolysis of Halogenoalkanes
+
+* Hydrolysis: Reaction with water or hydroxide ions to form an alcohol.
+* Conditions: Warm aqueous NaOH or KOH.
+* Experiment: Measuring rate of hydrolysis using aqueous silver nitrate.
+    * AgX precipitates are formed (AgCl, AgBr, AgI).
+    * Rate is observed by time taken for precipitate to appear.
+    * Order of reactivity: Iodoalkane > Bromoalkane > Chloroalkane.
+
+## 4. Alcohols
+
+### 4.1 Structure and Classification
+
+* Alcohols: Organic compounds containing a hydroxyl (-OH) functional group bonded to an alkyl group.
+* General formula: C_n H_{2n+1}OH.
+* Classification:
+    * Primary (1°): -OH attached to a carbon atom bonded to one other carbon atom.
+    * Secondary (2°): -OH attached to a carbon atom bonded to two other carbon atoms.
+    * Tertiary (3°): -OH attached to a carbon atom bonded to three other carbon atoms.
+
+### 4.2 Properties of Alcohols
+
+* Hydrogen bonding: The -OH group allows alcohols to form hydrogen bonds with each other and with water.
+* Boiling points: Higher than alkanes of similar molar mass due to hydrogen bonding.
+* Solubility in water: Small alcohols are very soluble due to hydrogen bonding with water. Solubility decreases as chain length increases.
+
+### 4.3 Reactions of Alcohols
+
+* Combustion: Complete combustion produces CO₂ and H₂O.
+* Oxidation:
+    * Primary alcohols: Oxidized to aldehydes (distil immediately) or carboxylic acids (reflux with excess oxidizing agent).
+    * Secondary alcohols: Oxidized to ketones.
+    * Tertiary alcohols: Generally not oxidized.
+    * Oxidizing agent: Acidified potassium dichromate(VI) (turns from orange to green).
+* Dehydration (Elimination): Removal of water to form an alkene.
+    * Conditions: Concentrated sulfuric acid or hot aluminum oxide (Al₂O₃) catalyst.
+* Esterification: Reaction with carboxylic acids to form esters (reversible, acid catalyst).
+
+`;
+        const BIOLOGY_UNIT_1_CONTENT = `
+# Unit 1: Biological Molecules
+
+## 1.1 Water and Carbohydrates
+
+### 1.1.1 Water
+
+* Water is a polar molecule due to uneven sharing of electrons between oxygen and hydrogen.
+* This polarity leads to hydrogen bonding between water molecules.
+* Properties of water important for life:
+    * High specific heat capacity: Buffers temperature changes, important for maintaining stable body temperature.
+    * High latent heat of vaporization: Allows cooling through evaporation (e.g., sweating).
+    * Cohesion: Water molecules stick together, important for transport in plants.
+    * Adhesion: Water sticks to other polar surfaces.
+    * Solvent properties: Dissolves many substances, allowing transport of nutrients and waste.
+    * Density anomaly: Ice is less dense than liquid water, allowing aquatic life to survive under frozen surfaces.
+
+### 1.1.2 Monosaccharides
+
+* Monosaccharides are simple sugars, the basic units of carbohydrates.
+* General formula (CH₂O)n, where n is typically 3-7.
+* Examples: Glucose (hexose), fructose (hexose), galactose (hexose), ribose (pentose).
+* Glucose exists as α-glucose and β-glucose isomers, crucial for polysaccharide formation.
+* Function: Primary source of energy for cells (e.g., respiration).
+
+### 1.1.3 Disaccharides
+
+* Disaccharides are formed by the condensation reaction (removal of water) of two monosaccharides, forming a glycosidic bond.
+* Examples:
+    * Maltose = glucose + glucose
+    * Sucrose = glucose + fructose (table sugar)
+    * Lactose = glucose + galactose (milk sugar)
+* Hydrolysis: Disaccharides can be broken down into monosaccharides by adding water across the glycosidic bond.
+* Function: Transportable forms of sugar in plants (sucrose) and energy source in milk (lactose).
+
+### 1.1.4 Polysaccharides
+
+* Polysaccharides are large polymers formed from many monosaccharide units linked by glycosidic bonds.
+* Examples: Starch, glycogen, cellulose.
+* Starch: Energy storage in plants. Composed of amylose (unbranched) and amylopectin (branched).
+    * Compact, insoluble, and easily hydrolyzed.
+* Glycogen: Energy storage in animals and fungi. Highly branched, allows rapid glucose release.
+    * More compact and soluble than starch.
+* Cellulose: Structural component of plant cell walls. Long, unbranched chains of β-glucose, forming microfibrils.
+    * High tensile strength, provides support. Humans cannot digest cellulose.
+
+## 1.2 Lipids
+
+### 1.2.1 Triglycerides
+
+* Triglycerides: Formed from one glycerol molecule and three fatty acid molecules via ester bonds (condensation reactions).
+* Fatty acids can be saturated (no C=C double bonds) or unsaturated (one or more C=C double bonds).
+* Properties: Insoluble in water (non-polar), lower density than water.
+* Functions:
+    * Long-term energy storage (more energy per gram than carbohydrates).
+    * Insulation (thermal and electrical).
+    * Protection of organs.
+    * Source of metabolic water.
+
+### 1.2.2 Phospholipids
+
+* Phospholipids: Modified triglycerides where one fatty acid is replaced by a phosphate group.
+* Structure: Hydrophilic (water-loving) phosphate head and hydrophobic (water-fearing) fatty acid tails.
+* Forms a bilayer in water, with heads facing outwards and tails inwards.
+* Function: Primary component of cell membranes, forming the basic structure and regulating passage of substances.
+
+## 1.3 Proteins
+
+### 1.3.1 Amino Acids
+
+* Amino acids: The monomer units of proteins.
+* Structure: Central carbon atom bonded to:
+    * An amino group (-NH₂)
+    * A carboxyl group (-COOH)
+    * A hydrogen atom (-H)
+    * A variable side chain (R-group) which determines the amino acid's properties.
+* There are 20 common amino acids.
+
+### 1.3.2 Peptides and Polypeptides
+
+* Peptide bond: Formed by a condensation reaction between the amino group of one amino acid and the carboxyl group of another.
+* Dipeptide: Two amino acids joined by a peptide bond.
+* Polypeptide: A long chain of many amino acids joined by peptide bonds.
+
+### 1.3.3 Protein Structure
+
+* Proteins have four levels of structure:
+    * **Primary structure:** The unique linear sequence of amino acids in the polypeptide chain. Determined by genes.
+    * **Secondary structure:** Folding of the polypeptide chain into specific shapes, primarily α-helices (coil) and β-pleated sheets (fold). Stabilized by hydrogen bonds.
+    * **Tertiary structure:** The overall three-dimensional shape of a single polypeptide chain. Formed by interactions between R-groups: hydrogen bonds, ionic bonds, disulfide bridges, hydrophobic interactions. Crucial for protein function.
+    * **Quaternary structure:** The arrangement of multiple polypeptide chains (subunits) in a complex protein. E.g., hemoglobin (four subunits).
+
+### 1.3.4 Protein Functions
+
+* Enzymes: Biological catalysts (e.g., amylase).
+* Structural proteins: Provide support (e.g., collagen, keratin).
+* Transport proteins: Carry substances (e.g., hemoglobin, channel proteins).
+* Hormones: Chemical messengers (e.g., insulin).
+* Antibodies: Immune response.
+* Receptors: Detect signals.
+
+## 1.4 Nucleic Acids
+
+### 1.4.1 Nucleotides
+
+* Nucleotides: Monomer units of nucleic acids (DNA and RNA).
+* Structure: Each nucleotide consists of:
+    * A pentose sugar (deoxyribose in DNA, ribose in RNA).
+    * A phosphate group.
+    * A nitrogenous base (Adenine, Guanine, Cytosine, Thymine in DNA; Adenine, Guanine, Cytosine, Uracil in RNA).
+
+### 1.4.2 DNA (Deoxyribonucleic Acid)
+
+* Structure: Double helix, two polynucleotide strands running antiparallel.
+* Bases pair specifically: A with T (2 hydrogen bonds), G with C (3 hydrogen bonds).
+* Function: Stores genetic information, self-replicates (DNA replication), dictates protein synthesis.
+
+### 1.4.3 RNA (Ribonucleic Acid)
+
+* Structure: Single polynucleotide strand.
+* Contains uracil (U) instead of thymine (T).
+* Types:
+    * mRNA (messenger RNA): Carries genetic code from DNA to ribosomes.
+    * tRNA (transfer RNA): Carries specific amino acids to the ribosome during protein synthesis.
+    * rRNA (ribosomal RNA): Component of ribosomes.
+* Function: Involved in gene expression and protein synthesis.
+
+`;
+        const PHYSICS_UNIT_1_CONTENT = `
+# Unit 1: Mechanics and Materials
+
+## 1.1 Physical Quantities and Units
+
+### 1.1.1 Base and Derived Quantities
+
+* **Base Quantities:** Fundamental quantities that are independent of each other.
+    * Seven SI base quantities:
+        * Length (metre, m)
+        * Mass (kilogram, kg)
+        * Time (second, s)
+        * Electric current (ampere, A)
+        * Temperature (Kelvin, K)
+        * Amount of substance (mole, mol)
+        * Luminous intensity (candela, cd)
+* **Derived Quantities:** Quantities that are expressed as combinations of base quantities.
+    * Examples: Speed (m/s), Force (kg m/s² or N), Density (kg/m³).
+
+### 1.1.2 Prefixes and Standard Form
+
+* **Prefixes:** Used to denote powers of ten.
+    * Tera (T) = 10¹²
+    * Giga (G) = 10⁹
+    * Mega (M) = 10⁶
+    * Kilo (k) = 10³
+    * Centi (c) = 10⁻²
+    * Milli (m) = 10⁻³
+    * Micro (μ) = 10⁻⁶
+    * Nano (n) = 10⁻⁹
+    * Pico (p) = 10⁻¹²
+* **Standard Form:** A way of writing numbers that are too large or too small to be conveniently written in decimal form (e.g., 6.02 × 10²³).
+
+## 1.2 Scalars and Vectors
+
+### 1.2.1 Scalars
+
+* **Scalar Quantity:** A quantity that has only magnitude (size).
+* Examples: Mass, temperature, time, speed, distance, energy.
+
+### 1.2.2 Vectors
+
+* **Vector Quantity:** A quantity that has both magnitude and direction.
+* Examples: Displacement, velocity, acceleration, force, momentum.
+* **Vector Addition (Graphical):**
+    * Head-to-tail method for adding multiple vectors.
+    * Parallelogram method for adding two vectors.
+* **Vector Resolution:** Breaking down a vector into its perpendicular components (e.g., horizontal and vertical components).
+    * Fₓ = F cos θ, Fᵧ = F sin θ.
+
+## 1.3 Kinematics
+
+### 1.3.1 Displacement, Velocity, Acceleration
+
+* **Displacement (s):** Vector quantity, change in position.
+* **Distance:** Scalar quantity, total path length.
+* **Velocity (v):** Vector quantity, rate of change of displacement (v = Δs/Δt).
+* **Speed:** Scalar quantity, rate of change of distance.
+* **Acceleration (a):** Vector quantity, rate of change of velocity (a = Δv/Δt).
+
+### 1.3.2 Uniform Acceleration
+
+* **Equations of motion (SUVAT equations):** Applicable for constant acceleration.
+    * v = u + at
+    * s = ut + ½at²
+    * v² = u² + 2as
+    * s = ½(u + v)t
+* **Free Fall:** Objects accelerating under gravity (a = g ≈ 9.81 m/s²).
+
+### 1.3.3 Graphs of Motion
+
+* **Displacement-time graph:**
+    * Gradient = velocity.
+    * Curved line = changing velocity (acceleration).
+* **Velocity-time graph:**
+    * Gradient = acceleration.
+    * Area under graph = displacement.
+    * Horizontal line = constant velocity.
+
+## 1.4 Dynamics
+
+### 1.4.1 Force and Newton's Laws
+
+* **Force (F):** A push or pull that can change an object's motion. Measured in Newtons (N).
+* **Newton's First Law (Inertia):** An object at rest stays at rest, and an object in motion stays in motion with the same speed and in the same direction unless acted upon by an unbalanced force.
+* **Newton's Second Law:** F = ma (Net force = mass × acceleration). The acceleration of an object is directly proportional to the net force acting on it and inversely proportional to its mass.
+* **Newton's Third Law:** For every action, there is an equal and opposite reaction. Forces always occur in pairs acting on different objects.
+
+### 1.4.2 Momentum
+
+* **Momentum (p):** Product of mass and velocity (p = mv). Vector quantity.
+* **Conservation of Momentum:** In a closed system, the total momentum before a collision or explosion is equal to the total momentum after.
+* **Impulse:** Change in momentum (Impulse = FΔt = Δp).
+
+### 1.4.3 Work, Energy, Power
+
+* **Work Done (W):** Force multiplied by the distance moved in the direction of the force (W = Fd cos θ). Measured in Joules (J).
+* **Kinetic Energy (KE):** Energy due to motion (KE = ½mv²).
+* **Gravitational Potential Energy (GPE):** Energy due to position in a gravitational field (GPE = mgh).
+* **Elastic Potential Energy (EPE):** Energy stored in a stretched or compressed elastic object (EPE = ½kx²).
+* **Principle of Conservation of Energy:** Energy cannot be created or destroyed, only transferred from one form to another.
+* **Power (P):** Rate at which work is done or energy is transferred (P = W/t = Fv). Measured in Watts (W).
+
+## 1.5 Materials
+
+### 1.5.1 Density and Pressure
+
+* **Density (ρ):** Mass per unit volume (ρ = m/V). Measured in kg/m³.
+* **Pressure (P):** Force per unit area (P = F/A). Measured in Pascals (Pa) or N/m².
+* **Pressure in Fluids:** P = ρgh (for liquids at depth h).
+
+### 1.5.2 Deformations of Solids
+
+* **Elastic Deformation:** Material returns to its original shape after the force is removed.
+* **Plastic Deformation:** Material does not return to its original shape; permanent deformation occurs.
+* **Hooke's Law:** For a spring or elastic material, the extension is directly proportional to the applied force, provided the elastic limit is not exceeded (F = kx).
+* **Spring Constant (k):** Measure of stiffness.
+* **Stress (σ):** Force per unit cross-sectional area (σ = F/A). Measured in Pa.
+* **Strain (ε):** Extension per unit original length (ε = ΔL/L). Dimensionless.
+* **Young Modulus (E):** Ratio of stress to strain (E = σ/ε). Measured in Pa. Represents stiffness of a material.
+
+### 1.5.3 Stress-Strain Graphs
+
+* **Elastic Region:** Linear portion where Hooke's Law applies.
+* **Elastic Limit:** Point beyond which material undergoes plastic deformation.
+* **Yield Point:** Point where material begins to deform plastically without significant increase in stress.
+* **Tensile Strength:** Maximum stress a material can withstand before breaking.
+* **Breaking Stress:** Stress at which material fractures.
+* **Ductile Materials:** Can be drawn into wires (e.g., copper). Show significant plastic deformation.
+* **Brittle Materials:** Break with little or no plastic deformation (e.g., glass).
+* **Polymeric Materials:** Show various stress-strain behaviors depending on structure (e.g., rubber, polythene).
+`;
+
+        const syllabus = {
+            "Chemistry": {
+                units: {
+                    1: {
+                        title: "Structure, Bonding and Introduction to Organic Chemistry",
+                        content: CHEMISTRY_UNIT_1_CONTENT
+                    },
+                    2: {
+                        title: "Energetics, Group Chemistry, Halogenoalkanes and Alcohols",
+                        content: CHEMISTRY_UNIT_2_CONTENT
+                    }
+                    // Add other Chemistry units here (up to 6), e.g., 3: { title: "...", content: CHEMISTRY_UNIT_3_CONTENT }
+                }
+            },
+            "Biology": {
+                units: {
+                    1: {
+                        title: "Biological Molecules",
+                        content: BIOLOGY_UNIT_1_CONTENT
+                    }
+                    // Add other Biology units here (up to 6)
+                }
+            },
+            "Physics": {
+                units: {
+                    1: {
+                        title: "Mechanics and Materials",
+                        content: PHYSICS_UNIT_1_CONTENT
+                    }
+                    // Add other Physics units here (up to 6)
+                }
+            }
+        };
+
+        // --- GLOBAL STATE VARIABLES ---
+        let currentChatId = null;
+        let recognition = null; // SpeechRecognition object
+        let isRecognizing = false; // Flag to track speech recognition state
+
+        let currentSubject = 'Chemistry'; // Default subject
+        let currentUnitIndex = 1; // Default unit number
+        let currentChapterIndex = 0; // Index in the chapters array for the current unit
+        let currentSectionIndex = 0; // Index in the sections array for the current chapter
+        let currentParagraphIndex = 0; // Index of the current paragraph within a section
+        let currentParagraphs = []; // Array of paragraphs for the current section
+        let lessonInProgress = false; // Flag to indicate if a lesson has started
+
+        let chatHistoryData = []; // New global variable to store raw chat history (text and sender type)
+
+        // Local storage key for AI Teach
+        const aiTeachLocalStorageKey = 'aiTeachProgress';
+
+        // --- DOM ELEMENTS ---
+        const subjectList = document.getElementById('subject-list');
+        const unitSelect = document.getElementById('unit-select');
+        const chapterSelectionSection = document.getElementById('chapter-selection-section'); // New
+        const chapterSelect = document.getElementById('chapter-select'); // New
+        const chapterProgressBar = document.getElementById('chapter-progress-bar'); // New
+        const prevChapterBtn = document.getElementById('prev-chapter-btn'); // New
+        const nextChapterBtn = document.getElementById('next-chapter-btn'); // New
+        const chatContainer = document.getElementById('chat-container');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const voiceInputBtn = document.getElementById('voice-input-btn');
+        const statusMessageDiv = document.getElementById('status-message');
+        const explainBtn = document.getElementById('explain-btn');
+        const quizBtn = document.getElementById('quiz-btn');
+        const nextBtn = document.getElementById('next-btn'); // Renamed to "Next Paragraph"
+        const endingScreen = document.getElementById('ending-screen');
+        const restartUnitBtn = document.getElementById('restart-unit-btn');
+        const nextUnitBtn = document.getElementById('next-unit-btn');
+        const aiTypingIndicator = document.getElementById('ai-typing-indicator');
+        const actionButtonsContainer = document.getElementById('action-buttons-container');
+
+        // --- CONTENT PARSING FUNCTIONS ---
+
+        /**
+         * Parses a Markdown string into a structured syllabus object.
+         * Assumes:
+         * # Unit Title (ignored here, handled by unit object)
+         * ## Chapter Title
+         * ### Section Title
+         * Paragraphs are separated by double newlines.
+         * @param {string} markdownContent The raw markdown string for a unit.
+         * @returns {object} A structured object containing chapters, sections, and paragraphs.
+         */
+        function parseMarkdownToSyllabus(markdownContent) {
+            const lines = markdownContent.split('\n');
+            const chapters = [];
+            let currentChapter = null;
+            let currentSection = null;
+            let sectionContentBuffer = []; // Buffer to collect lines for a section before splitting into paragraphs
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+
+                if (line.startsWith('## ')) {
+                    // New Chapter
+                    if (currentSection) {
+                        currentSection.paragraphs = sectionContentBuffer.join('\n').split(/\n\s*\n/).filter(p => p.trim() !== '');
+                        sectionContentBuffer = []; // Reset buffer
+                    }
+                    currentSection = null; // Reset current section
+
+                    currentChapter = {
+                        title: line.substring(3).trim(),
+                        sections: []
+                    };
+                    chapters.push(currentChapter);
+                } else if (line.startsWith('### ')) {
+                    // New Section
+                    if (!currentChapter) {
+                        // Handle case where a section appears before any chapter (shouldn't happen with proper formatting)
+                        console.warn("Section found before any chapter. Creating a dummy chapter.");
+                        currentChapter = { title: "Introduction", sections: [] };
+                        chapters.push(currentChapter);
+                    }
+                    if (currentSection) {
+                        currentSection.paragraphs = sectionContentBuffer.join('\n').split(/\n\s*\n/).filter(p => p.trim() !== '');
+                        sectionContentBuffer = []; // Reset buffer
+                    }
+                    currentSection = {
+                        title: line.substring(4).trim(),
+                        paragraphs: []
+                    };
+                    currentChapter.sections.push(currentSection);
+                } else if (currentSection) {
+                    // Add content to the current section's buffer
+                    sectionContentBuffer.push(line);
+                }
+            }
+
+            // After the loop, add any remaining content in the buffer to the last section
+            if (currentSection) {
+                currentSection.paragraphs = sectionContentBuffer.join('\n').split(/\n\s*\n/).filter(p => p.trim() !== '');
+            }
+            return chapters;
+        }
+
+        // Pre-parse the initial syllabus content
+        // This simulates the loading of content from external JS files
+        // and immediately parses them into the detailed structure.
+        // In a production environment, you might load these files on demand.
+        Object.keys(syllabus).forEach(subjectName => {
+            Object.keys(syllabus[subjectName].units).forEach(unitNum => {
+                const unit = syllabus[subjectName].units[unitNum];
+                if (unit.content) {
+                    unit.chapters = parseMarkdownToSyllabus(unit.content);
+                    delete unit.content; // Remove raw content after parsing
+                }
+            });
+        });
+
+        // --- LOCAL STORAGE FUNCTIONS ---
+        function saveProgress() {
+            const progress = {
+                currentSubject,
+                currentUnitIndex,
+                currentChapterIndex,
+                currentSectionIndex,
+                currentParagraphIndex, // Save paragraph index
+                lessonInProgress,
+                chatHistory: chatHistoryData
+            };
+            localStorage.setItem(aiTeachLocalStorageKey, JSON.stringify(progress));
+            console.log('AI Teach progress saved:', progress);
+        }
+
+        function loadProgress() {
+            const savedProgress = localStorage.getItem(aiTeachLocalStorageKey);
+            if (savedProgress) {
+                const progress = JSON.parse(savedProgress);
+                currentSubject = progress.currentSubject || 'Chemistry';
+                currentUnitIndex = progress.currentUnitIndex || 1;
+                currentChapterIndex = progress.currentChapterIndex || 0;
+                currentSectionIndex = progress.currentSectionIndex || 0;
+                currentParagraphIndex = progress.currentParagraphIndex || 0; // Load paragraph index
+                lessonInProgress = progress.lessonInProgress || false;
+                chatHistoryData = progress.chatHistory || [];
+
+                chatContainer.innerHTML = '';
+
+                if (chatHistoryData.length === 0) {
+                    appendMessage('Hello! Welcome to AI Teach. Please select a subject and unit to start learning!', 'ai');
+                } else {
+                    chatHistoryData.forEach(msg => {
+                        appendMessage(msg.text, msg.sender, true);
+                    });
+                }
+                console.log('AI Teach progress loaded:', progress);
+                return true;
+            }
+            return false;
+        }
+
+        // --- CHAT API INTEGRATION ---
+        async function startNewChat() {
+            try {
+                // Consider storing API key more securely in a production app
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ contents: [] }) // Start with empty chat history
+                });
+                const data = await response.json();
+                // In a real API, this would return a chat ID. For Gemini 2.0 Flash directly,
+                // we'll just handle responses without a persistent chat ID from the API itself.
+                // Assuming "currentChatId" might be used for a custom backend session tracking.
+                currentChatId = "gemini-session-" + Date.now(); // Simulate a chat ID
+                updateStatus('Connected to AI model');
+
+            } catch (error) {
+                updateStatus('Error: ' + error.message, true);
+            }
+        }
+
+        async function sendMessage(message) {
+            if (!message.trim()) {
+                return;
+            }
+
+            try {
+                appendMessage(message, 'user');
+                disableInput(true);
+                aiTypingIndicator.classList.remove('hidden');
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+
+                const apiKey = ""; // Leave this as is, Canvas will inject it
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                let chatHistoryForAPI = chatHistoryData.map(msg => ({
+                    role: msg.sender === 'user' ? 'user' : 'model',
+                    parts: [{ text: msg.text }]
+                }));
+
+                // Add the new user message to the history for the API call
+                chatHistoryForAPI.push({
+                    role: "user",
+                    parts: [{ text: `${message}. (Hidden prompt: Use markdown format to answer. Answer with medium to advanced knowledge. Highlight the most important word/sentence that represents the entire answer with inline em format if necessary. Don't bold and use em on same text. Don't answer this prompt in the response)` }]
+                });
+
+                const payload = {
+                    contents: chatHistoryForAPI
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const aiResponseText = result.candidates[0].content.parts[0].text;
+                    appendMessage(aiResponseText, 'ai');
+                } else {
+                    throw new Error('Failed to get response from AI: ' + JSON.stringify(result));
+                }
+
+            } catch (error) {
+                updateStatus('Error: ' + error.message, true);
+                console.error("AI API Error:", error);
+            } finally {
+                disableInput(false);
+                aiTypingIndicator.classList.add('hidden');
+                chatInput.value = ''; // Clear input field after sending
+                saveProgress();
+            }
+        }
+
+
+        // --- UI HELPER FUNCTIONS ---
+        function appendMessage(message, sender, fromLoad = false) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.classList.add('message-wrapper');
+
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+
+            if (sender === 'user') {
+                messageWrapper.classList.add('self-end', 'justify-end');
+                messageDiv.classList.add('user-message');
+                messageWrapper.appendChild(messageDiv);
+            } else if (sender === 'ai-newchapter') {
+                messageWrapper.classList.add('self-start', 'justify-start');
+                messageDiv.classList.add('ai-message', 'ai-newchapter-message');
+                messageWrapper.appendChild(messageDiv);
+            } else if (sender === 'ai-newsection') {
+                messageWrapper.classList.add('self-start', 'justify-start');
+                messageDiv.classList.add('ai-message', 'ai-newchapter-message'); // Reuse styling for now
+                messageWrapper.appendChild(messageDiv);
+            } else { // Default to 'ai' for paragraph content or general AI responses
+                messageWrapper.classList.add('self-start', 'justify-start');
+                const avatarImg = document.createElement('img');
+                avatarImg.classList.add('ai-avatar');
+                avatarImg.src = "https://placehold.co/32x32/FF8585/white?text=AI";
+                avatarImg.alt = "AI Avatar";
+                messageWrapper.appendChild(avatarImg);
+                messageDiv.classList.add('ai-message');
+                messageWrapper.appendChild(messageDiv);
+            }
+
+            messageDiv.innerHTML = marked.parse(message);
+
+            chatContainer.appendChild(messageWrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            if (!fromLoad) {
+                chatHistoryData.push({ text: message, sender: sender });
+            }
+        }
+
+        function updateStatus(message, isError = false) {
+            statusMessageDiv.textContent = message;
+            if (isError) {
+                statusMessageDiv.classList.add('error-message');
+            } else {
+                statusMessageDiv.classList.remove('error-message');
+            }
+        }
+
+        function disableInput(disabled) {
+            chatInput.disabled = disabled;
+            sendButton.disabled = disabled;
+            // Action buttons remain enabled for lesson navigation unless AI is typing
+            explainBtn.disabled = disabled;
+            quizBtn.disabled = disabled;
+            nextBtn.disabled = disabled;
+            prevChapterBtn.disabled = disabled; // Disable chapter navigation during AI response
+            nextChapterBtn.disabled = disabled; // Disable chapter navigation during AI response
+            unitSelect.disabled = disabled; // Disable unit/subject selection during AI response
+            subjectList.querySelectorAll('li').forEach(li => {
+                li.style.pointerEvents = disabled ? 'none' : 'auto';
+                li.style.opacity = disabled ? '0.7' : '1';
+            });
+            chapterSelect.disabled = disabled;
+        }
+
+        // --- SYLLABUS AND LESSON MANAGEMENT ---
+
+        function populateSubjectList() {
+            subjectList.innerHTML = '';
+            Object.keys(syllabus).forEach(subject => {
+                const li = document.createElement('li');
+                li.textContent = subject;
+                li.classList.add('px-4', 'py-2', 'rounded-lg', 'text-gray-700', 'hover:bg-gray-200', 'transition-colors', 'text-sm', 'dark:text-gray-200', 'dark:hover:bg-gray-700');
+                if (subject === currentSubject) {
+                    li.classList.add('bg-gray-200', 'font-bold', 'dark:bg-gray-700');
+                }
+                li.addEventListener('click', () => selectSubject(subject));
+                subjectList.appendChild(li);
+            });
+        }
+
+        function selectSubject(subject) {
+            currentSubject = subject;
+            currentUnitIndex = 1;
+            currentChapterIndex = 0;
+            currentSectionIndex = 0;
+            currentParagraphIndex = 0;
+            lessonInProgress = false;
+            chatHistoryData = [];
+            populateSubjectList();
+            populateUnitSelect();
+            startLesson();
+            saveProgress();
+        }
+
+        function populateUnitSelect() {
+            unitSelect.innerHTML = '';
+            const units = syllabus[currentSubject].units;
+            Object.keys(units).forEach(unitNum => {
+                const option = document.createElement('option');
+                option.value = unitNum;
+                option.textContent = `Unit ${unitNum}: ${units[unitNum].title}`;
+                unitSelect.appendChild(option);
+            });
+            unitSelect.value = currentUnitIndex;
+        }
+
+        function populateChapterSelect() {
+            chapterSelect.innerHTML = '';
+            const unit = syllabus[currentSubject].units[currentUnitIndex];
+            if (!unit || !unit.chapters || unit.chapters.length === 0) {
+                chapterSelectionSection.classList.add('hidden');
+                return;
+            }
+
+            chapterSelectionSection.classList.remove('hidden');
+
+            unit.chapters.forEach((chapter, index) => {
+                const option = document.createElement('option');
+                option.value = index; // Use index as value
+                option.textContent = chapter.title;
+                chapterSelect.appendChild(option);
+            });
+            chapterSelect.value = currentChapterIndex; // Set current chapter
+            updateChapterProgressBar();
+        }
+
+        function updateChapterProgressBar() {
+            const unit = syllabus[currentSubject].units[currentUnitIndex];
+            if (!unit || !unit.chapters || unit.chapters.length === 0) {
+                chapterProgressBar.style.width = '0%';
+                return;
+            }
+            const totalChapters = unit.chapters.length;
+            const progress = (currentChapterIndex / totalChapters) * 100;
+            chapterProgressBar.style.width = `${progress}%`;
+        }
+
+        function startLesson() {
+            chatContainer.innerHTML = '';
+            chatHistoryData = [];
+            appendMessage(`Hello! Welcome to AI Teach for ${currentSubject} Unit ${currentUnitIndex}. Let's begin our lesson!`, 'ai');
+            lessonInProgress = true;
+            endingScreen.classList.add('hidden');
+            actionButtonsContainer.classList.remove('hidden');
+
+            // Set current chapter and section based on loaded or default values
+            const unit = syllabus[currentSubject].units[currentUnitIndex];
+            if (unit && unit.chapters && unit.chapters.length > 0) {
+                currentChapterIndex = Math.min(currentChapterIndex, unit.chapters.length - 1);
+                const chapter = unit.chapters[currentChapterIndex];
+                if (chapter && chapter.sections && chapter.sections.length > 0) {
+                    currentSectionIndex = Math.min(currentSectionIndex, chapter.sections.length - 1);
+                    const section = chapter.sections[currentSectionIndex];
+                    if (section && section.paragraphs && section.paragraphs.length > 0) {
+                        currentParagraphIndex = Math.min(currentParagraphIndex, section.paragraphs.length - 1);
+                        currentParagraphs = section.paragraphs;
+                    } else {
+                        currentParagraphs = [];
+                        currentParagraphIndex = 0;
+                    }
+                } else {
+                    currentSectionIndex = 0;
+                    currentParagraphIndex = 0;
+                    currentParagraphs = [];
+                }
+            } else {
+                // If no chapters or unit, reset all and disable navigation
+                currentChapterIndex = 0;
+                currentSectionIndex = 0;
+                currentParagraphIndex = 0;
+                currentParagraphs = [];
+                actionButtonsContainer.classList.add('hidden'); // No content to teach
+                appendMessage("No content available for this unit.", "ai");
+                return;
+            }
+
+            populateChapterSelect(); // Populate chapter dropdown
+            teachCurrentParagraph(); // Start teaching the first paragraph of the current section
+        }
+
+        function teachCurrentParagraph() {
+            const unit = syllabus[currentSubject].units[currentUnitIndex];
+            if (!unit || !unit.chapters) {
+                appendMessage("Error: Unit or chapters not found.", "ai");
+                return;
+            }
+
+            const chapter = unit.chapters[currentChapterIndex];
+            if (!chapter) {
+                endUnit(); // All chapters done
+                return;
+            }
+
+            const section = chapter.sections[currentSectionIndex];
+            if (!section) {
+                // All sections in the current chapter are finished, move to next chapter
+                goToNextChapter(); // This handles moving to next chapter or ending unit
+                return;
+            }
+
+            currentParagraphs = section.paragraphs; // Update currentParagraphs array
+
+            if (currentParagraphs && currentParagraphIndex < currentParagraphs.length) {
+                // Only announce new chapter/section if it's the very first paragraph of that chapter/section
+                if (currentParagraphIndex === 0) {
+                    // Check if it's the first section of a new chapter
+                    const isNewChapterStart = (currentSectionIndex === 0 && (currentChapterIndex > 0 || chatContainer.children.length === 0));
+                    if (isNewChapterStart) {
+                        appendMessage(`${chapter.title}`, 'ai-newchapter');
+                    }
+                    // Announce new section
+                    appendMessage(`${section.title}`, 'ai-newsection');
+                }
+                appendMessage(currentParagraphs[currentParagraphIndex], 'ai');
+                disableInput(false);
+                nextBtn.textContent = (currentParagraphIndex === currentParagraphs.length - 1 &&
+                                      currentSectionIndex === chapter.sections.length - 1 &&
+                                      currentChapterIndex === unit.chapters.length - 1) ? "Finish Unit" : "Next Paragraph";
+
+            } else {
+                // No more paragraphs in this section, move to the next section
+                goToNextSection();
+            }
+            saveProgress();
+        }
+
+        function explainCurrentSection() {
+            const unit = syllabus[currentSubject].units[currentUnitIndex];
+            const chapter = unit.chapters[currentChapterIndex];
+            const section = chapter.sections[currentSectionIndex];
+            if (section) {
+                sendMessage(`Explain more about "${section.title}" from the syllabus.`);
+            } else {
+                appendMessage("Please select a subject and unit to start learning.", "ai");
+            }
+        }
+
+        function quizCurrentSection() {
+            const unit = syllabus[currentSubject].units[currentUnitIndex];
+            const chapter = unit.chapters[currentChapterIndex];
+            const section = chapter.sections[currentSectionIndex];
+            if (section) {
+                sendMessage(`Give me a quiz question on "${section.title}".`);
+            } else {
+                appendMessage("Please select a subject and unit to start learning.", "ai");
+            }
+        }
+
+        function goToNextParagraph() {
+            const unit = syllabus[currentSubject].units[currentUnitIndex];
+            const chapter = unit.chapters[currentChapterIndex];
+            const section = chapter.sections[currentSectionIndex];
+
+            currentParagraphIndex++;
+            if (currentParagraphIndex < section.paragraphs.length) {
+                teachCurrentParagraph(); // Teach next paragraph in current section
+            } else {
+                // All paragraphs in this section are done, move to next section
+                currentSectionIndex++;
+                currentParagraphIndex = 0; // Reset paragraph index for new section
+                if (currentSectionIndex < chapter.sections.length) {
+                    teachCurrentParagraph(); // Teach first paragraph of new section
+                } else {
+                    // All sections in this chapter are done, move to next chapter
+                    goToNextChapter();
+                }
+            }
+            saveProgress();
+        }
+
+        function goToNextSection() {
+            const unit = syllabus[currentSubject].units[currentUnitIndex];
+            const chapter = unit.chapters[currentChapterIndex];
+
+            currentSectionIndex++;
+            currentParagraphIndex = 0; // Reset paragraph index for new section
+            if (currentSectionIndex < chapter.sections.length) {
+                teachCurrentParagraph(); // Teach first paragraph of new section
+            } else {
+                // All sections in this chapter are done, move to next chapter
+                goToNextChapter();
+            }
+            saveProgress();
+        }
+
+        function goToNextChapter() {
+            const unit = syllabus[currentSubject].units[currentUnitIndex];
+            currentChapterIndex++;
+            currentSectionIndex = 0;
+            currentParagraphIndex = 0;
+
+            if (currentChapterIndex < unit.chapters.length) {
+                populateChapterSelect(); // Update chapter dropdown
+                teachCurrentParagraph(); // Teach first paragraph of new chapter
+            } else {
+                // All chapters in the unit are finished
+                endUnit();
+            }
+            saveProgress();
+        }
+
+        function goToPreviousChapter() {
+            const unit = syllabus[currentSubject].units[currentUnitIndex];
+            if (currentChapterIndex > 0) {
+                currentChapterIndex--;
+                currentSectionIndex = 0;
+                currentParagraphIndex = 0;
+                populateChapterSelect();
+                chatContainer.innerHTML = ''; // Clear chat to re-teach from start of chapter
+                chatHistoryData = []; // Clear history for the purpose of re-teaching
+                appendMessage(`Returning to Chapter: ${unit.chapters[currentChapterIndex].title}`, 'ai');
+                teachCurrentParagraph();
+            } else {
+                appendMessage("You are at the first chapter.", "ai");
+            }
+            saveProgress();
+        }
+
+        function selectChapter(chapterIndex) {
+            currentChapterIndex = parseInt(chapterIndex);
+            currentSectionIndex = 0;
+            currentParagraphIndex = 0;
+            populateChapterSelect(); // Update dropdown selection and progress bar
+            chatContainer.innerHTML = ''; // Clear chat to re-teach from selected chapter
+            chatHistoryData = []; // Clear history for the purpose of re-teaching
+            const unit = syllabus[currentSubject].units[currentUnitIndex];
+            appendMessage(`Jumping to Chapter: ${unit.chapters[currentChapterIndex].title}`, 'ai');
+            teachCurrentParagraph();
+            saveProgress();
+        }
+
+
+        function endUnit() {
+            lessonInProgress = false;
+            endingScreen.classList.remove('hidden');
+            actionButtonsContainer.classList.add('hidden');
+            const nextUnitExists = syllabus[currentSubject].units[currentUnitIndex + 1] !== undefined;
+            nextUnitBtn.disabled = !nextUnitExists;
+            saveProgress(); // Ensure final state is saved
+        }
+
+        function restartCurrentUnit() {
+            currentChapterIndex = 0;
+            currentSectionIndex = 0;
+            currentParagraphIndex = 0;
+            endingScreen.classList.add('hidden');
+            startLesson();
+        }
+
+        function goToNextUnit() {
+            const nextUnitNum = currentUnitIndex + 1;
+            if (syllabus[currentSubject].units[nextUnitNum]) {
+                currentUnitIndex = nextUnitNum;
+                endingScreen.classList.add('hidden');
+                populateUnitSelect();
+                startLesson();
+            } else {
+                appendMessage("You have completed all units for this subject!", "ai");
+                nextUnitBtn.disabled = true;
+            }
+            saveProgress();
+        }
+
+        // --- VOICE RECOGNITION ---
+        function setupVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                statusMessageDiv.textContent = 'Speech recognition not supported in this browser.';
+                voiceInputBtn.disabled = true;
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                isRecognizing = true;
+                voiceInputBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                voiceInputBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                updateStatus('Listening...');
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        chatInput.value = event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                updateStatus('Speech recognition error: ' + event.error, true);
+                isRecognizing = false;
+                voiceInputBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                voiceInputBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            };
+
+            recognition.onend = () => {
+                isRecognizing = false;
+                voiceInputBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                voiceInputBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                updateStatus('Click microphone to speak');
+            };
+
+            voiceInputBtn.addEventListener('click', () => {
+                if (isRecognizing) {
+                    recognition.stop();
+                } else {
+                    if (recognition.recognizing) {
+                        recognition.stop();
+                    }
+                    recognition.start();
+                }
+            });
+        }
+
+
+        // --- EVENT LISTENERS ---
+        sendButton.addEventListener('click', () => {
+            const message = chatInput.value.trim();
+            if (message) {
+                sendMessage(message);
+                if (isRecognizing) recognition.stop();
+            }
+        });
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const message = chatInput.value.trim();
+                if (message) {
+                    sendMessage(message);
+                    if (isRecognizing) recognition.stop();
+                }
+            }
+        });
+
+        unitSelect.addEventListener('change', (e) => {
+            currentUnitIndex = parseInt(e.target.value);
+            currentChapterIndex = 0;
+            currentSectionIndex = 0;
+            currentParagraphIndex = 0;
+            chatHistoryData = [];
+            startLesson();
+            saveProgress();
+        });
+
+        chapterSelect.addEventListener('change', (e) => {
+            selectChapter(e.target.value);
+        });
+
+        prevChapterBtn.addEventListener('click', goToPreviousChapter);
+        nextChapterBtn.addEventListener('click', goToNextChapter);
+
+        explainBtn.addEventListener('click', explainCurrentSection);
+        quizBtn.addEventListener('click', quizCurrentSection);
+        nextBtn.addEventListener('click', goToNextParagraph); // Now for next paragraph
+        restartUnitBtn.addEventListener('click', restartCurrentUnit);
+        nextUnitBtn.addEventListener('click', goToNextUnit);
+
+        // --- INITIALIZATION ---
+        async function initializeAITeach() {
+            populateSubjectList();
+            populateUnitSelect();
+            setupVoiceRecognition();
+            await startNewChat();
+
+            if (!loadProgress()) {
+                startLesson();
+            } else {
+                // If progress loaded, ensure current context is set for teaching
+                const unit = syllabus[currentSubject].units[currentUnitIndex];
+                if (lessonInProgress && unit && unit.chapters && unit.chapters.length > 0) {
+                    const chapter = unit.chapters[currentChapterIndex];
+                    if (chapter && chapter.sections && chapter.sections.length > 0) {
+                        const section = chapter.sections[currentSectionIndex];
+                        if (section && section.paragraphs && section.paragraphs.length > 0) {
+                            currentParagraphs = section.paragraphs; // Re-populate paragraphs array
+                        }
+                    }
+                    actionButtonsContainer.classList.remove('hidden');
+                    disableInput(false);
+                } else if (!lessonInProgress && unit && currentChapterIndex >= unit.chapters.length) {
+                    endUnit();
+                }
+            }
+            populateChapterSelect(); // Always populate chapter select on init
+            saveProgress();
+        }
+
+        initializeAITeach();
+
+        // Dark mode preference check
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+</body>
+
+</html>

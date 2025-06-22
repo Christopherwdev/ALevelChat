@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry Notes - Paper Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Updated marked.js CDN to 4.0.17 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.17/marked.min.js"></script>
+    <script>
+        /* Tailwind configuration for custom colors and dark mode */
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B6B', /* Custom primary color for Chemistry, matches #ff6b6b */
+                        subjectColor: '#FF6B6B', /* Dynamic subject color */
+                    },
+                },
+            },
+        };
+
+        /* Apply dark mode if preferred by the user's system settings */
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+    <style>
+        /* Custom styles for the app */
+        :root {
+            /* This variable will be dynamically updated by JavaScript based on the subject */
+            --subject-primary-color: #FF6B6B;
+            --subject-primary-color-trans: #FF6B6B70;
+            /* Default for Chemistry */
+            --subject-primary-color-rgb: 255, 107, 107;
+            /* RGB equivalent for rgba usage */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .btn-primary {
+            background-color: var(--subject-primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: color-mix(in srgb, var(--subject-primary-color) 80%, black);
+            /* Darken on hover */
+        }
+
+        /* Styles for the active unit button and active home/subject button */
+        .unit-button.active,
+        .home-subject-button.active {
+            background-color: var(--subject-primary-color);
+            color: white;
+            border: 2px solid black;
+            /* Highlight active button */
+        }
+
+        /* Styles for inactive unit button and inactive home/subject button */
+        .unit-button:not(.active),
+        .home-subject-button:not(.active) {
+            background-color: #f3f4f6;
+            /* gray-100 */
+            color: #4b5563;
+            /* gray-700 */
+            border: 2px solid #e5e7eb;
+            /* Light border for inactive */
+        }
+
+        .dark .unit-button:not(.active),
+        .dark .home-subject-button:not(.active) {
+            background-color: #374151;
+            /* gray-700 */
+            color: #d1d5db;
+            /* gray-300 */
+            border: 2px solid #4b5563;
+            /* Darker border for inactive in dark mode */
+        }
+
+        .unit-button,
+        .home-subject-button {
+           
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        /* Style for section links in sidebar */
+        .section-link {
+            display: flex;
+            /* Use flex to align icon and text */
+            align-items: center;
+            justify-content: space-between; /* Push text and icon to edges */
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            /* Indent slightly */
+            border-radius: 0 0.375rem 0.375rem 0;
+            font-size: 0.875rem;
+            /* text-sm */
+            color: #6b7280;
+            /* gray-500 */
+            transition: background-color 0.2s, color 0.2s;
+            text-decoration: none;
+            /* Removed overflow, text-overflow, white-space from here */
+        }
+
+        .section-link:hover {
+            background-color: #e5e7eb;
+            /* gray-200 */
+            color: #374151;
+            /* gray-700 */
+        }
+
+        .dark .section-link {
+            color: #9ca3af;
+            /* gray-400 */
+        }
+
+        .dark .section-link:hover {
+            background-color: #4a5568;
+            /* gray-700 */
+            color: #e2e8f0;
+            /* gray-200 */
+        }
+
+        .section-link.active-section {
+            background-color: rgba(var(--subject-primary-color-rgb), 0.1);
+            /* Lighter shade of primary color */
+            color: var(--subject-primary-color);
+            font-weight: 600;
+        }
+
+        /* NEW CSS: Styling for the text inside the section link */
+        .section-link-text {
+            flex-grow: 1; /* Allow text to take available space */
+            min-width: 0; /* Essential for flex items with overflow: hidden */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap; /* Keep text on a single line */
+        }
+
+        /* NEW CSS: Styling for the completion icon in the sidebar */
+        .section-completion-icon {
+            flex-shrink: 0; /* Prevent the icon from shrinking */
+            margin-left: 0.5rem; /* Space between text and icon */
+            display: none; /* Keep hidden by default */
+        }
+        .markdown-content {
+            /* font-weight:lighter; */
+        }
+        /* Markdown rendering styles */
+        .markdown-content h1 {
+            font-size: 2rem;
+            /* text-4xl */
+            font-weight: 700;
+            /* font-bold */
+            margin-bottom: 10px;
+            /* color: var(--subject-primary-color); */
+            color: black;
+            /* Apply subject color to H1 */
+        }
+
+        .markdown-content h2 {
+            font-size: 1.8rem;
+            /* text-3xl */
+            font-weight: 600;
+            /* font-semibold */
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--subject-primary-color);
+            /* Apply subject color to H2 */
+        }
+
+        .markdown-content h3 {
+            font-size: 1.4rem;
+            /* text-2xl */
+            font-weight: 600;
+            /* font-semibold */
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-content p {
+            margin-bottom: 0px;
+            line-height: 1.5rem;
+            
+        }
+
+        .markdown-content ul,
+        .markdown-content ol {
+            margin-bottom: 1rem;
+            padding-left: 1.4rem;
+        }
+
+        .markdown-content ul li {
+            list-style-type: disc;
+            margin-bottom: 0.1rem;
+        }
+
+        .markdown-content ol li {
+            list-style-type: decimal;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-content pre {
+            background-color: #e2e8f0;
+            /* gray-200 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-content code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            background-color: #e2e8f0;
+            /* gray-200 */
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+        }
+
+        .dark .markdown-content code,
+        .dark .markdown-content pre {
+            background-color: #4a5568;
+            /* gray-700 */
+            color: #e2e8f0;
+            /* gray-200 */
+        }
+
+        .markdown-content blockquote {
+            border-left: 4px solid var(--subject-primary-color);
+            padding-left: 1rem;
+            margin-left: 0;
+            font-style: italic;
+            color: #6b7280;
+            /* gray-500 */
+        }
+
+        /* Custom scrollbar for left sidebar */
+        #left-sidebar::-webkit-scrollbar {
+            display: none
+        }
+
+        #left-sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .dark #left-sidebar::-webkit-scrollbar-track {
+            background: #2d3748;
+            /* Darker track */
+        }
+
+        #left-sidebar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .dark #left-sidebar::-webkit-scrollbar-thumb {
+            background: #555;
+            /* Darker thumb */
+        }
+
+        #left-sidebar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .dark #left-sidebar::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+
+        /* Styling for per-section completion button (in main content) */
+        .section-completion-button {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.75rem;
+            border-radius: 9999px;
+            /* Full rounded corners */
+            margin-left: 1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+           
+        }
+
+        .section-completion-button.completed {
+            background-color: #10B981;
+            /* Green-500 */
+            color: white;
+            border: 1px solid #059669;
+            /* Green-600 */
+            /* width: 170px; */
+        }
+
+        .section-completion-button.incomplete {
+            background-color: #e5e7eb;
+            /* Gray-200 */
+            color: #4b5563;
+            /* Gray-700 */
+            border: 1px solid #d1d5db;
+            /* Gray-300 */
+            /* width: 170px; */
+        }
+
+
+        .section-completion-button:hover {
+            opacity: 0.9;
+        }
+
+        .section-header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            margin-top: 30px;
+            /* Match H2 default margin */
+        }
+
+        .section-header-container h2 {
+            margin-top: 0px;
+            /* Reset default H2 margin-top */
+            margin-bottom: 0;
+            /* Reset default H2 margin-bottom */
+        }
+        /* Styles for the new editing toolbar buttons */
+        .editor-button {
+            width: 32px;
+            height: 32px;
+            padding: 0.6rem;
+            border-radius: 8px;
+            background-color: #e2e8f0; /* Light gray */
+            color: #2d3748; /* Darker text */
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .editor-button:hover {
+            background-color: #cbd5e0; /* Slightly darker gray on hover */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        .dark .editor-button {
+            background-color: #4a5568; /* Dark mode gray */
+            color: #e2e8f0; /* Light text */
+        }
+        .dark .editor-button:hover {
+            background-color: #6b7280; /* Dark mode slightly darker gray on hover */
+        }
+        /* Specific color for highlight buttons */
+        .highlight-button {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.2);
+            cursor: pointer;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .highlight-button:hover {
+            opacity: 0.8;
+            box-shadow: inset 0 1px 5px rgba(0,0,0,0.2);
+        }
+        .highlight-yellow { background-color: #FFEB3B50; }
+        .highlight-red { background-color: #EF535050; }
+        .highlight-blue { background-color: #42A5F550; }
+        .highlight-green { background-color: #66BB6A50; }
+
+        /* NEW HOME PAGE STYLES */
+        .home-page-section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .dark .home-page-section-title {
+            color: #e2e8f0;
+        }
+
+        .unit-card {
+            /* background-color: #ffffff; */
+
+            background: linear-gradient(45deg, white 50%, rgba(var(--subject-primary-color-rgb), 0.1));
+            border: 3px solid var(--subject-primary-color);
+            /* border: 2px solid #000000; */
+            border-radius: 1rem;
+            /* box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); */
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            width: 280px; /* Ensure uniform and wide cards */
+            flex-shrink: 0; /* Prevent shrinking in flex container */
+            height: auto; /* Allow content to dictate height */
+            
+        }
+
+        
+
+        .unit-card:hover {
+            /* transform: translateY(-3px); */
+            /* box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); */
+            /* box-shadow: 0px 0px 0px 5px #00000010; */
+            /* outline: 2px solid var(--subject-primary-color) */
+        }
+
+        .progress-bar-container {
+            height: 10px;
+            background-color: #00000016;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-right: 20px;
+            /* margin-left: 10px */
+        }
+
+        .dark .progress-bar-container {
+            background-color: #4a5568;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+       
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .ai-tool-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+
+        .dark .ai-tool-card {
+            background-color: #2d3748;
+            border-color: #4a5568;
+        }
+
+        .ai-tool-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .ai-tool-icon-circle {
+            width: 80px;
+            height: 80px;
+            background-color: #3b82f6; /* Blue-500 */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .ai-tool-icon-circle i {
+            color: white;
+            font-size: 2.5rem;
+
+        }
+        /* Continue Lesson Element Style */
+        .continue-lesson-card {
+            width: 250px; /* Fixed width as per image */
+            height: 250px; /* Fixed height to match title/buttons div */
+            background-color: rgba(var(--subject-primary-color-rgb),0.2); /* White background */
+            /* border: 1px solid #e2e8f0; */
+            /* border: 3px solid var(--subject-primary-color); */
+            border-radius: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            flex-grow: 0; /* Prevent it from growing, fix height */
+            
+            text-align: center;
+            padding: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease-in-out;
+        }
+        .dark .continue-lesson-card {
+            background-color: #2d3748;
+            border-color: #4a5568;
+        }
+        .continue-lesson-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .continue-lesson-card i {
+            font-size: 3rem;
+            color: #3b82f6; /* Blue icon */
+            align-self: center;
+            justify-self: center;
+        
+          
+
+        }
+        .continue-lesson-card .text-sm {
+            color: #6b7280; /* Gray-500 */
+        }
+        .dark .continue-lesson-card .text-sm {
+            color: #9ca3af; /* Gray-400 */
+        }
+        #lesson-pane {
+            padding: 10px 0px;
+        }
+
+        #lesson-pane::-webkit-scrollbar {
+            display: none
+        }
+
+        /* Styles for the new "Past Papers", "AI Teacher & Grading", "Ask For Our Help" buttons */
+        .revision-tool-button {
+            background-color: white; /* White background */
+            border: 3px solid #e2e8f0; /* Light gray border */
+            border-radius: 2rem; /* Rounded corners */
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Align content to start */
+            text-align: left;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1); /* Subtle shadow */
+        }
+
+        .revision-tool-button:hover {
+            /* transform: translateY(-2px); */
+            border-color: var(--subject-primary-color);
+            box-shadow: 0 6px 20px rgba(var(--subject-primary-color-rgb),0.2);
+        }
+        .revision-tool-button .icon-circle {
+            width: 40px;
+            height: 40px;
+            min-width: 40px; /* Ensure icon circle doesn't shrink */
+            border: 2px solid #ef4444; /* Red border for circle */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+        .revision-tool-button .icon-circle i {
+            color: #ef4444; /* Red icon */
+            font-size: 1.25rem; /* Icon size */
+        }
+        .revision-tool-button .text-content {
+            display: flex;
+            flex-direction: column;
+        }
+        .revision-tool-button .text-content .main-text {
+            font-weight: bold;
+            color: #ef4444; /* Red text */
+            font-size: 1rem;
+        }
+        .revision-tool-button .text-content .sub-text {
+              font-weight: bold;
+            font-size: 0.875rem;
+            color: #6b7280; /* Gray-500 */
+            margin-top: 0.125rem;
+        }
+        .dark .revision-tool-button .text-content .main-text {
+            color: #f87171; /* Lighter red for dark mode */
+        }
+        .dark .revision-tool-button .text-content .sub-text {
+            color: #9ca3af; /* Lighter gray for dark mode */
+        }
+
+        /* Adjusting the height of the container holding title and buttons */
+        .title-buttons-container {
+            height: 200px; /* Match the height of .continue-lesson-card */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Distribute space evenly */
+        }
+    </style>
+</head>
+
+<body class="antialiased bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200">
+    <!-- Main Container -->
+    <div class="w-full h-screen flex flex-col">
+
+        <!-- Header -->
+        <header
+            class="flex justify-between items-center p-4 bg-white border-b dark:bg-gray-800 dark:border-gray-700 h-[80px]">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                <a href="../../Revision.html" class="hover:underline">Revision Notes</a> / <span id="subject-title"></span>
+                </h1>
+                <p class="text-xs text-gray-500 mt-1">Your comprehensive revision guide</p>
+                
+            </div>
+<script src="../../header.js"></script>
+            <!-- Right side editing tools -->
+            <div class="flex items-center space-x-2">
+                <button id="bold-button" class="editor-button" title="Bold">
+                    <i class="fas fa-bold"></i>
+                </button>
+                <button id="underline-button" class="editor-button" title="Underline">
+                    <i class="fas fa-underline"></i>
+                </button>
+                <div class="flex space-x-1">
+                    <button id="highlight-yellow-button" class="highlight-button highlight-yellow" title="Highlight Yellow"></button>
+                    <button id="highlight-red-button" class="highlight-button highlight-red" title="Highlight Red"></button>
+                    <button id="highlight-blue-button" class="highlight-button highlight-blue" title="Highlight Blue"></button>
+                    <button id="highlight-green-button" class="highlight-button highlight-green" title="Highlight Green"></button>
+                </div>
+                <button id="clear-effects-button" class="editor-button" title="Clear All Effects">
+                    <i class="fas fa-eraser"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="flex flex-1 overflow-hidden">
+
+            <!-- Left Sidebar - Navigation -->
+            <div id="left-sidebar"
+                class="w-80 bg-white border-r flex flex-col dark:bg-gray-800 dark:border-gray-700 overflow-y-auto p-4">
+
+                <!-- Subject Home Button (combining Home and Subject) -->
+                <button id="home-subject-button"
+                    class="home-subject-button w-full text-left px-4 py-3 rounded-[15px] text-lg font-semibold mb-4 flex items-center justify-center transition duration-200">
+                    <i id="sidebar-subject-icon" class="fas fa-home mr-3 text-xl"></i> <!-- Icon for home button -->
+                    <span id="sidebar-subject-name" style="font-weight: 900;">Home</span>
+                    <i class="fas fa-chevron-right ml-auto text-sm"></i>
+                </button>
+
+
+                <!-- Learning Notes Section -->
+                <div class="mb-4">
+                    <h3 class="text-md font-semibold text-gray-700 mb-2 dark:text-gray-300">Learning Notes</h3>
+                    <div id="unit-buttons-container" class="space-y-4">
+                        <!-- Unit buttons will be dynamically added here -->
+                        <!-- Each unit button will contain a nested div for sections -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Content Area - Notes Display -->
+            <div class="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900 pl-[7.5%] pr-[15%]">
+                <div class="max-w-4xl mx-auto markdown-content" contenteditable="true" style="font-size: 14px; outline: none">
+                    <!-- Title and Info -->
+                    <div class="flex items-center justify-between mb-2">
+                        <h1 id="notes-title" class="text-4xl font-bold text-black"></h1>
+                        <!-- Removed global mark-completed-button -->
+                    </div>
+
+                    <p id="notes-info-text" class="text-gray-600 dark:text-gray-400 mb-6">
+                        Learning Notes | <span id="notes-duration"></span> | AI powered
+                    </p>
+                    <hr id="notes-divider" class="border-t border-gray-300 dark:border-gray-700 my-6">
+
+                    <!-- Markdown content will be rendered here -->
+                    <div id="markdown-display" class="prose dark:prose-invert max-w-none">
+                        <!-- Default content for home page -->
+                        <!-- This content will be dynamically replaced by displayHomePage() -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="Unit1.js"></script>
+    <script src="Unit2.js"></script>
+    <script src="Unit3.js"></script>
+    <script src="Unit4.js"></script>
+    <script src="Unit5.js"></script>
+    <script src="Unit6.js"></script>
+
+
+
+    <script>
+        // Dummy content for Units. In a real app, these would be separate files or fetched.
+        // Assuming UnitX.js files define UNIT_X_CONTENT global variables
+         const UNIT_NOTES_CONTENT = {
+            1: CHEMISTRY_UNIT_1_CONTENT,
+            2: CHEMISTRY_UNIT_2_CONTENT,
+            3: CHEMISTRY_UNIT_3_CONTENT,
+            4: CHEMISTRY_UNIT_4_CONTENT,
+            5: CHEMISTRY_UNIT_5_CONTENT,
+            6: CHEMISTRY_UNIT_6_CONTENT
+        };
+
+
+        // --- CONFIGURATION FOR EASY ADAPTATION ---
+        const CURRENT_SUBJECT = 'Chemistry';
+        const SUBJECT_COLOR = '#FF6B6B'; // Corresponds to primary color in Tailwind config
+        const SUBJECT_ICON_CLASS = 'fas fa-flask'; // Font Awesome icon for Chemistry
+        const UNIT_PREFIX = 'Unit'; // For units like "Unit 1", "Unit 2"
+        const TOTAL_UNITS = 6; // Number of units for the subject
+        // Key prefix for local storage. Now includes unit and section.
+        const LOCAL_STORAGE_KEY_PREFIX = 'completed_notes_section_';
+        const LAST_VIEWED_LESSON_KEY = 'last_viewed_lesson';
+
+        // Update CSS variable for dynamic coloring and add RGB version for transparency
+        const hexToRgb = (hex) => {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `${r}, ${g}, ${b}`;
+        };
+        document.documentElement.style.setProperty('--subject-primary-color', SUBJECT_COLOR);
+        document.documentElement.style.setProperty('--subject-primary-color-rgb', hexToRgb(SUBJECT_COLOR));
+
+
+        // --- DOM ELEMENTS ---
+        const subjectTitle = document.getElementById('subject-title');
+        const sidebarSubjectName = document.getElementById('sidebar-subject-name');
+        const sidebarSubjectIcon = document.getElementById('sidebar-subject-icon');
+        const homeSubjectButton = document.getElementById('home-subject-button');
+        const unitButtonsContainer = document.getElementById('unit-buttons-container');
+        const notesTitle = document.getElementById('notes-title');
+        const notesDuration = document.getElementById('notes-duration');
+        const notesInfoText = document.getElementById('notes-info-text');
+        const notesDivider = document.getElementById('notes-divider');
+        const markdownDisplay = document.getElementById('markdown-display');
+        // Removed global markCompletedButton as it's now per-section
+
+        let currentActiveUnit = null; // To keep track of the currently viewed unit for section completion keys
+
+        // --- FUNCTIONS ---
+
+        /**
+         * Generates a unique local storage key for a section.
+         * @param {number} unitIndex
+         * @param {string} sectionId - The ID of the section (e.g., 'unit-1-section-1')
+         * @returns {string}
+         */
+        function getLocalStorageKey(unitIndex, sectionId) {
+            return `${LOCAL_STORAGE_KEY_PREFIX}${CURRENT_SUBJECT}_${unitIndex}_${sectionId}`;
+        }
+
+        /**
+         * Loads completion status for a given section from local storage.
+         * @param {number} unitIndex
+         * @param {string} sectionId
+         * @returns {boolean} True if completed, false otherwise.
+         */
+        function loadCompletionStatus(unitIndex, sectionId) {
+            const key = getLocalStorageKey(unitIndex, sectionId);
+            return localStorage.getItem(key) === 'true';
+        }
+
+        /**
+         * Saves completion status for a given section to local storage.
+         * @param {number} unitIndex
+         * @param {string} sectionId
+         * @param {boolean} status
+         */
+        function saveCompletionStatus(unitIndex, sectionId, status) {
+            const key = getLocalStorageKey(unitIndex, sectionId);
+            localStorage.setItem(key, status ? 'true' : 'false');
+            // Update the sidebar icon using its direct element reference
+            const sectionLink = document.querySelector(`.unit-sections-container a[data-section-id="${sectionId}"]`);
+            if (sectionLink) {
+                updateSectionLinkCompletionIcon(sectionLink, status);
+            }
+            updateHomePageProgress(); // Recalculate and update home page unit progress
+        }
+
+        /**
+         * Saves the last viewed lesson to local storage.
+         * @param {number} unitIndex
+         * @param {string} sectionId
+         */
+        function saveLastViewedLesson(unitIndex, sectionId) {
+            localStorage.setItem(LAST_VIEWED_LESSON_KEY, JSON.stringify({ unitIndex, sectionId }));
+            updateContinueLessonButton(); // Update the button text
+        }
+
+        /**
+         * Loads the last viewed lesson from local storage.
+         * @returns {{unitIndex: number, sectionId: string} | null}
+         */
+        function loadLastViewedLesson() {
+            const data = localStorage.getItem(LAST_VIEWED_LESSON_KEY);
+            return data ? JSON.parse(data) : null;
+        }
+
+        /**
+         * Updates the "Continue to Last Lesson" button text and behavior.
+         */
+        function updateContinueLessonButton() {
+            const continueButton = document.getElementById('continue-lesson-button');
+            if (!continueButton) return;
+
+            const lastLesson = loadLastViewedLesson();
+            if (lastLesson) {
+                const unitContent = UNIT_NOTES_CONTENT[lastLesson.unitIndex];
+                let sectionTitle = `Section ${lastLesson.sectionId.split('-').pop()}`; // Default fallback
+
+                if (unitContent) {
+                    const tokens = marked.lexer(unitContent);
+                    let sectionCounter = 0;
+                    for (const token of tokens) {
+                        if (token.type === 'heading' && token.depth === 2) {
+                            sectionCounter++;
+                            const currentSectionId = `unit-${lastLesson.unitIndex}-section-${sectionCounter}`;
+                            if (currentSectionId === lastLesson.sectionId) {
+                                sectionTitle = token.text;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                continueButton.innerHTML = `
+                    <i class="fas fa-arrow-right text-blue-500 text-3xl mb-2"></i>
+                    <span class="font-semibold text-gray-800 dark:text-gray-200">Continue to Lesson</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-400 mt-1">Unit ${lastLesson.unitIndex}: ${sectionTitle}</span>
+                `;
+            } else {
+                continueButton.innerHTML = `
+                    <i class="fas fa-play-circle text-blue-500 text-3xl mb-2"></i>
+                    <span class="font-semibold text-gray-800 dark:text-gray-200">Start Learning</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-400 mt-1">Begin your Chemistry journey</span>
+                `;
+            }
+        }
+
+
+        /**
+         * Updates the completion icon/state on a section link in the sidebar.
+         * @param {HTMLElement} sectionLinkElement The actual section link element from the sidebar.
+         * @param {boolean} isCompleted
+         */
+        function updateSectionLinkCompletionIcon(sectionLinkElement, isCompleted) {
+            if (sectionLinkElement) {
+                let checkIcon = sectionLinkElement.querySelector('.section-completion-icon');
+                if (!checkIcon) {
+                    checkIcon = document.createElement('i');
+                    checkIcon.className = 'section-completion-icon fas fa-check-circle text-green-500 text-xs';
+                    sectionLinkElement.appendChild(checkIcon);
+                }
+                // Ensure the style is explicitly set
+                checkIcon.style.display = isCompleted ? 'inline-block' : 'none';
+            }
+        }
+
+        /**
+         * Updates the "Mark as Completed" button for a specific section.
+         * This function will be called for each section's button.
+         * @param {HTMLButtonElement} buttonElement The button to update.
+         * @param {number} unitIndex The unit index.
+         * @param {string} sectionId The section ID.
+         */
+        function updateSectionCompletionButton(buttonElement, unitIndex, sectionId) {
+            const isCompleted = loadCompletionStatus(unitIndex, sectionId);
+            if (isCompleted) {
+                buttonElement.innerHTML = `<i class="fas fa-check-circle mr-1"></i> Completed`;
+                buttonElement.classList.add('completed');
+                buttonElement.classList.remove('incomplete');
+            } else {
+                buttonElement.innerHTML = `<i class="far fa-circle mr-1"></i> Complete`;
+                buttonElement.classList.add('incomplete');
+                buttonElement.classList.remove('completed');
+            }
+        }
+
+
+        /**
+         * Renders the unit buttons in the sidebar.
+         */
+        function renderUnitButtons() {
+            unitButtonsContainer.innerHTML = ''; // Clear existing buttons
+
+            for (let i = 1; i <= TOTAL_UNITS; i++) {
+                const button = document.createElement('button');
+                const unitName = `${UNIT_PREFIX} ${i}`;
+                let unitTitleWithoutPrefix = unitName; // Default
+
+                // Get the raw H1 title from the unit's markdown content
+                const markdownContent = UNIT_NOTES_CONTENT[i];
+                if (markdownContent) {
+                    const tokens = marked.lexer(markdownContent);
+                    const h1Token = tokens.find(token => token.type === 'heading' && token.depth === 1);
+                    if (h1Token) {
+                        unitTitleWithoutPrefix = h1Token.text;
+                        // Remove "Unit X:" if it's already part of the H1 title
+                        if (unitTitleWithoutPrefix.startsWith(`${unitName}:`)) {
+                            unitTitleWithoutPrefix = unitTitleWithoutPrefix.substring(`${unitName}:`.length).trim();
+                        }
+                    }
+                }
+
+                button.className = 'unit-button w-full text-left px-3 py-2 rounded-[15px] text-md font-medium flex items-center justify-between shadow-sm';
+                button.dataset.unitIndex = i; // Store index to fetch corresponding markdown file
+                
+                // Construct the inner HTML to bold "Unit X:"
+                button.innerHTML = `<span><span style="font-weight: 900">${unitName}:</span> ${unitTitleWithoutPrefix}</span>`;
+
+                button.addEventListener('click', () => fetchAndDisplayNote(i));
+                unitButtonsContainer.appendChild(button);
+            }
+        }
+
+        /**
+         * Fetches and displays the markdown content for a given unit and dynamically adds section buttons.
+         * @param {number} unitIndex - The index of the unit (1-based).
+         * @param {string} [sectionIdToScrollTo=null] - Optional ID of a specific section to scroll to.
+         */
+        async function fetchAndDisplayNote(unitIndex, sectionIdToScrollTo = null) {
+            currentActiveUnit = unitIndex;
+            // Deactivate the home/subject button
+            homeSubjectButton.classList.remove('active');
+
+            // Remove active class from all unit buttons and their section containers
+            unitButtonsContainer.querySelectorAll('.unit-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            unitButtonsContainer.querySelectorAll('.unit-sections-container').forEach(container => {
+                container.remove();
+            });
+
+
+            // Add active class to the clicked unit button
+            const clickedButton = unitButtonsContainer.querySelector(`[data-unit-index="${unitIndex}"]`);
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+            }
+
+            // Show notes info text and divider
+            notesInfoText.style.display = 'block';
+            notesDivider.style.display = 'block';
+
+            markdownDisplay.innerHTML = `
+                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-spinner fa-spin text-4xl mb-4"></i>
+                    <div class="text-lg">Loading notes...</div>
+                </div>
+            `;
+            notesTitle.textContent = ''; // Clear title
+            notesDuration.textContent = ''; // Clear duration
+
+            const unitName = `${UNIT_PREFIX} ${unitIndex}`;
+            const markdownText = UNIT_NOTES_CONTENT[unitIndex];
+
+            if (!markdownText) {
+                markdownDisplay.innerHTML = `
+                    <div class="text-center py-12 text-red-500 dark:text-red-400">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                        <div class="text-lg">Notes for ${unitName} not found.</div>
+                        <div class="text-sm">Please ensure content is defined for this unit.</div>
+                    </div>
+                `;
+                notesTitle.textContent = `${unitName}: Error Loading Notes`;
+                notesDuration.textContent = '';
+                return;
+            }
+
+            try {
+                // Parse markdown and build HTML with section wrappers
+                const tokens = marked.lexer(markdownText);
+                let renderedHtml = '';
+                const sectionsInUnit = []; // To store H2 sections for sidebar and per-section tracking
+
+                let sectionCounter = 0;
+                tokens.forEach(token => {
+                    if (token.type === 'heading' && token.depth === 1) {
+                        // Use H1 for main title, do not render in markdownDisplay directly
+                        if (!notesTitle.textContent) {
+                            notesTitle.textContent = token.text;
+
+
+                        }
+                    } else if (token.type === 'heading' && token.depth === 2) {
+                        const sectionId = `unit-${unitIndex}-section-${++sectionCounter}`;
+                        sectionsInUnit.push({ id: sectionId, text: token.text });
+
+                        const isCompleted = loadCompletionStatus(unitIndex, sectionId);
+                        const completionClass = isCompleted ? 'completed' : 'incomplete';
+                        const completionText = isCompleted ? 'Completed' : 'Mark as Completed';
+                        const completionIcon = isCompleted ? 'fas fa-check-circle' : 'far fa-circle';
+
+                        // Create a container for the H2 and its associated completion button
+                        renderedHtml += `
+                            <div class="section-header-container">
+                                <h2 id="${sectionId}">${token.text}</h2>
+                                <button class="section-completion-button ${completionClass}"
+                                        data-unit-index="${unitIndex}"
+                                        data-section-id="${sectionId}"
+                                        contentEditable = 'false'>
+                                    <i class="${completionIcon} mr-1"></i> ${completionText}
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        renderedHtml += marked.parse(token.raw);
+                    }
+                });
+
+                // If no H1 was found in markdown, fallback title
+                if (!notesTitle.textContent) {
+                    notesTitle.textContent = `${unitName}: ${CURRENT_SUBJECT} Notes`;
+                }
+                
+                markdownDisplay.contentEditable = 'true';
+                markdownDisplay.innerHTML = renderedHtml;
+                notesDuration.textContent = `Approx ${Math.ceil(markdownText.length / 1000)} min read`;
+
+                // --- Add Sections to Sidebar and attach event listeners to section completion buttons ---
+                const unitButtonParent = clickedButton.parentNode;
+                let existingSectionsContainer = unitButtonParent.querySelector('.unit-sections-container');
+                if (existingSectionsContainer) {
+                    existingSectionsContainer.remove();
+                }
+
+                const sectionsContainer = document.createElement('div');
+                sectionsContainer.className = 'unit-sections-container space-y-1 mt-2 mb-2 ml-4 border-l border-l-[2px] border-gray-200 dark:border-gray-600'; // Indent sections
+
+                sectionsInUnit.forEach(section => {
+                    const sectionLink = document.createElement('a');
+                    sectionLink.href = `#${section.id}`;
+                    sectionLink.className = 'section-link';
+                    sectionLink.dataset.sectionId = section.id;
+                    sectionLink.dataset.unitIndex = unitIndex; // Add unitIndex to section link for completion tracking
+
+                    // Create a span for the text content to apply ellipsis
+                    const sectionTextSpan = document.createElement('span');
+                    sectionTextSpan.className = 'section-link-text'; // Apply the new class
+                    sectionTextSpan.textContent = section.text;
+                    sectionLink.appendChild(sectionTextSpan);
+
+                    // Add icon placeholder for section completion in sidebar
+                    const sidebarSectionCompletionIcon = document.createElement('i');
+                    sidebarSectionCompletionIcon.className = 'section-completion-icon fas fa-check-circle text-green-500 text-xs';
+                    sectionLink.appendChild(sidebarSectionCompletionIcon);
+
+                    // Update its initial state using the direct sectionLink element
+                    updateSectionLinkCompletionIcon(sectionLink, loadCompletionStatus(unitIndex, section.id));
+
+                    sectionLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        sectionsContainer.querySelectorAll('.section-link').forEach(link => {
+                            link.classList.remove('active-section');
+                        });
+                        sectionLink.classList.add('active-section');
+                        document.getElementById(section.id).scrollIntoView({ behavior: 'smooth' });
+                        saveLastViewedLesson(unitIndex, section.id); // Save last viewed section
+                    });
+                    sectionsContainer.appendChild(sectionLink);
+                });
+
+                // Insert sections container right after the unit button
+                unitButtonParent.insertBefore(sectionsContainer, clickedButton.nextSibling);
+
+                // Attach event listeners to all newly created section completion buttons
+                document.querySelectorAll('.section-completion-button').forEach(button => {
+                    const btnUnitIndex = parseInt(button.dataset.unitIndex);
+                    const btnSectionId = button.dataset.sectionId;
+                    updateSectionCompletionButton(button, btnUnitIndex, btnSectionId); // Set initial state
+
+                    button.addEventListener('click', () => {
+                        const isCompleted = loadCompletionStatus(btnUnitIndex, btnSectionId);
+                        saveCompletionStatus(btnUnitIndex, btnSectionId, !isCompleted);
+                        updateSectionCompletionButton(button, btnUnitIndex, btnSectionId);
+                    });
+                });
+
+                // Scroll to the specified section if provided
+                if (sectionIdToScrollTo) {
+                    const targetSectionElement = document.getElementById(sectionIdToScrollTo);
+                    if (targetSectionElement) {
+                        targetSectionElement.scrollIntoView({ behavior: 'smooth' });
+                        // Also activate the sidebar link for the scrolled section
+                        const sectionLink = sectionsContainer.querySelector(`a[data-section-id="${sectionIdToScrollTo}"]`);
+                        if (sectionLink) {
+                            sectionsContainer.querySelectorAll('.section-link').forEach(link => {
+                                link.classList.remove('active-section');
+                            });
+                            sectionLink.classList.add('active-section');
+                        }
+                    }
+                }
+
+
+            } catch (error) {
+                console.error('Error parsing markdown:', error);
+                notesInfoText.style.display = 'block';
+                notesDivider.style.display = 'block';
+                markdownDisplay.contentEditable = 'false';
+                markdownDisplay.innerHTML = `
+                    <div class="text-center py-12 text-red-500 dark:text-red-400">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                        <div class="text-lg">An error occurred while displaying notes for ${unitName}.</div>
+                    </div>
+                `;
+                notesTitle.textContent = `${unitName}: Error Displaying Notes`;
+                notesDuration.textContent = '';
+            }
+        }
+
+        /**
+         * Calculates the progress for a given unit based on completed sections.
+         * @param {number} unitIndex - The index of the unit.
+         * @returns {{completedSections: number, totalSections: number, percentage: number, unitTitle: string}}
+         */
+        function calculateUnitProgress(unitIndex) {
+            const markdownContent = UNIT_NOTES_CONTENT[unitIndex];
+            if (!markdownContent) {
+                return { completedSections: 0, totalSections: 0, percentage: 0, unitTitle: `${UNIT_PREFIX} ${unitIndex}` };
+            }
+
+            const tokens = marked.lexer(markdownContent);
+            let totalSections = 0;
+            let completedSections = 0;
+            let unitTitle = `${UNIT_PREFIX} ${unitIndex}`; // Default title
+
+            // Extract H1 as unit title
+            const h1Token = tokens.find(token => token.type === 'heading' && token.depth === 1);
+            if (h1Token) {
+                unitTitle = h1Token.text;
+                // Remove "Unit X:" if it's already part of the H1 title
+                if (unitTitle.startsWith(`${UNIT_PREFIX} ${unitIndex}:`)) {
+                    unitTitle = unitTitle.substring(`${UNIT_PREFIX} ${unitIndex}:`.length).trim();
+                }
+            }
+
+            let sectionCounter = 0;
+            tokens.forEach(token => {
+                if (token.type === 'heading' && token.depth === 2) {
+                    totalSections++;
+                    const sectionId = `unit-${unitIndex}-section-${++sectionCounter}`;
+                    if (loadCompletionStatus(unitIndex, sectionId)) {
+                        completedSections++;
+                    }
+                }
+            });
+
+            const percentage = totalSections > 0 ? Math.round((completedSections / totalSections) * 100) : 0;
+            return { completedSections, totalSections, percentage, unitTitle };
+        }
+
+        /**
+         * Updates the progress bars on the home page.
+         * Call this after any completion status changes.
+         */
+        function updateHomePageProgress() {
+            if (currentActiveUnit !== null) return; // Only update if on home page
+
+            for (let i = 1; i <= TOTAL_UNITS; i++) {
+                const { percentage } = calculateUnitProgress(i);
+                const progressBarFill = document.querySelector(`.unit-card[onclick*="fetchAndDisplayNote(${i})"] .progress-bar-fill`);
+                // const percentageText = document.querySelector(`.unit-card[onclick*="fetchAndDisplayNote(${i})"] .text-xs`); // Removed as requested
+
+                if (progressBarFill) {
+                    progressBarFill.style.width = `${percentage}%`;
+                }
+                // if (percentageText) {
+                //     percentageText.textContent = `${percentage}%`;
+                // }
+            }
+            updateContinueLessonButton(); // Ensure the continue button is always up-to-date
+        }
+
+
+        /**
+         * Displays the home page content.
+         */
+        function displayHomePage() {
+            currentActiveUnit = null;
+
+            // Activate the home/subject button
+            homeSubjectButton.classList.add('active');
+
+            // Remove active class from all unit buttons
+            unitButtonsContainer.querySelectorAll('.unit-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Remove all section containers
+            unitButtonsContainer.querySelectorAll('.unit-sections-container').forEach(container => {
+                container.remove();
+            });
+
+            notesTitle.innerHTML = ``; // Clear main notes title
+            notesDuration.textContent = ''; // Clear duration for home page
+            notesInfoText.style.display = 'none'; // Hide notes info text
+            notesDivider.style.display = 'none'; // Hide divider
+            markdownDisplay.contentEditable = 'false'; // Home page is not editable
+
+            // Build the new home page content
+            let homePageHtml = `
+                <div class="flex flex-col md:flex-row items-stretch md:items-center gap-6 mb-8">
+                    <div id="continue-lesson-button" class="continue-lesson-card">
+                        <!-- Content will be dynamically updated by updateContinueLessonButton() -->
+                    </div>
+                    <div class="flex flex-col flex-grow title-buttons-container">
+                        <span class="text-4xl font-bold text-black">Edexcel IAL</span>
+                       <div style="line-height: 1.3em; font-weight: bold; margin-top: 10px; margin-bottom: 10px; font-size: 60px; color: var(--subject-primary-color)">${CURRENT_SUBJECT}</div>
+                         
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <button class="revision-tool-button">
+                                <div class="icon-circle"><i class="fas fa-file-alt"></i></div>
+                                <div class="text-content">
+                                    <span class="main-text">2009-2023</span>
+                                    <span class="sub-text">Past Papers</span>
+                                </div>
+                            </button>
+                            <button class="revision-tool-button">
+                                <div class="icon-circle"><i class="fas fa-chalkboard-teacher"></i></div>
+                                <div class="text-content">
+                                    <span class="main-text">AI Teacher</span>
+                                    <span class="sub-text">& Grading</span>
+                                </div>
+                            </button>
+                            <button class="revision-tool-button">
+                                <div class="icon-circle"><i class="fas fa-bolt"></i></div>
+                                <div class="text-content">
+                                    <span class="main-text">Ask for</span>
+                                    <span class="sub-text">Our Help</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="home-page-section-title mb-4" style="color: black">My Lessons</h2>
+                <div id="lesson-pane" class="flex flex-row gap-6 mb-8 overflow-x-auto pb-4"> <!-- Added pb-4 for scrollbar space -->
+            `;
+
+            // Dynamically add unit cards with progress bars
+            for (let i = 1; i <= TOTAL_UNITS; i++) {
+                const { completedSections, totalSections, percentage, unitTitle } = calculateUnitProgress(i);
+                homePageHtml += `
+                    <div class="unit-card p-4 flex flex-col justify-between" onclick="fetchAndDisplayNote(${i})">
+                      
+                            <div class="flex flex-col items-left mb-2 justify-flex-start grow">
+                                <span class=" text-[var(--subject-primary-color)]" style="font-size: 20px; font-weight: 900">${UNIT_PREFIX} ${i}</span>
+                                <span class="text-black" style="font-size: 15px">${unitTitle}</span>
+                            </div>
+                            <div class="flex items-center mt-2 justify-center">
+                                <i class="fas fa-play-circle text-black mr-4" style="width: 40px; height: 40px; font-size: 40px;"></i>
+                                <div class="progress-bar-container flex-grow self-center">
+                                    <div class="progress-bar-fill bg-green-500" style="width: ${percentage}%;"></div>
+                                </div>
+                             
+                            </div>
+                 
+                    </div>
+                `;
+            }
+            homePageHtml += `</div>`; // Close Revision Lessons flex container
+
+            homePageHtml += `
+                <h2 class="home-page-section-title mb-4 mt-8" style="color: black">AI Tools</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="ai-tool-card">
+                        <div class="ai-tool-icon-circle">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <span class="font-semibold text-gray-800 dark:text-gray-200">AI Listening Practice</span>
+                    </div>
+                    <div class="ai-tool-card">
+                        <div class="ai-tool-icon-circle">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <span class="font-semibold text-gray-800 dark:text-gray-200">AI Reading Generator</span>
+                    </div>
+                    <div class="ai-tool-card">
+                        <div class="ai-tool-icon-circle">
+                            <i class="fas fa-pencil-alt"></i>
+                        </div>
+                        <span class="font-semibold text-gray-800 dark:text-gray-200">AI Writing Marker</span>
+                    </div>
+                </div>
+            `;
+
+            markdownDisplay.innerHTML = homePageHtml;
+            updateContinueLessonButton(); // Initialize the continue button content
+
+            // Add event listener to the continue lesson button after it's in the DOM
+            document.getElementById('continue-lesson-button').addEventListener('click', () => {
+                const lastLesson = loadLastViewedLesson();
+                if (lastLesson) {
+                    fetchAndDisplayNote(lastLesson.unitIndex, lastLesson.sectionId);
+                } else {
+                    // Optional: If no last lesson, maybe navigate to the first unit/section
+                    // For now, it just shows "Start Learning" and does nothing on click if no data.
+                    // Could add: fetchAndDisplayNote(1, 'unit-1-section-1');
+                }
+            });
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Update header and sidebar subject names
+            subjectTitle.textContent = CURRENT_SUBJECT;
+
+            renderUnitButtons();
+            displayHomePage(); // Show home page by default and activate the combined button
+            
+            // --- EDITOR TOOLBAR EVENT LISTENERS ---
+            document.getElementById('bold-button').addEventListener('click', () => {
+                document.execCommand('bold', false, null);
+            });
+            document.getElementById('underline-button').addEventListener('click', () => {
+                document.execCommand('underline', false, null);
+            });
+            document.getElementById('highlight-yellow-button').addEventListener('click', () => {
+                document.execCommand('backColor', false, '#FFEB3B'); // Yellow
+            });
+            document.getElementById('highlight-red-button').addEventListener('click', () => {
+                document.execCommand('backColor', false, '#EF535070'); // Red
+            });
+            document.getElementById('highlight-blue-button').addEventListener('click', () => {
+                document.execCommand('backColor', false, '#42A5F570'); // Blue
+            });
+            document.getElementById('highlight-green-button').addEventListener('click', () => {
+                document.execCommand('backColor', false, '#22c45e70'); // Green
+            });
+            document.getElementById('clear-effects-button').addEventListener('click', () => {
+                document.execCommand('removeFormat', false, null);
+            });
+        });
+
+        // --- EVENT LISTENERS ---
+        homeSubjectButton.addEventListener('click', displayHomePage);
+    </script>
+</body>
+
+</html>
