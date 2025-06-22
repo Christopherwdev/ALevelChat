@@ -50,7 +50,9 @@ class="text-gray-700 dark:text-gray-200">
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    const trimmedPath = window.location.pathname;
+       const fullPath = window.location.pathname;
+    const trimPoint = fullPath.indexOf("ALevelChat");
+    const trimmedPath = fullPath.substring(trimPoint);
 
 
     const pageToTabMap = {
