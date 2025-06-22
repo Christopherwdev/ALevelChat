@@ -47,48 +47,39 @@ class="text-gray-700 dark:text-gray-200">
 
 `);
 
-
-
 document.addEventListener("DOMContentLoaded", () => {
-    const fullPath = window.location.pathname;
+  // Map button text to their corresponding pages under /Learning/
+  const pageToTabMap = {
+    "ai-teach.html": "AI Teach",
+    "notes.html": "Notes",
+    "index.html": "Home",
+    "pastpaper1.html": "Past Paper",
+    "battle.html": "Battle",
+      "account.html": "Account",
+  };
 
-    // No need to trim for "newpublic", as it is now root
-    const trimmedPath = fullPath; 
+  // Get the current path and extract the page name
+  const currentPage = window.location.pathname.split("/").pop();
 
-    const pageToTabMap = {
-        "ai-teach.html": "AI Teach",
-        "Revision.html": "Revision",
-        "index.html": "Home",
-        "pastpaper1.html": "Past Paper",
-        "battle.html": "Battle",
-        "account.html": "Account", // Ensure this mapping is correct
-    };
+  // Loop through the buttons
+  const buttons = document.querySelectorAll("nav button, button[data-page='account.html']"");
 
-    // Select ALL buttons that should behave like navigation tabs
-    // This will select buttons inside <nav> AND the specific account button
-    const allNavigableButtons = document.querySelectorAll("nav button, button[data-page='account.html']");
+  buttons.forEach((button) => {
+    const tabName = button.textContent.trim(); // Get button text
+    const targetPage = button.getAttribute("data-page").split("/").pop(); // Get the target page name
 
-    allNavigableButtons.forEach((button) => {
-        // Get the text content, or for the account button, use the hidden span's text
-        const tabName = button.querySelector('span') ? button.querySelector('span').textContent.trim() : button.textContent.trim();
+    // Highlight the current tab
+    if (currentPage === targetPage) {
+      button.classList.add("bg-white", "shadow", "text-gray-900"); // Highlight selected tab
+      button.classList.remove("text-gray-700", "hover:bg-gray-300"); // Remove unselected styles
+    } else {
+      button.classList.remove("bg-white", "shadow", "text-gray-900"); // Remove selected styles
+      button.classList.add("text-gray-700", "hover:bg-gray-300"); // Add unselected styles
+    }
 
-        const targetPage = button.getAttribute("data-page");
-        let buttonPagePath = `/${targetPage}`; // Construct the path to compare for root
-
-        // Highlighting logic
-        if (trimmedPath === buttonPagePath) {
-            button.classList.add("bg-white", "shadow", "text-gray-900");
-            button.classList.remove("text-gray-700", "hover:bg-gray-300");
-        } else {
-            button.classList.remove("bg-white", "shadow", "text-gray-900");
-            button.classList.add("text-gray-700", "hover:bg-gray-300");
-        }
-
-        // Add click event listener for navigation
-        button.addEventListener("click", () => {
-            if (targetPage) {
-                window.location.href = targetPage;
-            }
-        });
+    // Add click event listener for navigation
+    button.addEventListener("click", () => {
+      window.location.href = button.getAttribute("data-page"); // Redirect to the target page
     });
+  });
 });
