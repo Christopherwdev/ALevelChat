@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const tabName = button.querySelector('span') ? button.querySelector('span').textContent.trim() : button.textContent.trim();
 
         const targetPage = button.getAttribute("data-page");
-        let buttonPagePath = `newpublic/${targetPage}`; // Construct the path to compare
+        let buttonPagePath = `ALevelChat/${targetPage}`; // Construct the path to compare
 
         // Highlighting logic
         if (trimmedPath === buttonPagePath) {
