@@ -55,12 +55,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const trimmedPath = fullPath.substring(trimPoint);
 
     const pageToTabMap = {
-        "newpublic/ai-teach.html": "AI Teach",
-        "newpublic/Revision.html": "Revision",
-        "newpublic/index.html": "Home",
-        "newpublic/pastpaper1.html": "Past Paper",
-        "newpublic/battle.html": "Battle",
-        "newpublic/account.html": "Account", // Ensure this mapping is correct
+        "/ai-teach.html": "AI Teach",
+        "/Revision.html": "Revision",
+        "/index.html": "Home",
+        "/pastpaper1.html": "Past Paper",
+        "/battle.html": "Battle",
+        "/account.html": "Account", // Ensure this mapping is correct
     };
 
     // Select ALL buttons that should behave like navigation tabs
