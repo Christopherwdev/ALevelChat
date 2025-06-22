@@ -50,18 +50,18 @@ class="text-gray-700 dark:text-gray-200">
 
 
 document.addEventListener("DOMContentLoaded", () => {
-       const fullPath = window.location.pathname;
-    const trimPoint = fullPath.indexOf("ALevelChat");
-    const trimmedPath = fullPath.substring(trimPoint);
+    const fullPath = window.location.pathname;
 
+    // No need to trim for "newpublic", as it is now root
+    const trimmedPath = fullPath; 
 
     const pageToTabMap = {
-        "/ai-teach.html": "AI Teach",
-        "/Revision.html": "Revision",
-        "/index.html": "Home",
-        "/pastpaper1.html": "Past Paper",
-        "/battle.html": "Battle",
-        "/account.html": "Account", // Ensure this mapping is correct
+        "ai-teach.html": "AI Teach",
+        "Revision.html": "Revision",
+        "index.html": "Home",
+        "pastpaper1.html": "Past Paper",
+        "battle.html": "Battle",
+        "account.html": "Account", // Ensure this mapping is correct
     };
 
     // Select ALL buttons that should behave like navigation tabs
@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const tabName = button.querySelector('span') ? button.querySelector('span').textContent.trim() : button.textContent.trim();
 
         const targetPage = button.getAttribute("data-page");
-        let buttonPagePath = `ALevelChat/${targetPage}`; // Construct the path to compare
+        let buttonPagePath = `/${targetPage}`; // Construct the path to compare for root
 
         // Highlighting logic
         if (trimmedPath === buttonPagePath) {
