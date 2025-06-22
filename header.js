@@ -50,9 +50,8 @@ class="text-gray-700 dark:text-gray-200">
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    const fullPath = window.location.pathname;
-    const trimPoint = fullPath.indexOf("newpublic");
-    const trimmedPath = fullPath.substring(trimPoint);
+    const trimmedPath = window.location.pathname;
+
 
     const pageToTabMap = {
         "/ai-teach.html": "AI Teach",
