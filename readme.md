@@ -29,3 +29,23 @@
 
     - **edexcel-igcse**
         - ...
+
+- **social.html:** dsechat style social media (tbd)
+
+
+# To do list
+
+Functions
+- Accounts system (Supabase)
+- Finalize the subject home page
+- Work on AI Teacher
+- AI Grading in paper_viewer.html
+- Social page (discuss more later)
+
+Resources
+- Write IGCSE Chinese notes
+- Add IELTS course to website
+
+Fixes
+- 
+
