@@ -18,9 +18,9 @@ document.write(`
 
 <button class="px-4 py-2 rounded-full text-gray-700 hover:bg-gray-300 transition-colors text-sm" data-page="index.html">Home</button>
 
-<button class="px-4 py-2 rounded-full text-gray-700 hover:bg-gray-300 transition-colors text-sm" data-page="pastpaper1.html">Past Paper</button>
+<button class="px-4 py-2 rounded-full text-gray-700 hover:bg-gray-300 transition-colors text-sm" data-page="pastpaper.html">Past Paper</button>
 
-<button class="px-4 py-2 rounded-full text-gray-700 hover:bg-gray-300 transition-colors text-sm" data-page="battle.html">Battle</button>
+<button class="px-4 py-2 rounded-full text-gray-700 hover:bg-gray-300 transition-colors text-sm" data-page="social.html">Social</button>
 
 </nav>
 
@@ -53,8 +53,8 @@ document.addEventListener("DOMContentLoaded", () => {
     "ai-teach.html": "AI Teach",
     "notes.html": "Notes",
     "index.html": "Home",
-    "pastpaper1.html": "Past Paper",
-    "battle.html": "Battle",
+    "pastpaper.html": "Past Paper",
+    "social.html": "Social",
       "account.html": "Account",
   };
 
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const currentPage = window.location.pathname.split("/").pop();
 
   // Loop through the buttons
-  const buttons = document.querySelectorAll("nav button, button[data-page='account.html']"");
+  const buttons = document.querySelectorAll("nav button, button[data-page='account.html']");
 
   buttons.forEach((button) => {
     const tabName = button.textContent.trim(); // Get button text
