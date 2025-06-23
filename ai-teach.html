@@ -383,6 +383,7 @@
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">AI Teach</h1>
             <p class="text-xs text-gray-500 mt-1">Your personal AI tutor</p>
         </div>
+           <script src="header.js"></script>
         <div class="flex items-center space-x-2">
         </div>
     </header>
@@ -488,19 +489,19 @@
                         content: CHEMISTRY_UNIT_2_CONTENT
                     },
                     3: {
-                        title: "Energetics, Group Chemistry, Halogenoalkanes and Alcohols",
+                        title: "Practical Skills in Chemistry I",
                         content: CHEMISTRY_UNIT_3_CONTENT
                     },
                     4: {
-                        title: "Energetics, Group Chemistry, Halogenoalkanes and Alcohols",
+                        title: "Rates, Equilibria and Further Organic Chemistry",
                         content: CHEMISTRY_UNIT_4_CONTENT
                     },
                     5: {
-                        title: "Energetics, Group Chemistry, Halogenoalkanes and Alcohols",
+                        title: "Transition Metals and Organic Nitrogen Chemistry",
                         content: CHEMISTRY_UNIT_5_CONTENT
                     },
                     6: {
-                        title: "Energetics, Group Chemistry, Halogenoalkanes and Alcohols",
+                        title: "Practical Skills in Chemistry II",
                         content: CHEMISTRY_UNIT_6_CONTENT
                     }
                     // Add other Chemistry units here (up to 6), e.g., 3: { title: "...", content: CHEMISTRY_UNIT_3_CONTENT }
@@ -696,7 +697,8 @@
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: {
+                    
+                    s: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ contents: [] }) // Start with empty chat history
