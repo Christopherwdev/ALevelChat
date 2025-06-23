@@ -60,6 +60,7 @@ const CHEMISTRY_UNIT_1_CONTENT = `
   * Protons: Positive charge, relative mass 1, in nucleus  
   * Neutrons: No charge, relative mass 1, in nucleus  
   * Electrons: Negative charge, relative mass 1/1840, in shells around nucleus  
+
 * Atomic (proton) number (Z): Number of protons in the nucleus
 
 * Mass number (A): Sum of protons and neutrons

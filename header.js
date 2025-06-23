@@ -60,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Get the current path and extract the page name
   const currentPage = window.location.pathname.split("/").pop();
+  console.log(currentPage);
 
   // Loop through the buttons
   const buttons = document.querySelectorAll("nav button, button[data-page='account.html']");
