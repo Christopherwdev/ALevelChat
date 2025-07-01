@@ -92,3 +92,44 @@ CREATE TABLE IF NOT EXISTS user_selected_subjects (
 -- Create indexes for quick lookups in both directions.
 CREATE INDEX IF NOT EXISTS idx_user_selected_subjects_user_id ON user_selected_subjects(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_selected_subjects_subject_id ON user_selected_subjects(subject_id);
+
+-- Enable Row Level Security (RLS) and add policies for all user-facing tables
+
+-- 1. Enable RLS on profiles
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Only allow users to select, update, and delete their own profile
+CREATE POLICY IF NOT EXISTS select_own_profile ON profiles
+  FOR SELECT USING (auth.uid() = id);
+CREATE POLICY IF NOT EXISTS update_own_profile ON profiles
+  FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY IF NOT EXISTS delete_own_profile ON profiles
+  FOR DELETE USING (auth.uid() = id);
+
+-- 2. Enable RLS on user_selected_subjects
+ALTER TABLE user_selected_subjects ENABLE ROW LEVEL SECURITY;
+
+-- Only allow users to select, insert, update, and delete their own subject selections
+CREATE POLICY IF NOT EXISTS select_own_subjects ON user_selected_subjects
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS insert_own_subjects ON user_selected_subjects
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS update_own_subjects ON user_selected_subjects
+  FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS delete_own_subjects ON user_selected_subjects
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- 3. Enable RLS on schools (read-only for all, no insert/update/delete except by service role)
+ALTER TABLE schools ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS public_read_schools ON schools
+  FOR SELECT USING (true);
+
+-- 4. Enable RLS on subjects (read-only for all, no insert/update/delete except by service role)
+ALTER TABLE subjects ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS public_read_subjects ON subjects
+  FOR SELECT USING (true);
+
+-- 5. Enable RLS on topics (read-only for all, no insert/update/delete except by service role)
+ALTER TABLE topics ENABLE ROW LEVEL SECURITY;
+CREATE POLICY IF NOT EXISTS public_read_topics ON topics
+  FOR SELECT USING (true);
