@@ -1,6 +1,5 @@
 import AccountForm from './account-form';
 import { createClient } from '@/utils/supabase/server';
-// import Link from 'next/link';
 
 export default async function Account() {
   const supabase = await createClient();
@@ -8,6 +7,20 @@ export default async function Account() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select(`
+      *, 
+      school:schools(name)
+    `)
+    .eq('id', user?.id)
+    .single();
+
+  const { data: schools } = await supabase
+    .from('schools')
+    .select('id, name')
+    .order('name', { ascending: true });
 
   // Mock stats data
   const stats = {
@@ -76,7 +89,7 @@ export default async function Account() {
 
       <div className="bg-white p-6 rounded-lg shadow mb-8">
         <h2 className="text-xl font-semibold mb-6">Account Information</h2>
-        <AccountForm user={user} />
+        <AccountForm user={user} profile={profile} schools={schools || []} />
       </div>
     </div>
   );
