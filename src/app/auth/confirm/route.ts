@@ -8,13 +8,14 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const token_hash = searchParams.get('token_hash');
   const type = searchParams.get('type') as EmailOtpType | null;
-  const next = '/profile';
+  const next = searchParams.get('redirectTo') || '/profile';
 
   // Create redirect link without the secret token
   const redirectTo = request.nextUrl.clone();
   redirectTo.pathname = next;
   redirectTo.searchParams.delete('token_hash');
   redirectTo.searchParams.delete('type');
+  redirectTo.searchParams.delete('redirectTo');
 
   if (token_hash && type) {
     const supabase = await createClient();
@@ -24,8 +25,10 @@ export async function GET(request: NextRequest) {
       token_hash,
     });
     if (!error) {
-      redirectTo.searchParams.delete('next');
       return NextResponse.redirect(redirectTo);
+    }
+    else {
+      console.log('Error verifying OTP:', error.message);
     }
   }
 

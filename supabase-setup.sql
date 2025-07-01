@@ -22,8 +22,41 @@ CREATE TABLE IF NOT EXISTS profiles (
     settings JSONB DEFAULT '{"is_social_enabled": true, "language": "en-us"}'::jsonb,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    CONSTRAINT valid_username CHECK (username ~ '^[a-z0-9_.]{1,30}$')
+    CONSTRAINT valid_username CHECK (username IS NULL OR username ~ '^[a-z0-9_.]{1,30}$')
 );
+
+CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public,auth,extensions
+AS $$
+BEGIN
+    IF NEW.email_confirmed_at IS NOT NULL AND OLD.email_confirmed_at IS NULL THEN
+        INSERT INTO public.profiles (id, email)
+        VALUES (NEW.id, NEW.email);
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE TRIGGER on_email_verified
+AFTER UPDATE ON auth.users
+FOR EACH ROW
+EXECUTE PROCEDURE public.handle_new_auth_user();
+
+CREATE OR REPLACE FUNCTION public.check_email_exists(email_to_check TEXT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 
+        FROM profiles 
+        WHERE email = email_to_check
+    );
+END;
+$$;
 
 CREATE TABLE IF NOT EXISTS subjects (
     id SERIAL PRIMARY KEY,  -- small number of subjects, so SERIAL is sufficient

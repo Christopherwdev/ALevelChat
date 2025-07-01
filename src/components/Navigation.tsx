@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState, useTransition } from 'react';
+import { signOut } from '@/app/auth/actions';
 
 interface NavigationProps {
   isAuthenticated: boolean;
@@ -9,6 +11,8 @@ interface NavigationProps {
 
 export default function Navigation({ isAuthenticated }: NavigationProps) {
   const pathname = usePathname();
+  const [isSigningOut, startSignOutTransition] = useTransition();
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const tabs = [
     { name: 'Learn', path: '/learn' },
@@ -16,8 +20,13 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
     { name: 'Resources', path: '/resources' },
     { name: 'AI Hub', path: '/ai-hub' },
     { name: 'Social', path: '/social' },
-    { name: 'Profile', path: '/profile' },
   ];
+
+  async function handleSignOut() {
+    startSignOutTransition(async () => {
+      await signOut();
+    });
+  }
 
   return (
     <nav className="bg-white shadow-md dark:bg-gray-800">
@@ -30,20 +39,55 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
           </div>
           
           {isAuthenticated ? (
-            <div className="flex space-x-4">
-              {tabs.map((tab) => (
-                <Link
-                  key={tab.name}
-                  href={tab.path}
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    pathname === tab.path
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
-                      : 'text-gray-600 hover:bg-indigo-50 dark:text-gray-300 dark:hover:bg-indigo-800'
-                  }`}
+            <div className="flex items-center space-x-4">
+              {/* Navigation tabs */}
+              <div className="hidden md:flex space-x-4">
+                {tabs.map((tab) => (
+                  <Link
+                    key={tab.name}
+                    href={tab.path}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      pathname === tab.path
+                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
+                        : 'text-gray-600 hover:bg-indigo-50 dark:text-gray-300 dark:hover:bg-indigo-800'
+                    }`}
+                  >
+                    {tab.name}
+                  </Link>
+                ))}
+              </div>
+
+              {/* User menu */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
-                  {tab.name}
-                </Link>
-              ))}
+                  <span>Account</span>
+                  <svg className={`ml-1 h-4 w-4 transform transition-transform ${showUserMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 dark:bg-gray-800">
+                    <Link
+                      href="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      onClick={handleSignOut}
+                      disabled={isSigningOut}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50"
+                    >
+                      {isSigningOut ? 'Signing out...' : 'Sign Out'}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="flex space-x-4">

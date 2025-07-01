@@ -1,7 +1,8 @@
 import AccountForm from './account-form';
 import { createClient } from '@/utils/supabase/server';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
-export default async function Account() {
+async function AccountInterface() {
   const supabase = await createClient();
 
   const {
@@ -92,5 +93,13 @@ export default async function Account() {
         <AccountForm user={user} profile={profile} schools={schools || []} />
       </div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <ProtectedRoute currentPath='/profile'>
+      <AccountInterface />
+    </ProtectedRoute>
   );
 }
