@@ -1,9 +1,10 @@
 import './globals.css';
 import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
 import { createClient } from '@/utils/supabase/server';
 
 export const metadata = {
-  title: 'AitoLearn - AI-Powered Learning Platform',
+  title: 'AIToLearn - AI-Powered Learning Platform',
   description: 'Your personal AI tutor for GCSE, IGCSE, IAL and IELTS exam preparation',
 };
 
@@ -13,11 +14,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en">
-      <body className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <body className="min-h-screen bg-white">
         <Navigation isAuthenticated={!!user} />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main>
           {children}
         </main>
+        <Footer />
       </body>
     </html>
   );
