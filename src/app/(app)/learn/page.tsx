@@ -12,6 +12,9 @@ export default async function LearnPage() {
           </p>
         </div>
       </div>
+      <div className="flex justify-center items-center h-[5000px]">
+        <p>This is a really long content area to test scrolling.</p>
+      </div>
     </ProtectedRoute>
   );
 }
