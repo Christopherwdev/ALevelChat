@@ -17,9 +17,10 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
 
   const tabs = [
     { name: 'Learn', path: '/learn' },
+    { name: 'Past Paper', path: '/past-paper' },
     { name: 'Practice', path: '/practice' },
     { name: 'Resources', path: '/resources' },
-    { name: 'AI Hub', path: '/ai-hub' },
+    { name: 'AI Teacher', path: '/ai-teacher' },
     { name: 'Social', path: '/social' },
   ];
 
