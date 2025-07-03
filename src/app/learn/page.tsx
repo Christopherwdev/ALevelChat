@@ -18,10 +18,10 @@ const App: React.FC = () => {
     // Function to handle subject card click
     const handleSubjectClick = useCallback((subjectId: string) => {
         setSelectedSubject(subjectId);
-        console.log(`Navigating to notes for: ${subjectId}`);
+        // console.log(`Navigating to notes for: ${subjectId}`);
         // In a real application, you would use a router or state management
         // to navigate to the specific notes page, e.g.:
-        // window.location.href = `/notes/${subjectId}`;
+        window.location.href = `/learn/edexcel-ial/${subjectId}`;
         // For this immersive, we'll just log it.
         // If this were part of a larger app, you might emit an event or change a global state.
     }, []);
