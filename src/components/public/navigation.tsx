@@ -1,3 +1,5 @@
+// The nav bar for the old version landing page
+
 "use client";
 
 import Link from 'next/link';

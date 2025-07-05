@@ -1,3 +1,5 @@
+// The old version landing page
+
 import Navigation from '@/components/public/navigation';
 import Footer from '@/components/public/footer';
 import { createClient } from '@/utils/supabase/server';

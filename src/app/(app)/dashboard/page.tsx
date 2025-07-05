@@ -672,14 +672,16 @@ const App: React.FC = () => {
                     font-family: 'Inter', sans-serif;
                     background-color: #f8f9fa;
                     color: #333;
+                   
                 }
                 .table-container {
-                    width: 100%;
-                    height: calc(100vh - 150px); /* Adjust based on header height */
+                    width: calc(100%);
+                    height: calc(100vh - 100px); /* Adjust based on header height */
                     overflow: auto;
                     border: 1px solid #e2e8f0;
-                    border-radius: 0.5rem;
+                    border-radius: 0rem;
                     margin-bottom: 30px;
+                    // align-self: center;
                     position: relative; /* Needed for absolute positioning of message */
                 }
                 .table-container::-webkit-scrollbar {
