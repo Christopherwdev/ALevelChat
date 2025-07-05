@@ -5,6 +5,7 @@ import { marked } from 'marked'; // Assuming marked is available globally or imp
 
 // Define types for chat messages and sessions
 interface Message {
+    id: string; // Added unique ID for each message
     sender: 'user' | 'ai';
     text: string;
     timestamp: number;
@@ -39,7 +40,7 @@ const App: React.FC = () => {
     const [isTyping, setIsTyping] = useState<boolean>(false);
     const [isRecording, setIsRecording] = useState<boolean>(false);
     const [isQuizModalOpen, setIsQuizModalOpen] = useState<boolean>(false);
-    const [isRevisionModalOpen, setIsRevisionModalOpen] = useState<boolean>(false);
+    const [isRevisionModalOpen, setIsRevisionModalIsOpen] = useState<boolean>(false);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState<boolean>(false);
     const [quizNumQuestions, setQuizNumQuestions] = useState<string>('10');
     const [quizDifficulty, setQuizDifficulty] = useState<string>('medium');
@@ -230,35 +231,16 @@ const App: React.FC = () => {
             updateStatus('No active chat session. Please wait for initialization.', true);
             return;
         }
-
         if (!currentSubject) {
             updateStatus('Please select a subject first.', true);
             return;
         }
-
-        const newUserMessage: Message = { sender: 'user', text: message, timestamp: Date.now() };
-
-        setChatHistory(prevHistory => {
-            const newHistory = { ...prevHistory };
-            if (!newHistory[currentSubject]) {
-                newHistory[currentSubject] = [];
-            }
-
-            let currentChat = activeChat;
-            if (!currentChat || currentChat.subject !== currentSubject) {
-                currentChat = {
-                    id: Date.now(),
-                    subject: currentSubject,
-                    messages: []
-                };
-                newHistory[currentSubject].unshift(currentChat); // Add new chat to the beginning
-            }
-
-            currentChat.messages.push(newUserMessage);
-            setActiveChat(currentChat);
-            saveChatHistory(newHistory);
-            return newHistory;
-        });
+        if (!message.trim()) { // Prevent sending empty messages
+            return;
+        }
+        if (isTyping) { // Prevent multiple sends if already typing
+            return;
+        }
 
         setIsTyping(true);
         setMessageInput(''); // Clear input immediately
@@ -267,6 +249,35 @@ const App: React.FC = () => {
             messageInputRef.current.style.padding = '5px 15px';
         }
 
+        const newUserMessage: Message = { id: crypto.randomUUID(), sender: 'user', text: message, timestamp: Date.now() };
+
+        // Update chat history with user message
+        setChatHistory(prevHistory => {
+            const newHistory = { ...prevHistory };
+            if (!newHistory[currentSubject]) {
+                newHistory[currentSubject] = [];
+            }
+            let currentSession = newHistory[currentSubject].find(s => s.id === activeChat?.id);
+            if (!currentSession) {
+                // Create a new session if activeChat is null or doesn't match
+                currentSession = { id: Date.now(), subject: currentSubject, messages: [] };
+                newHistory[currentSubject].unshift(currentSession);
+            }
+            currentSession.messages.push(newUserMessage);
+            saveChatHistory(newHistory);
+            return newHistory;
+        });
+
+        // Update activeChat for immediate UI display
+        setActiveChat(prevChat => {
+            if (prevChat) {
+                return { ...prevChat, messages: [...prevChat.messages, newUserMessage] };
+            }
+            // Fallback if prevChat was null (should be handled by initial subject load)
+            return { id: Date.now(), subject: currentSubject, messages: [newUserMessage] };
+        });
+
+        scrollToBottom(); // Scroll to show user message immediately
 
         try {
             const response = await fetch('https://server-ef04.onrender.com/api/chat/message', {
@@ -276,40 +287,51 @@ const App: React.FC = () => {
             });
 
             const data = await response.json();
+            let aiMessageText: string;
 
             if (data.success) {
-                const newAiMessage: Message = { sender: 'ai', text: data.response, timestamp: Date.now() };
-                setChatHistory(prevHistory => {
-                    const newHistory = { ...prevHistory };
-                    const chatToUpdate = newHistory[currentSubject]?.find(chat => chat.id === activeChat?.id);
-                    if (chatToUpdate) {
-                        chatToUpdate.messages.push(newAiMessage);
-                    }
-                    saveChatHistory(newHistory);
-                    return newHistory;
-                });
-                setActiveChat(prevChat => {
-                    if (prevChat) {
-                        return { ...prevChat, messages: [...prevChat.messages, newAiMessage] };
-                    }
-                    return null;
-                });
+                aiMessageText = data.response;
             } else {
-                throw new Error(data.error || 'Failed to get response');
+                aiMessageText = "Sorry, I encountered an error. Please try again.";
+                // Do not throw here, handle error message addition in this block
             }
+
+            const newAiMessage: Message = { id: crypto.randomUUID(), sender: 'ai', text: aiMessageText, timestamp: Date.now() };
+
+            // Update chat history with AI message
+            setChatHistory(prevHistory => {
+                const newHistory = { ...prevHistory };
+                const chatToUpdate = newHistory[currentSubject!]?.find(chat => chat.id === activeChat?.id); // Find the correct session
+                if (chatToUpdate) {
+                    chatToUpdate.messages.push(newAiMessage);
+                }
+                saveChatHistory(newHistory);
+                return newHistory;
+            });
+            // Update activeChat for UI display
+            setActiveChat(prevChat => {
+                if (prevChat) {
+                    return { ...prevChat, messages: [...prevChat.messages, newAiMessage] };
+                }
+                return null;
+            });
+
         } catch (error: any) {
             console.error("Error sending message:", error);
             updateStatus('Error: ' + error.message, true);
-            const errorMessage: Message = { sender: 'ai', text: "Sorry, I encountered an error. Please try again.", timestamp: Date.now() };
+            const errorMessage: Message = { id: crypto.randomUUID(), sender: 'ai', text: "Sorry, I encountered an error. Please try again.", timestamp: Date.now() };
+
+            // Update chat history with error message
             setChatHistory(prevHistory => {
                 const newHistory = { ...prevHistory };
-                const chatToUpdate = newHistory[currentSubject]?.find(chat => chat.id === activeChat?.id);
+                const chatToUpdate = newHistory[currentSubject!]?.find(chat => chat.id === activeChat?.id);
                 if (chatToUpdate) {
                     chatToUpdate.messages.push(errorMessage);
                 }
                 saveChatHistory(newHistory);
                 return newHistory;
             });
+            // Update activeChat for UI display
             setActiveChat(prevChat => {
                 if (prevChat) {
                     return { ...prevChat, messages: [...prevChat.messages, errorMessage] };
@@ -320,7 +342,7 @@ const App: React.FC = () => {
             setIsTyping(false);
             scrollToBottom();
         }
-    }, [currentChatId, currentSubject, activeChat, saveChatHistory, updateStatus, scrollToBottom]);
+    }, [currentChatId, currentSubject, activeChat, saveChatHistory, updateStatus, scrollToBottom, isTyping]); // Added isTyping to dependency array
 
     // --- Chat Management ---
     const changeSubject = useCallback((subject: string) => {
@@ -336,7 +358,7 @@ const App: React.FC = () => {
             const newChat: ChatSession = {
                 id: Date.now(),
                 subject: subject,
-                messages: [{ sender: 'ai', text: getWelcomeMessage(subject), timestamp: Date.now() }]
+                messages: [{ id: crypto.randomUUID(), sender: 'ai', text: getWelcomeMessage(subject), timestamp: Date.now() }]
             };
             setActiveChat(newChat);
             setChatHistory(prevHistory => {
@@ -382,7 +404,7 @@ const App: React.FC = () => {
                 const newChat: ChatSession = {
                     id: Date.now(),
                     subject: currentSubject,
-                    messages: [{ sender: 'ai', text: getWelcomeMessage(currentSubject), timestamp: Date.now() }]
+                    messages: [{ id: crypto.randomUUID(), sender: 'ai', text: getWelcomeMessage(currentSubject), timestamp: Date.now() }]
                 };
                 setActiveChat(newChat);
                 setChatHistory({ [currentSubject]: [newChat] });
@@ -489,9 +511,7 @@ const App: React.FC = () => {
             });
 
             document.getElementById('save-quiz-btn')?.addEventListener('click', () => {
-                const userPrompt = `Generate a ${quizNumQuestions}-question ${quizDifficulty} difficulty quiz${quizTopic ? ` focusing on ${quizTopic}` : ''}.`;
-                const newAiMessage: Message = { sender: 'ai', text: quizText, timestamp: Date.now() };
-                const newUserMessage: Message = { sender: 'user', text: userPrompt, timestamp: Date.now() };
+                const newAiMessage: Message = { id: crypto.randomUUID(), sender: 'ai', text: quizText, timestamp: Date.now() };
 
                 setChatHistory(prevHistory => {
                     const newHistory = { ...prevHistory };
@@ -507,7 +527,7 @@ const App: React.FC = () => {
                         };
                         newHistory[currentSubject!].unshift(currentChat);
                     }
-                    currentChat.messages.push(newUserMessage, newAiMessage);
+                    currentChat.messages.push(newAiMessage);
                     setActiveChat(currentChat);
                     saveChatHistory(newHistory);
                     return newHistory;
@@ -582,8 +602,8 @@ const App: React.FC = () => {
             // Add event listener for retry button
             setTimeout(() => {
                 document.getElementById('retry-plan-btn')?.addEventListener('click', () => {
-                    setIsRevisionModalOpen(false);
-                    setTimeout(() => setIsRevisionModalOpen(true), 300);
+                    setIsRevisionModalIsOpen(false);
+                    setTimeout(() => setIsRevisionModalIsOpen(true), 300);
                 });
             }, 0);
         }
@@ -619,14 +639,12 @@ const App: React.FC = () => {
                 setRevisionExamDate(defaultDate.toISOString().split('T')[0]);
                 setRevisionHours('10');
                 setRevisionFocus('');
-                setIsRevisionModalOpen(false);
-                setTimeout(() => setIsRevisionModalOpen(true), 300);
+                setIsRevisionModalIsOpen(false);
+                setTimeout(() => setIsRevisionModalIsOpen(true), 300);
             });
 
             document.getElementById('save-plan-btn')?.addEventListener('click', () => {
-                const userPrompt = `Generate a revision plan for ${getSubjectDisplayName(currentSubject || '')} (Exam: ${new Date(revisionExamDate).toLocaleDateString()}, ${revisionHours} hours/week${revisionFocus ? `, Focus: ${revisionFocus}` : ''})`;
-                const newAiMessage: Message = { sender: 'ai', text: planText, timestamp: Date.now() };
-                const newUserMessage: Message = { sender: 'user', text: userPrompt, timestamp: Date.now() };
+                const newAiMessage: Message = { id: crypto.randomUUID(), sender: 'ai', text: planText, timestamp: Date.now() };
 
                 setChatHistory(prevHistory => {
                     const newHistory = { ...prevHistory };
@@ -642,12 +660,12 @@ const App: React.FC = () => {
                         };
                         newHistory[currentSubject!].unshift(currentChat);
                     }
-                    currentChat.messages.push(newUserMessage, newAiMessage);
+                    currentChat.messages.push(newAiMessage);
                     setActiveChat(currentChat);
                     saveChatHistory(newHistory);
                     return newHistory;
                 });
-                setIsRevisionModalOpen(false);
+                setIsRevisionModalIsOpen(false);
                 scrollToBottom();
             });
         }, 0);
@@ -682,7 +700,7 @@ const App: React.FC = () => {
             const newChat: ChatSession = {
                 id: Date.now(),
                 subject: currentSubject,
-                messages: [{ sender: 'ai', text: getWelcomeMessage(currentSubject), timestamp: Date.now() }]
+                messages: [{ id: crypto.randomUUID(), sender: 'ai', text: getWelcomeMessage(currentSubject), timestamp: Date.now() }]
             };
             setActiveChat(newChat);
             setChatHistory(prevHistory => {
@@ -706,17 +724,13 @@ const App: React.FC = () => {
         if (textarea) {
             textarea.style.height = 'auto'; // Reset height to get the correct scrollHeight
             textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`; // Set height, max 200px
-            const container = textarea.parentElement;
-            if (container) {
-                container.style.height = textarea.style.height;
-            }
         }
     }, [messageInput]); // Re-run when messageInput changes
 
     // --- Render Logic ---
     const renderMessages = (messages: Message[]) => {
-        return messages.map((msg, index) => (
-            <div key={index} className={`message ${msg.sender}-message p-3 rounded-lg break-words mb-2 relative`}>
+        return messages.map((msg) => ( // Removed index, using msg.id for key
+            <div key={msg.id} className={`message ${msg.sender}-message p-3 rounded-lg break-words mb-2 relative`}>
                 <div className="message-content" dangerouslySetInnerHTML={{ __html: msg.sender === 'ai' ? marked.parse(msg.text) : msg.text }}></div>
                 <div className="copy-button-container">
                     <button
@@ -753,7 +767,7 @@ const App: React.FC = () => {
             <>
                 {Object.entries(categories).map(([category, subjectsInCategory]) => (
                     <React.Fragment key={category}>
-                        <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-4">{category}</h3>
+                        <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-[20px] mt-[10px] h-[30px]">{category}</h3>
                         {subjectsInCategory.map(subject => (
                             <button
                                 key={subject.id}
@@ -775,6 +789,8 @@ const App: React.FC = () => {
             <style>
                 {`
                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+                /* Import Font Awesome */
+                @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
                 
                 :root {
                     --primary-color: #1E90FF;
@@ -793,7 +809,7 @@ const App: React.FC = () => {
                 #eduai-container {
                     width: 95vw;
                     max-width: 1000px;
-                    height: 95vh;
+                    
                     margin: auto;
                 }
 
@@ -955,13 +971,12 @@ const App: React.FC = () => {
 
                 .textarea-container {
                     position: relative;
-                    min-height: 40px;
+                    min-height: 40px; /* Changed from h-[40px] */
                     display: flex;
                     align-items: flex-end;
                 }
 
                 #message-input {
-                    align-content: center;
                     min-height: 40px;
                     max-height: 200px;
                     overflow-y: auto;
@@ -1089,7 +1104,7 @@ const App: React.FC = () => {
                                 <i className="fas fa-question-circle text-xs"></i>
                                 <span>Quiz</span>
                             </button>
-                            <button id="revision-btn" className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm bg-purple-100 text-purple-500 hover:text-purple-500 hover:bg-purple-200 transition" onClick={() => setIsRevisionModalOpen(true)}>
+                            <button id="revision-btn" className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm bg-purple-100 text-purple-500 hover:text-purple-500 hover:bg-purple-200 transition" onClick={() => setIsRevisionModalIsOpen(true)}>
                                 <i className="fas fa-book text-xs"></i>
                                 <span>Plan</span>
                             </button>
@@ -1115,11 +1130,11 @@ const App: React.FC = () => {
 
                     {/* Input Area */}
                     <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 blur-container flex justify-center z-10" style={{ borderTop: '1px solid rgba(0, 0, 0, 0.125)' }}>
-                        <div className="flex gap-3 w-full max-w-xl p-0 h-auto align-content-flex-end justify-content-flex-end">
+                        <div className="flex gap-3 w-full max-w-xl p-0 min-h-[40px] align-content-flex-end justify-content-flex-end"> {/* Changed h-[40px] to min-h-[40px] */}
                             <button id="voice-btn" className={`p-2 rounded-full hover:bg-gray-100 transition ${isRecording ? 'text-primary-500' : 'text-gray-500'}`} title="Use voice input" style={{ width: 40, height: 40 }} onClick={toggleRecording}>
                                 <i className={`fas ${isRecording ? 'fa-microphone-slash' : 'fa-microphone'}`}></i>
                             </button>
-                            <div className="flex-grow relative h-[40px] textarea-container">
+                            <div className="flex-grow relative textarea-container"> {/* Removed h-[40px] from here */}
                                 <textarea
                                     id="message-input"
                                     ref={messageInputRef}
@@ -1209,7 +1224,7 @@ const App: React.FC = () => {
                     <div id="revision-modal" className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col animate-fade-in">
                         <div className="p-4 border-b flex justify-between items-center">
                             <h2 className="font-semibold text-xl text-gray-800">Revision Plan</h2>
-                            <button id="close-revision-btn" className="p-2 rounded-full hover:bg-gray-100 transition" onClick={() => setIsRevisionModalOpen(false)}>
+                            <button id="close-revision-btn" className="p-2 rounded-full hover:bg-gray-100 transition" onClick={() => setIsRevisionModalIsOpen(false)}>
                                 <i className="fas fa-times text-gray-600"></i>
                             </button>
                         </div>

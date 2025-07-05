@@ -13,7 +13,19 @@ const App: React.FC = () => {
         { id: 'chemistry', name: 'Chemistry', category: 'Edexcel IAL', bgColorClass: 'card-chemistry' },
         { id: 'physics', name: 'Physics', category: 'Edexcel IAL', bgColorClass: 'card-physics' },
         { id: 'math', name: 'Math', category: 'Edexcel IAL', bgColorClass: 'card-math' },
+        { id: 'chinese', name: 'Chinese', category: 'Edexcel IGCSE', bgColorClass: 'card-chinese' },
+        { id: 'ielts-speaking', name: 'Speaking', category: 'IELTS', bgColorClass: 'card-ielts' },
+        { id: 'ielts-writing', name: 'Writing', category: 'IELTS', bgColorClass: 'card-ielts' },
+        { id: 'ielts-reading', name: 'Reading', category: 'IELTS', bgColorClass: 'card-ielts' },
+        { id: 'ielts-listening', name: 'Listening', category: 'IELTS', bgColorClass: 'card-ielts' },
     ];
+
+    // Group subjects by category
+    const groupedSubjects: { [category: string]: typeof subjects } = subjects.reduce((acc, subject) => {
+        if (!acc[subject.category]) acc[subject.category] = [];
+        acc[subject.category].push(subject);
+        return acc;
+    }, {} as { [category: string]: typeof subjects });
 
     // Function to handle subject card click
     const handleSubjectClick = useCallback((subjectId: string) => {
@@ -131,31 +143,37 @@ const App: React.FC = () => {
                 .card-chemistry { background-color: var(--chemistry-bg); }
                 .card-physics { background-color: var(--physics-bg); }
                 .card-math { background-color: var(--math-bg); }
+                .card-chinese { background-color: #a855f7; }
+                .card-ielts { background-color: #FF3b30; }
                 `}
             </style>
 
             <div id="app-container" className="w-full flex flex-col">
                 {/* Header Section */}
-           
-
-                {/* Main Content Area for Subject Selection */}
                 <div className="container">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-8 mt-8">Edexcel IAL Revision Notes <span className="font-normal text-gray-400 text-xl">/ 4 Subjects</span></h2>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full mb-8">
-                        {subjects.map((subject) => (
-                            <div
-                                key={subject.id}
-                                className={`subject-card ${subject.bgColorClass}`}
-                                data-subject={`edexcel-ial/${subject.id}`}
-                                onClick={() => handleSubjectClick(subject.id)}
-                            >
-                                <span className="subject-tag">{subject.category}</span>
-                                <span className="subject-name">{subject.name}</span>
-                                <button className="start-now-btn">START NOW</button>
+                    <h2 className="text-3xl font-bold text-gray-800 mb-8 mt-8">Browse Subjects</h2>
+                    {Object.entries(groupedSubjects).map(([category, subjectsInCategory]) => (
+                        <div key={category} className="mb-10">
+                            <div className="flex items-center mb-4">
+                                <h3 className="text-2xl font-semibold text-gray-700 mr-3">{category}</h3>
+                                <span className="text-gray-400 text-lg">/ {subjectsInCategory.length} Subjects</span>
                             </div>
-                        ))}
-                    </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+                                {subjectsInCategory.map((subject) => (
+                                    <div
+                                        key={subject.id}
+                                        className={`subject-card ${subject.bgColorClass}`}
+                                        data-subject={`${category.toLowerCase().replace(/ /g, '-')}/${subject.id}`}
+                                        onClick={() => handleSubjectClick(subject.id)}
+                                    >
+                                        <span className="subject-tag">{subject.category}</span>
+                                        <span className="subject-name">{subject.name}</span>
+                                        <button className="start-now-btn">START NOW</button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

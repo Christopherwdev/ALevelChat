@@ -218,9 +218,6 @@ const tailwindConfig = `
     });
 `;
 
-// Declare ZXing globally for TypeScript to recognize it
-declare const ZXing: any;
-
 const App: React.FC = () => {
     // State variables
     const [examLevel, setExamLevel] = useState<string>('IGCSE');
@@ -230,15 +227,6 @@ const App: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [isKeywordSearchActive, setIsKeywordSearchActive] = useState<boolean>(false);
     const [filteredPapers, setFilteredPapers] = useState<Paper[]>([]);
-    const [isCameraOverlayOpen, setIsCameraOverlayOpen] = useState<boolean>(false);
-    const [cameraStatus, setCameraStatus] = useState<string>('Starting camera...');
-    const [detectedBarcode, setDetectedBarcode] = useState<string | null>(null);
-
-    // Refs for DOM elements
-    const videoRef = useRef<HTMLVideoElement>(null);
-    // Initialize codeReaderRef with a type that can be null or the ZXing BrowserMultiFormatReader
-    const codeReaderRef = useRef<any | null>(null); // Use 'any' for ZXing types due to CDN global access
-    const streamRef = useRef<MediaStream | null>(null);
 
     // Helper to get subject color class
     const getSubjectColor = useCallback((subj: string): string => {
@@ -315,79 +303,6 @@ const App: React.FC = () => {
     useEffect(() => {
         applyFiltersAndSearch(searchTerm);
     }, [searchTerm, examLevel, examBoard, subject, unit, applyFiltersAndSearch]);
-
-    // Camera functions
-    const startCamera = useCallback(() => {
-        setCameraStatus('Starting camera...');
-        setDetectedBarcode(null);
-
-        // Ensure ZXing is available globally before trying to use it
-        if (typeof ZXing === 'undefined' || !ZXing.BrowserMultiFormatReader) {
-            setCameraStatus('ZXing library not loaded. Please try again.');
-            console.error('ZXing library not available globally.');
-            return;
-        }
-
-        if (!codeReaderRef.current) {
-            codeReaderRef.current = new ZXing.BrowserMultiFormatReader();
-        }
-
-        codeReaderRef.current.getVideoInputDevices()
-            .then((videoInputDevices: MediaDeviceInfo[]) => {
-                if (videoInputDevices.length === 0) {
-                    setCameraStatus('No camera found');
-                    return;
-                }
-
-                const selectedDeviceId = videoInputDevices[0].deviceId;
-                setCameraStatus('Camera ready - Point at barcode');
-
-                if (videoRef.current) {
-                    codeReaderRef.current.decodeFromVideoDevice(selectedDeviceId, videoRef.current, (result: any, err: any) => {
-                        if (result) {
-                            const code = result.getText();
-                            if (/^p\w+a$/i.test(code)) {
-                                setDetectedBarcode(code);
-                                setCameraStatus('Barcode detected!');
-                                stopCamera(); // Stop camera once barcode is detected
-                            }
-                        }
-                        // Check if err is an instance of ZXing.NotFoundException
-                        if (err && !(err instanceof ZXing.NotFoundException)) {
-                            console.error(err);
-                        }
-                    });
-                }
-            })
-            .catch((err: any) => {
-                console.error(err);
-                setCameraStatus('Error accessing camera');
-            });
-    }, []);
-
-    const stopCamera = useCallback(() => {
-        if (codeReaderRef.current) {
-            codeReaderRef.current.reset();
-        }
-        if (videoRef.current?.srcObject) {
-            const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-            tracks.forEach(track => track.stop());
-            videoRef.current.srcObject = null;
-        }
-    }, []);
-
-    // Handle camera overlay open/close
-    useEffect(() => {
-        if (isCameraOverlayOpen) {
-            startCamera();
-        } else {
-            stopCamera();
-        }
-        // Cleanup function for useEffect
-        return () => {
-            stopCamera();
-        };
-    }, [isCameraOverlayOpen, startCamera, stopCamera]);
 
     const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
@@ -517,8 +432,6 @@ const App: React.FC = () => {
         <>
             {/* Tailwind CSS config script */}
             <script dangerouslySetInnerHTML={{ __html: tailwindConfig }}></script>
-            {/* ZXing Library CDN Script - Added to resolve import error */}
-            <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
 
             {/* Custom styles */}
             <style>
@@ -589,7 +502,7 @@ const App: React.FC = () => {
 
             <div className="w-full h-screen flex flex-col antialiased bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200">
                 {/* Header */}
-                <header className="flex justify-between items-center p-4 bg-white border-b dark:bg-gray-800 dark:border-gray-700 h-[80px]">
+                <header className="flex justify-between items-center p-4 bg-white border-b border-b-[#00000020] dark:bg-gray-800 dark:border-gray-700 h-[80px]">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Past Papers</h1>
                         <p className="text-xs text-gray-500 mt-1">Search and access past papers</p>
@@ -607,29 +520,14 @@ const App: React.FC = () => {
                                 <option value="IGCSE">IGCSE</option>
                             </select>
                         </div>
-
-                        <button
-                            id="camera-search-btn"
-                            className="bg-white p-2 rounded-lg shadow-md hover:bg-gray-100 transition dark:bg-gray-700 dark:hover:bg-gray-600"
-                            title="Scan barcode"
-                            onClick={() => setIsCameraOverlayOpen(true)}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700 dark:text-gray-200">
-                                <path d="M9 12l2 2 4-4"/>
-                                <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/>
-                                <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/>
-                                <path d="M12 21c0-1-1-3-3-3s-3 2-3 3 1 3 3 3 3-2 3-3"/>
-                                <path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3"/>
-                            </svg>
-                        </button>
                     </div>
                 </header>
 
                 {/* Main Content */}
                 <div className="flex flex-1 overflow-hidden">
                     {/* Left Sidebar - Search and Filters */}
-                    <div id="left-sidebar" className="w-80 bg-white border-r flex flex-col dark:bg-gray-800 dark:border-gray-700 overflow-auto no-scrollbar">
-                        <div className="p-4 border-b dark:border-gray-700">
+                    <div id="left-sidebar" className="w-80 bg-white border-r border-r-[#00000020] flex flex-col dark:bg-gray-800 dark:border-gray-700 overflow-auto no-scrollbar">
+                        <div className="p-4 border-b border-b-[#00000020] dark:border-gray-700">
                             <div className="relative">
                                 <input
                                     type="text"
@@ -656,7 +554,7 @@ const App: React.FC = () => {
                         </div>
 
                         {/* Exam Board Selector */}
-                        <div id="exam-board-filter-section" className={`p-4 border-b dark:border-gray-700 ${isKeywordSearchActive ? 'filter-disabled' : ''}`}>
+                        <div id="exam-board-filter-section" className={`p-4 border-b border-b-[#00000020] dark:border-gray-700 ${isKeywordSearchActive ? 'filter-disabled' : ''}`}>
                             <label htmlFor="examBoardSelect" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Select Exam Board</label>
                             <div className="relative">
                                 <select
@@ -673,7 +571,7 @@ const App: React.FC = () => {
                         </div>
 
                         {/* Subject Selector */}
-                        <div id="subject-filter-section" className={`p-4 border-b dark:border-gray-700 ${isKeywordSearchActive ? 'filter-disabled' : ''}`}>
+                        <div id="subject-filter-section" className={`p-4 border-b border-b-[#00000020] dark:border-gray-700 ${isKeywordSearchActive ? 'filter-disabled' : ''}`}>
                             <label htmlFor="subjectSelect" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Select Subject</label>
                             <div className="relative">
                                 <select
@@ -695,7 +593,7 @@ const App: React.FC = () => {
                         </div>
 
                         {/* Unit Selector */}
-                        <div id="unit-filter-section" className={`p-4 border-b dark:border-gray-700 ${isKeywordSearchActive ? 'filter-disabled' : ''}`}>
+                        <div id="unit-filter-section" className={`p-4 border-b  border-b-[#00000020] dark:border-gray-700 ${isKeywordSearchActive ? 'filter-disabled' : ''}`}>
                             <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Select Unit</label>
                             <div className="flex flex-wrap gap-2 unit-buttons bg-gray-100 dark:bg-gray-700 p-2 rounded-lg">
                                 {unitsForCurrentSubject.length > 0 ? (
@@ -716,7 +614,7 @@ const App: React.FC = () => {
                         </div>
 
                         {/* Quick Filters */}
-                        <div id="quick-filters-section" className={`p-4 border-b dark:border-gray-700 ${isKeywordSearchActive ? 'filter-disabled' : ''}`}>
+                        <div id="quick-filters-section" className={`p-4 border-b border-b-[#00000020] dark:border-gray-700 ${isKeywordSearchActive ? 'filter-disabled' : ''}`}>
                             <h3 className="font-semibold text-gray-700 mb-3 dark:text-gray-200">Quick Filters</h3>
                             <div className="space-y-2">
                                 {years.slice(0, 1).map(yearOption => ( // Only show 2023 for now, as in original HTML
@@ -748,50 +646,6 @@ const App: React.FC = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Camera Search Overlay */}
-            {isCameraOverlayOpen && (
-                <div id="camera-overlay" className="fixed inset-0 camera-overlay z-50 flex items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) setIsCameraOverlayOpen(false); }}>
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 dark:bg-gray-800">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Scan Paper Barcode</h3>
-                            <button
-                                id="close-camera-btn"
-                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                onClick={() => setIsCameraOverlayOpen(false)}
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div className="text-center">
-                            <video id="video" ref={videoRef} className="mb-4 bg-black"></video>
-                            <div id="camera-status" className="text-sm text-gray-600 mb-4 dark:text-gray-400">
-                                {cameraStatus}
-                            </div>
-                            {detectedBarcode && (
-                                <div id="barcode-result">
-                                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 dark:bg-green-800 dark:border-green-700 dark:text-green-200">
-                                        <strong>Barcode detected:</strong> <span id="detected-barcode">{detectedBarcode}</span>
-                                    </div>
-                                    <button
-                                        id="search-barcode-btn"
-                                        className="btn-primary w-full"
-                                        onClick={() => {
-                                            setSearchTerm(detectedBarcode);
-                                            setIsCameraOverlayOpen(false);
-                                        }}
-                                    >
-                                        Search for this paper
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
         </>
     );
 };
