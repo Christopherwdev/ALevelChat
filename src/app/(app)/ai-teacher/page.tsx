@@ -42,6 +42,7 @@ const App: React.FC = () => {
     const [isQuizModalOpen, setIsQuizModalOpen] = useState<boolean>(false);
     const [isRevisionModalOpen, setIsRevisionModalIsOpen] = useState<boolean>(false);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState<boolean>(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
     const [quizNumQuestions, setQuizNumQuestions] = useState<string>('10');
     const [quizDifficulty, setQuizDifficulty] = useState<string>('medium');
     const [quizTopic, setQuizTopic] = useState<string>('');
@@ -772,10 +773,11 @@ const App: React.FC = () => {
                             <button
                                 key={subject.id}
                                 data-sidebar-subject={subject.id}
-                                className="sidebar-subject-btn w-full text-left px-4 py-2 hover:bg-gray-100 hover:text-black"
+                                className={`sidebar-subject-btn w-full text-left px-4 py-2 hover:bg-gray-100 hover:text-black transition-all duration-150 rounded-lg mb-1 flex items-center gap-2
+                                    ${currentSubject === subject.id ? 'active-sidebar-subject bg-blue-100 text-blue-600 font-semibold shadow-sm' : ''}`}
                                 onClick={() => changeSubject(subject.id)}
                             >
-                                <i className={`${subject.icon} mr-2 ${subject.color}`}></i> {subject.name}
+                                <i className={`${subject.icon} mr-2 ${subject.color} ${currentSubject === subject.id ? 'text-blue-600' : ''}`}></i> {subject.name}
                             </button>
                         ))}
                     </React.Fragment>
@@ -981,8 +983,10 @@ const App: React.FC = () => {
                     max-height: 200px;
                     overflow-y: auto;
                     resize: none;
-                    line-height: 1.5;
-                    padding: 5px 15px;
+                    line-height: 1;
+                    justify-content: center;
+                    align-content: center;
+                    padding: 10px 10px;
                 }
                 #message-input::-webkit-scrollbar {
                     display: none;
@@ -1054,6 +1058,14 @@ const App: React.FC = () => {
                 #sidebar-menu {
                     will-change: transform;
                 }
+
+                .sidebar-subject-btn.active-sidebar-subject {
+                    background: #e0e7ff !important;
+                    color: #2563eb !important;
+                    font-weight: 600;
+                    border-radius: 0.75rem;
+                    box-shadow: 0 2px 8px 0 #2563eb10;
+                }
                 `}
             </style>
             <div id="eduai-container" className="w-full h-[90vh] rounded-xl overflow-hidden shadow-xl border border-gray-200 relative transition-all duration-300 ease-in-out flex flex-col md:flex-row">
@@ -1072,7 +1084,7 @@ const App: React.FC = () => {
                 )}
 
                 {/* Sidebar Menu */}
-                <div id="sidebar-menu" className={`absolute left-0 top-0 h-full w-64 bg-white/50 blur-container transform ${isHistoryModalOpen ? 'translate-x-0' : '-translate-x-full'} z-40 border-r border-gray-200 overflow-y-auto transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:bg-white md:shadow-md md:z-auto md:flex-shrink-0 md:flex-grow-0 md:rounded-l-xl`}>
+                <div id="sidebar-menu" className={`absolute left-0 top-0 h-full w-64 bg-white/50 blur-container transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-40 border-r border-gray-200 overflow-y-auto transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:bg-white md:shadow-md md:z-auto md:flex-shrink-0 md:flex-grow-0 md:rounded-l-xl`}>
                     <div className="p-4 border-b">
                         <h3 className="font-bold text-xl text-primary-500" style={{ marginBottom: 0, paddingBottom: 0 }}>AI Teacher Pro</h3>
                     </div>
@@ -1091,7 +1103,7 @@ const App: React.FC = () => {
                     {/* Header */}
                     <header className="flex justify-between items-center p-4 bg-white border-b h-[60px]">
                         <div className="flex items-center">
-                            <button id="menu-toggle" className="p-2 rounded-full hover:bg-gray-100 transition mr-2 block md:hidden" style={{ width: 40, height: 40 }} onClick={() => setIsHistoryModalOpen(prev => !prev)}>
+                            <button id="menu-toggle" className="p-2 rounded-full hover:bg-gray-100 transition mr-2 block md:hidden" style={{ width: 40, height: 40 }} onClick={() => { setIsHistoryModalOpen(false); setIsSidebarOpen(true); }}>
                                 <i className="fas fa-bars text-gray-600"></i>
                             </button>
                             <div>
@@ -1140,7 +1152,7 @@ const App: React.FC = () => {
                                     ref={messageInputRef}
                                     rows={1}
                                     placeholder={isRecording ? "Listening..." : "Ask anything about your subject..."}
-                                    className="w-full bg-gray-100 rounded-full focus:outline-none blur-container focus:ring-2 focus:ring-primary-500 text-gray-800 resize-none"
+                                    className="w-full bg-gray-100 rounded-[25px] focus:outline-none blur-container focus:ring-2 focus:ring-primary-500 text-gray-800 resize-none"
                                     value={messageInput}
                                     onChange={(e) => setMessageInput(e.target.value)}
                                     onKeyPress={(e) => {
@@ -1157,7 +1169,7 @@ const App: React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                            <button id="send-button" className={`p-2 bg-primary-500 rounded-full hover:bg-primary-600 transition text-white ${isTyping ? 'opacity-50 cursor-not-allowed' : ''}`} style={{ width: 40, height: 40, backgroundColor: '#2563eb' }} onClick={() => sendMessage(messageInput)} disabled={isTyping}>
+                            <button id="send-button" className={`px-[10px] bg-primary-500 rounded-full hover:bg-primary-600 transition text-white ${isTyping ? 'opacity-50 cursor-not-allowed' : ''}`} style={{ width: 40, height: 40, backgroundColor: '#2563eb' }} onClick={() => sendMessage(messageInput)} disabled={isTyping}>
                                 <i className="fas fa-paper-plane"></i>
                             </button>
                         </div>
