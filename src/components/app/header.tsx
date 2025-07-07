@@ -72,7 +72,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
         zIndex: 50,
       }}
     >
-      <nav className="bg-[rgba(255,255,255,0.9)] backdrop-blur-[15px] shadow-sm border-b border-gray-100">
+      <nav className="bg-[rgba(255,255,255,0.9)] backdrop-blur-[15px] shadow-xl shadow-[rgba(0,0,0,0.02)] border-b border-gray-100">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16 justify-between w-full">
             {/* Logo left */}

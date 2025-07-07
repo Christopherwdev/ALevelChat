@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { BookText, Settings, MessageCircle } from 'lucide-react'; // Importing Lucide React icons
-import Navigation from '@/components/app/header';
+import AppHeader from '@/components/app/header';
 
 // Helper function to convert hex color to RGB string
 const hexToRgb = (hex: string) => {
@@ -165,7 +165,7 @@ const App = () => {
 
   return (
     <>
-      <Navigation isAuthenticated={true} />
+      <AppHeader isAuthenticated={true} />
       {/* Tailwind CSS CDN */}
       <script src="https://cdn.tailwindcss.com"></script>
       {/* Inter font from Google Fonts */}
