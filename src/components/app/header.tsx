@@ -57,6 +57,8 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
   const [isSigningOut, startSignOutTransition] = useTransition();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [hoveredExam, setHoveredExam] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [expandedExam, setExpandedExam] = useState<string | null>(null);
 
   async function handleSignOut() {
     startSignOutTransition(async () => {
@@ -76,7 +78,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16 justify-between w-full">
             {/* Logo left */}
-            <div className="flex items-center min-w-[180px]">
+            <div className="flex items-center min-w-[100px]">
               <Link href="/" className="flex items-center space-x-2">
                 <Image
                   src="/logo-300x300.png"
@@ -89,7 +91,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
               </Link>
             </div>
             {/* Exams center */}
-            <div className="flex justify-center items-center space-x-0 mr-[70px] py-2 px-3 bg-[rgba(0,0,0,0.04)] rounded-full">
+            <div className="hidden lg:flex justify-center items-center space-x-0 py-2 px-3 bg-[rgba(0,0,0,0.04)] rounded-full">
               {exams.map((exam) => (
                 <div
                   key={exam.name}
@@ -125,7 +127,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
               ))}
             </div>
             {/* Account button right */}
-            <div className="flex items-center space-x-4 min-w-[180px] justify-end">
+            <div className="flex items-center space-x-4 min-w-[100px] justify-end">
               {isAuthenticated ? (
                 <div className="relative">
                   <button
@@ -173,9 +175,53 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                 </div>
               )}
             </div>
+            {/* Hamburger for mobile */}
+            <div className="flex lg:hidden">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 rounded-md text-gray-700 hover:bg-gray-100"
+                aria-label="Open menu"
+              >
+                {/* Hamburger icon */}
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </nav>
+      {mobileMenuOpen && (
+        <div className="lg:hidden absolute left-0 right-0 bg-white shadow-lg rounded-b-xl z-40 mt-0 px-4 py-2">
+          {exams.map((exam) => (
+            <div key={exam.name} className="mb-2">
+              <button
+                onClick={() => setExpandedExam(expandedExam === exam.name ? null : exam.name)}
+                className="w-full text-left px-2 py-2 font-semibold text-gray-800 hover:text-red-500 flex justify-between items-center"
+              >
+                {exam.name}
+                <svg className={`h-4 w-4 ml-2 transition-transform ${expandedExam === exam.name ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+              {expandedExam === exam.name && (
+                <div className="pl-4">
+                  {exam.subjects.map((subject) => (
+                    <Link
+                      key={subject.name}
+                      href={subject.path}
+                      className="block px-2 py-1 text-gray-700 hover:text-red-500"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {subject.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

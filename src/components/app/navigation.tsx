@@ -49,7 +49,7 @@ export default function AppNavigation() {
       {/* Navigation Items Container */}
       <div className="flex flex-col gap-2 mt-10 w-full px-3"> {/* Added horizontal padding for items */}
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon; // Dynamic icon component
 
           return (

@@ -84,9 +84,9 @@ const App = () => {
 
   // Revision Tools data
   const revisionTools = [
-    { id: 'past-papers', title: `Edexcel IAL Past Papers`, icon: FileText },
-    { id: 'ai-teacher', title: 'AI Teacher & Grading', icon: Lightbulb },
-    { id: 'ask-help', title: 'Ask for Our Help', icon: HelpCircle },
+    { id: 'past-papers', titleTop: 'Edexcel IAL', titleBottom: 'Past Papers', icon: FileText },
+    { id: 'ai-teacher', titleTop: 'AI Teacher', titleBottom: '& Grading', icon: Lightbulb },
+    { id: 'ask-help', titleTop: 'Ask for', titleBottom: 'Our Help', icon: HelpCircle },
   ];
 
   // Function to handle subject card click (similar to previous component)
@@ -165,7 +165,7 @@ const App = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 p-0 font-inter">
+    <div className="min-h-screen bg-white p-0  font-inter">
       {/* Tailwind CSS CDN and Inter font */}
       <script src="https://cdn.tailwindcss.com"></script>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -254,21 +254,21 @@ const App = () => {
       <div className="max-w-5xl mx-auto px-4 py-8 rounded-sm">
         {/* Breadcrumbs */}
         <nav className="text-gray-500 text-sm mb-6 font-semibold">
-          <a href="#" onClick={() => navigate('/')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Home</a>
+          <a href="#" onClick={() => navigate('/')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
           <span className="mx-2">/</span>
           <span>Edexcel IAL</span>
         </nav>
 
         {/* Page Title */}
-        <h1 className="text-5xl font-bold text-gray-900 mb-8">
-          Edexcel IAL <span className="text-[#ff3b30]">Revision</span>
+        <h1 className="text-6xl font-extrabold text-gray-400 mb-8">
+        <span className="text-[#ff3b30]">Edexcel</span> IAL<br></br> <span className="font-medium text-[#000000]">Revision</span>
         </h1>
         <p className="text-gray-700 text-lg mb-10 max-w-3xl">
           For each of the subjects below, there are revision notes, factsheets, questions from past exam papers separated by topic and other worksheets.
         </p>
 
         {/* Subject Cards Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {ialSubjects.map((subject) => (
             <div
               key={subject.id}
@@ -295,11 +295,14 @@ const App = () => {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {revisionTools.map((tool) => (
-            <div key={tool.id} className="bg-white p-6 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[5px] border-[#00000010] transition duration-200 hover:border-[5px] hover:border-[#ff3b30] hover:ring-[10px] hover:ring-[#ff3b3050]">
+            <div key={tool.id} className="bg-white p-6 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[5px] border-[#00000010] transition duration-200 hover:border-[5px] hover:border-[#ff3b30] hover:ring-[10px] hover:ring-[#ff3b3020]">
               <div className="border-2 border-[#ff3b30] p-3 rounded-full">
                 <tool.icon className="w-6 h-6 text-[#ff3b30]" />
               </div>
-              <p className="text-lg font-semibold text-[#ff3b30]">{tool.title}</p>
+              <div className="flex flex-col leading-tight">
+                <span className="text-2xl font-bold text-[#ff3b30]">{tool.titleTop}</span>
+                <span className="text-xl font-semibold text-gray-900">{tool.titleBottom}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -307,7 +310,7 @@ const App = () => {
         {/* 3-Pane Window Section */}
         <div className="bg-gray-100 rounded-xl p-2 shadow-inner mb-12">
           {/* Horizontal Tab Bar */}
-          <div className="relative flex justify-around bg-white rounded-t-lg p-2 border-b border-gray-200 space-x-2">
+          <div className="relative flex justify-around bg-white rounded-lg p-2 border-b border-gray-200 gap-x-2">
             {/* Sliding Indicator */}
             <div
               className="absolute bottom-0 left-0 h-1 bg-blue-600 rounded transition-transform duration-300"
@@ -343,7 +346,7 @@ const App = () => {
           </div>
 
           {/* Content Pane */}
-          <div className="mt-4">
+          <div className="mt-2">
             {activeTab === 'details' && <DetailsContent />}
             {activeTab === 'timetable' && <TimetableContent />}
             {activeTab === 'find-tutor' && <FindTutorContent />}
