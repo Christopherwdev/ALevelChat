@@ -25,9 +25,27 @@ const hexToRgb = (hex: string) => {
 
 // Main App component
 const App = () => {
-  // Simple navigation function for button clicks
+  const [currentPage, setCurrentPage] = useState<string>('home');
+  const [selectedExam, setSelectedExam] = useState<string | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+
+  // Function to handle navigation
   const navigate = (path: string) => {
-    window.location.href = `/${path.replace(/^\//, '')}`;
+    const parts = path.split('/');
+    if (parts[0] === 'learn') {
+      if (parts.length === 2) {
+        setSelectedExam(parts[1]);
+        setCurrentPage('examDetail');
+      } else if (parts.length === 3) {
+        setSelectedExam(parts[1]);
+        setSelectedSubject(parts[2]);
+        setCurrentPage('subjectDetail');
+      }
+    } else {
+      setCurrentPage(path);
+      setSelectedExam(null);
+      setSelectedSubject(null);
+    }
   };
 
   // Data for exams and subjects, now including a baseColor for gradients
@@ -42,7 +60,7 @@ const App = () => {
     subjects: string[];
   }> = [
     {
-      id: 'edexcel-igcse/chinese',
+      id: 'edexcel-igcse-chinese',
       title: 'Edexcel IGCSE Chinese',
       icon: BookText,
       description: 'AI Mock Tests | Past Papers | AI Teacher | Private Tutor',
@@ -52,7 +70,7 @@ const App = () => {
       subjects: ['Listening', 'Reading', 'Writing', 'Translating'],
     },
     {
-      id: 'edexcel-ial',
+      id: 'edexcel-ial-revision',
       title: 'Edexcel IAL Revision',
       icon: Settings,
       description: 'Revision Notes | Past Papers | AI Teacher | Private Tutor',
@@ -62,7 +80,7 @@ const App = () => {
       subjects: ['Biology', 'Chemistry', 'Physics', 'Math'],
     },
     {
-      id: 'ielts',
+      id: 'ielts-english-revision',
       title: 'IELTS English Revision',
       icon: MessageCircle,
       description: 'Revision Notes | Mock Test | AI Teacher | Private Tutor',
@@ -88,7 +106,7 @@ const App = () => {
                 key={exam.id}
                 className="p-4 rounded-2xl  flex flex-col items-start"
                 // Apply linear gradient from white to a semi-transparent version of exam color
-                style={{ background: `linear-gradient(to bottom, #FFFFFF, rgba(${rgbColor}, 0.2))` }}
+                style={{ background: `linear-gradient(to bottom, #FFFFFF, rgba(${rgbColor}, 0.1))` }}
               >
               
                   <div className={"bg-gray-200 p-3 rounded-full mb-4"}>
@@ -96,7 +114,7 @@ const App = () => {
                   </div>
                   <h1 className="text-3xl font-semibold text-gray-900 mb-4">{exam.title}</h1>
            
-                <p className="text-[#00000080] mb-6 flex-grow">{exam.description}</p>
+                <p className="text-gray-600 mb-6 flex-grow">{exam.description}</p>
                 <button
                   onClick={() => navigate(`learn/${exam.id}`)}
                   className={`flex items-center justify-between px-6 py-3 rounded-full text-white border-black border-[3px] mb-2 font-semibold text-xl transition-all duration-200 ${exam.buttonColor} w-full`}
@@ -163,6 +181,87 @@ const App = () => {
     </div>
   );
 
+  // Component for Exam Detail Page
+  const ExamDetailPage = () => {
+    const exam = exams.find((e) => e.id === selectedExam);
+    if (!exam) {
+      return <div className="text-center p-8 text-red-600">Exam not found!</div>;
+    }
+    return (
+      <div className="min-h-screen bg-gray-100 p-8 font-inter">
+        <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+          <button onClick={() => navigate('home')} className="mb-6 text-blue-600 hover:underline flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Home
+          </button>
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">{exam.title}</h1>
+          <p className="text-gray-700 text-lg mb-8">{exam.description}</p>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Subjects for {exam.title}:</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {exam.subjects.map((subject) => (
+              <button
+                key={subject}
+                onClick={() => navigate(`learn/${exam.id}/${subject.toLowerCase().replace(/\s/g, '-')}`)}
+                className="bg-gray-200 px-6 py-3 rounded-xl text-gray-800 font-medium hover:bg-gray-300 transition-colors duration-200 text-center"
+              >
+                {subject}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Component for Subject Detail Page
+  const SubjectDetailPage = () => {
+    const exam = exams.find((e) => e.id === selectedExam);
+    if (!exam) {
+      return <div className="text-center p-8 text-red-600">Exam not found!</div>;
+    }
+    if (!selectedSubject) {
+      return <div className="text-center p-8 text-red-600">Subject not found!</div>;
+    }
+    return (
+      <div className="min-h-screen bg-gray-100 p-8 font-inter">
+        <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+          <button onClick={() => navigate(`learn/${exam.id}`)} className="mb-6 text-blue-600 hover:underline flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to {exam.title}
+          </button>
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">
+            {exam.title} - {selectedSubject.split('-').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+          </h1>
+          <p className="text-gray-700 text-lg">
+            This is the detail page for the {selectedSubject.split('-').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} subject under the {exam.title} exam.
+            You can add specific content, mock tests, or revision materials here.
+          </p>
+          {/* Add more content specific to the subject here */}
+        </div>
+      </div>
+    );
+  };
+
+  // Render the appropriate page based on currentPage state
+  let content;
+  switch (currentPage) {
+    case 'home':
+      content = <HomePage />;
+      break;
+    case 'examDetail':
+      content = <ExamDetailPage />;
+      break;
+    case 'subjectDetail':
+      content = <SubjectDetailPage />;
+      break;
+    default:
+      content = <HomePage />; // Fallback to home
+  }
+
   return (
     <>
       <Navigation isAuthenticated={true} />
@@ -177,7 +276,7 @@ const App = () => {
           }
         `}
       </style>
-      <HomePage />
+      {content}
     </>
   );
 };

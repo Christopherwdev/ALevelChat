@@ -33,13 +33,13 @@ export default function AppNavigation() {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={cn(
-        "h-full z-50 flex flex-col items-start bg-white text-gray-900 transition-all duration-300 border-r-[#00000020] border-r-1 border-l",
-        isExpanded ? "w-64" : "w-[75px]"
+        "h-full z-1000 flex flex-col items-start bg-[rgba(255,255,255,0.90)] backdrop-blur-[15px] text-gray-900 transition-all duration-300 border-r-[#00000010] border-r-2",
+        isExpanded ? "w-64" : "w-[70px]"
       )}
     >
       {/* Account Button (circular, user icon) */}
       <button
-        className="m-4 p-3 bg-gray-100 rounded-full hover:bg-gray-200 transition text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center"
+        className="m-3 p-3 bg-gray-100 rounded-full hover:bg-gray-200 transition text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center"
         aria-label="Account"
         style={{ width: 44, height: 44 }}
       >
@@ -47,7 +47,7 @@ export default function AppNavigation() {
       </button>
 
       {/* Navigation Items Container */}
-      <div className="flex flex-col gap-2 mt-10 w-full px-4"> {/* Added horizontal padding for items */}
+      <div className="flex flex-col gap-2 mt-10 w-full px-3"> {/* Added horizontal padding for items */}
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon; // Dynamic icon component

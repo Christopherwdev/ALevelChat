@@ -2,7 +2,7 @@ import AppNavigation from "@/components/app/navigation";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { headers } from "next/headers";
 
-const COLLAPSED_WIDTH = 75; // px, match with AppNavigation collapsed width
+const COLLAPSED_WIDTH = 70; // px, match with AppNavigation collapsed width
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
