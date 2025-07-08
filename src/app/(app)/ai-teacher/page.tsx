@@ -1,175 +1,114 @@
-'use client'; // Add this directive at the very top
-
+"use client"
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { marked } from 'marked'; // Assuming marked is available globally or imported
+import { marked } from 'marked';
 
-// Define types for chat messages and sessions
-interface Message {
-    id: string; // Added unique ID for each message
-    sender: 'user' | 'ai';
-    text: string;
-    timestamp: number;
-}
+// Add type for chatHistory
+interface ChatMessage { sender: string; text: string; timestamp: number; }
+interface ChatSession { id: number; subject: string; messages: ChatMessage[]; }
+type ChatHistory = { [subject: string]: ChatSession[] };
 
-interface ChatSession {
-    id: number;
-    subject: string;
-    messages: Message[];
-}
-
-interface ChatHistory {
-    [subject: string]: ChatSession[];
-}
-
-// Global type for SpeechRecognition
-declare global {
-    interface Window {
-        webkitSpeechRecognition: any;
-    }
-}
-
-const App: React.FC = () => {
+const App = () => {
     // State Management
     const [currentSubject, setCurrentSubject] = useState<string | null>(null);
-    const [chatHistory, setChatHistory] = useState<ChatHistory>({});
-    const [activeChat, setActiveChat] = useState<ChatSession | null>(null);
-    const [messageInput, setMessageInput] = useState<string>('');
-    const [statusMessage, setStatusMessage] = useState<string>('');
-    const [isErrorStatus, setIsErrorStatus] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [isTyping, setIsTyping] = useState<boolean>(false);
-    const [isRecording, setIsRecording] = useState<boolean>(false);
-    const [isQuizModalOpen, setIsQuizModalOpen] = useState<boolean>(false);
-    const [isRevisionModalOpen, setIsRevisionModalIsOpen] = useState<boolean>(false);
-    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState<boolean>(false);
-    const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
-    const [quizNumQuestions, setQuizNumQuestions] = useState<string>('10');
-    const [quizDifficulty, setQuizDifficulty] = useState<string>('medium');
-    const [quizTopic, setQuizTopic] = useState<string>('');
-    const [revisionExamDate, setRevisionExamDate] = useState<string>('');
-    const [revisionHours, setRevisionHours] = useState<string>('10');
-    const [revisionFocus, setRevisionFocus] = useState<string>('');
-    const [quizContentHtml, setQuizContentHtml] = useState<string>('');
-    const [revisionContentHtml, setRevisionContentHtml] = useState<string>('');
-    const [currentChatId, setCurrentChatId] = useState<string | null>(null); // Server-side chat ID
+    const [chatHistory, setChatHistory] = useState<ChatHistory>({}); // { subject: [{ id: timestamp, messages: [{sender, text, timestamp}] }] }
+    const [activeChat, setActiveChat] = useState<ChatSession | null>(null); // The currently viewed chat session
+    const [quizModalOpen, setQuizModalOpen] = useState(false);
+    const [revisionModalOpen, setRevisionModalOpen] = useState(false);
+    const [historyModalOpen, setHistoryModalOpen] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [messageInput, setMessageInput] = useState('');
+    const [statusMessage, setStatusMessage] = useState('');
+    const [isStatusError, setIsStatusError] = useState(false);
+    const [isSending, setIsSending] = useState(false); // To disable input while AI is typing
+    const [currentChatId, setCurrentChatId] = useState(null); // Server-side LLM session ID
+    const [showLoadingScreen, setShowLoadingScreen] = useState(true);
+    const [showConfirmClearModal, setShowConfirmClearModal] = useState(false);
+    const [speechRecognitionSupported, setSpeechRecognitionSupported] = useState(false);
+
 
     // Refs for DOM elements
-    const chatContainerRef = useRef<HTMLDivElement>(null);
-    const messageInputRef = useRef<HTMLTextAreaElement>(null);
-    const recognitionRef = useRef<any | null>(null);
-
-    // --- Utility Functions ---
-
-    const getSubjectDisplayName = useCallback((subject: string): string => {
-        const subjectMap: { [key: string]: string } = {
-            'biology': 'Biology (Edexcel IAL)',
-            'chemistry': 'Chemistry (Edexcel IAL)',
-            'physics': 'Physics (Edexcel IAL)',
-            'math': 'Mathematics (Edexcel IAL)',
-            'chinese': 'Chinese (Edexcel IGCSE)',
-            'ielts-speaking': 'IELTS Speaking',
-            'ielts-writing': 'IELTS Writing',
-            'ielts-reading': 'IELTS Reading',
-            'ielts-listening': 'IELTS Listening'
-        };
-        return subjectMap[subject] || subject;
-    }, []);
-
-    const getWelcomeMessage = useCallback((subject: string): string => {
-        const welcomeMessages: { [key: string]: string } = {
-            'biology': "👋 Welcome to Biology! I'm your Edexcel IAL Biology tutor. I can help with topics like biological molecules, cells, genetics, ecology, and more. What would you like to learn about today?",
-            'chemistry': "👋 Welcome to Chemistry! I'm your Edexcel IAL Chemistry tutor. I can help with topics like atomic structure, bonding, energetics, organic chemistry, and more. What would you like to learn about today?",
-            'physics': "👋 Welcome to Physics! I'm your Edexcel IAL Physics tutor. I can help with topics like mechanics, electricity, waves, fields, nuclear physics, and more. What would you like to learn about today?",
-            'math': "👋 Welcome to Mathematics! I'm your Edexcel IAL Mathematics tutor. I can help with topics like pure mathematics, statistics, mechanics, and more. What would you like to learn about today?",
-            'chinese': "👋 Welcome to Chinese! I'm your Edexcel IGCSE Chinese tutor. I can help with topics like pure reading, writing, translating, Chinese topics and more. What would you like to learn about today?",
-            'ielts-speaking': "👋 Welcome to IELTS Speaking! I can help you prepare for your speaking test with practice questions, vocabulary, strategies, and feedback. How would you like to practice today?",
-            'ielts-writing': "👋 Welcome to IELTS Writing! I can help you improve your writing skills for both Task 1 and Task 2, including essay structure, vocabulary, grammar, and more. What aspect of IELTS writing would you like help with?",
-            'ielts-reading': "👋 Welcome to IELTS Reading! I can help you with reading strategies, practice questions, vocabulary building, and more to improve your reading skills. What aspect of IELTS reading would you work on?",
-            'ielts-listening': "👋 Welcome to IELTS Listening! I can help you with listening strategies, practice questions, note-taking skills, and more. How would you like to improve your listening skills today?"
-        };
-        return welcomeMessages[subject] || "👋 Welcome! How can I help you today?";
-    }, []);
-
-    const updateStatus = useCallback((message: string, isError: boolean = false) => {
-        setStatusMessage(message);
-        setIsErrorStatus(isError);
-        setTimeout(() => {
-            setStatusMessage('');
-        }, 3000);
-    }, []);
-
-    const scrollToBottom = useCallback(() => {
-        if (chatContainerRef.current) {
-            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-        }
-    }, []);
-
-    const copyToClipboard = useCallback((text: string, buttonElement: HTMLElement) => {
-        try {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-
-            const successMessage = document.createElement('div');
-            successMessage.classList.add('copy-success-message');
-            successMessage.textContent = 'Copied!';
-            buttonElement.parentNode?.appendChild(successMessage);
-            successMessage.classList.add('visible');
-
-            setTimeout(() => {
-                successMessage.classList.remove('visible');
-                successMessage.addEventListener('transitionend', () => {
-                    if (successMessage.parentNode) {
-                        successMessage.parentNode.removeChild(successMessage);
-                    }
-                }, { once: true });
-            }, 1500);
-        } catch (err) {
-            console.error('Failed to copy text: ', err);
-            updateStatus('Failed to copy text.', true);
-        }
-    }, [updateStatus]);
+    const chatContainerRef = useRef(null);
+    const messageInputRef = useRef(null);
+    const sidebarMenuRef = useRef(null);
+    const recognitionRef = useRef(null); // For webkitSpeechRecognition
 
     // --- Local Storage Management ---
-    const loadChatHistory = useCallback(() => {
-        const savedHistory = localStorage.getItem('eduai-chat-history');
-        if (savedHistory) {
-            try {
-                setChatHistory(JSON.parse(savedHistory));
-            } catch (e) {
-                console.error('Error parsing chat history:', e);
-                setChatHistory({});
+    // Load chat history from localStorage on initial mount
+    useEffect(() => {
+        // Ensure localStorage is available before accessing it
+        if (typeof window !== 'undefined' && window.localStorage) {
+            const savedHistory = localStorage.getItem('eduai-chat-history');
+            if (savedHistory) {
+                try {
+                    setChatHistory(JSON.parse(savedHistory));
+                } catch (e) {
+                    console.error('Error parsing chat history:', e);
+                    setChatHistory({});
+                }
             }
         }
+
+        // Hide loading screen after a delay
+        const timer = setTimeout(() => {
+            setShowLoadingScreen(false);
+            // Set default subject and load its history or welcome message
+            const defaultSubject = 'biology';
+            changeSubject(defaultSubject);
+            // Start new chat session with the backend LLM (conceptual)
+            startNewChat();
+        }, 2000);
+
+        return () => clearTimeout(timer); // Cleanup timer
     }, []);
 
-    const saveChatHistory = useCallback((history: ChatHistory) => {
-        localStorage.setItem('eduai-chat-history', JSON.stringify(history));
-    }, []);
+    // Save chat history to localStorage whenever it changes
+    useEffect(() => {
+        // Ensure localStorage is available before accessing it
+        if (typeof window !== 'undefined' && window.localStorage) {
+            localStorage.setItem('eduai-chat-history', JSON.stringify(chatHistory));
+        }
+    }, [chatHistory]);
+
+    // --- Dynamically load Font Awesome CSS ---
+    useEffect(() => {
+        // Ensure document is available before manipulating it
+        if (typeof document !== 'undefined') {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+            document.head.appendChild(link);
+
+            return () => {
+                // Cleanup: remove the link when the component unmounts
+                if (document.head.contains(link)) {
+                    document.head.removeChild(link);
+                }
+            };
+        }
+    }, []); // Empty dependency array ensures this runs once on mount
 
     // --- Speech Recognition ---
     const initSpeechRecognition = useCallback(() => {
-        if ('webkitSpeechRecognition' in window) {
+        if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
+            setSpeechRecognitionSupported(true);
             const recognition = new window.webkitSpeechRecognition();
             recognition.continuous = false;
             recognition.interimResults = true;
 
             recognition.onstart = () => {
                 setIsRecording(true);
+                setMessageInput(''); // Clear input when starting to listen
                 if (messageInputRef.current) {
                     messageInputRef.current.placeholder = "Listening...";
                 }
             };
 
-            recognition.onresult = (event: any) => {
+            recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript;
                 setMessageInput(transcript);
             };
 
-            recognition.onerror = (event: any) => {
+            recognition.onerror = (event) => {
                 console.error('Speech recognition error', event.error);
                 stopRecording();
             };
@@ -179,18 +118,21 @@ const App: React.FC = () => {
             };
             recognitionRef.current = recognition;
         } else {
-            // Disable voice button if not supported
-            // This would typically be done by conditionally rendering the button or adding a disabled class
+            setSpeechRecognitionSupported(false);
         }
     }, []);
 
-    const startRecording = useCallback(() => {
+    useEffect(() => {
+        initSpeechRecognition();
+    }, [initSpeechRecognition]);
+
+    const startRecording = () => {
         if (recognitionRef.current) {
             recognitionRef.current.start();
         }
-    }, []);
+    };
 
-    const stopRecording = useCallback(() => {
+    const stopRecording = () => {
         if (recognitionRef.current) {
             recognitionRef.current.stop();
             setIsRecording(false);
@@ -198,601 +140,591 @@ const App: React.FC = () => {
                 messageInputRef.current.placeholder = "Ask anything about your subject...";
             }
         }
-    }, []);
+    };
 
-    const toggleRecording = useCallback(() => {
+    const toggleRecording = () => {
         if (isRecording) {
             stopRecording();
         } else {
             startRecording();
         }
-    }, [isRecording, startRecording, stopRecording]);
+    };
 
     // --- API Interaction (Conceptual) ---
-    const startNewChatSession = useCallback(async () => {
+    const startNewChat = useCallback(async () => {
         try {
             const response = await fetch('https://server-ef04.onrender.com/api/chat/new', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
             const data = await response.json();
             if (data.success) {
-                setCurrentChatId(data.chatId);
+                setCurrentChatId(data.chatId); // Store server-side chat ID
                 updateStatus('Connected to chat session');
             } else {
                 throw new Error(data.error || 'Failed to start chat session');
             }
-        } catch (error: any) {
+        } catch (error) {
             updateStatus('Error: ' + error.message, true);
         }
-    }, [updateStatus]);
+    }, []);
 
-    const sendMessage = useCallback(async (message: string) => {
+    const sendMessage = async (message: string) => {
         if (!currentChatId) {
             updateStatus('No active chat session. Please wait for initialization.', true);
             return;
         }
-        if (!currentSubject) {
-            updateStatus('Please select a subject first.', true);
-            return;
+
+        if (!currentSubject || typeof currentSubject !== 'string') return;
+        const subjectKey = currentSubject;
+        let currentSubjectHistory = chatHistory[subjectKey] || [];
+        let currentActiveChat = activeChat as ChatSession | null;
+
+        if (!currentActiveChat || currentActiveChat.subject !== subjectKey) {
+            // If no active chat or subject changed, create a new local chat session
+            currentActiveChat = {
+                id: Date.now(), // Unique ID for this local chat session
+                subject: subjectKey,
+                messages: []
+            };
+            // Add new chat to the beginning of the subject's history list
+            currentSubjectHistory = [currentActiveChat, ...currentSubjectHistory];
         }
-        if (!message.trim()) { // Prevent sending empty messages
-            return;
-        }
-        if (isTyping) { // Prevent multiple sends if already typing
-            return;
-        }
 
-        setIsTyping(true);
-        setMessageInput(''); // Clear input immediately
-        if (messageInputRef.current) {
-            messageInputRef.current.style.height = '40px'; // Reset textarea height
-            messageInputRef.current.style.padding = '5px 15px';
-        }
+        const newUserMessage = { sender: 'user', text: message, timestamp: Date.now() };
+        currentActiveChat.messages.push(newUserMessage);
 
-        const newUserMessage: Message = { id: crypto.randomUUID(), sender: 'user', text: message, timestamp: Date.now() };
+        setActiveChat(currentActiveChat); // Update active chat to include user message
+        setChatHistory(prevHistory => ({
+            ...prevHistory,
+            [subjectKey]: currentSubjectHistory
+        }));
 
-        // Update chat history with user message
-        setChatHistory(prevHistory => {
-            const newHistory = { ...prevHistory };
-            if (!newHistory[currentSubject]) {
-                newHistory[currentSubject] = [];
-            }
-            let currentSession = newHistory[currentSubject].find(s => s.id === activeChat?.id);
-            if (!currentSession) {
-                // Create a new session if activeChat is null or doesn't match
-                currentSession = { id: Date.now(), subject: currentSubject, messages: [] };
-                newHistory[currentSubject].unshift(currentSession);
-            }
-            currentSession.messages.push(newUserMessage);
-            saveChatHistory(newHistory);
-            return newHistory;
-        });
-
-        // Update activeChat for immediate UI display
-        setActiveChat(prevChat => {
-            if (prevChat) {
-                return { ...prevChat, messages: [...prevChat.messages, newUserMessage] };
-            }
-            // Fallback if prevChat was null (should be handled by initial subject load)
-            return { id: Date.now(), subject: currentSubject, messages: [newUserMessage] };
-        });
-
-        scrollToBottom(); // Scroll to show user message immediately
+        setIsSending(true); // Disable input while AI is typing
 
         try {
             const response = await fetch('https://server-ef04.onrender.com/api/chat/message', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chatId: currentChatId, message: message })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chatId: currentChatId, // Use server-side chat ID for API
+                    message: message
+                })
             });
 
             const data = await response.json();
-            let aiMessageText: string;
 
             if (data.success) {
-                aiMessageText = data.response;
+                // Save AI response to local history
+                const newAiMessage = { sender: 'ai', text: data.response, timestamp: Date.now() };
+                currentActiveChat.messages.push(newAiMessage);
+
+                setActiveChat({ ...currentActiveChat }); // Force update to trigger re-render
+                setChatHistory(prevHistory => ({
+                    ...prevHistory,
+                    [subjectKey]: currentSubjectHistory
+                }));
             } else {
-                aiMessageText = "Sorry, I encountered an error. Please try again.";
-                // Do not throw here, handle error message addition in this block
+                throw new Error(data.error || 'Failed to get response');
             }
-
-            const newAiMessage: Message = { id: crypto.randomUUID(), sender: 'ai', text: aiMessageText, timestamp: Date.now() };
-
-            // Update chat history with AI message
-            setChatHistory(prevHistory => {
-                const newHistory = { ...prevHistory };
-                const chatToUpdate = newHistory[currentSubject!]?.find(chat => chat.id === activeChat?.id); // Find the correct session
-                if (chatToUpdate) {
-                    chatToUpdate.messages.push(newAiMessage);
-                }
-                saveChatHistory(newHistory);
-                return newHistory;
-            });
-            // Update activeChat for UI display
-            setActiveChat(prevChat => {
-                if (prevChat) {
-                    return { ...prevChat, messages: [...prevChat.messages, newAiMessage] };
-                }
-                return null;
-            });
-
-        } catch (error: any) {
+        } catch (error) {
             console.error("Error sending message:", error);
             updateStatus('Error: ' + error.message, true);
-            const errorMessage: Message = { id: crypto.randomUUID(), sender: 'ai', text: "Sorry, I encountered an error. Please try again.", timestamp: Date.now() };
-
-            // Update chat history with error message
-            setChatHistory(prevHistory => {
-                const newHistory = { ...prevHistory };
-                const chatToUpdate = newHistory[currentSubject!]?.find(chat => chat.id === activeChat?.id);
-                if (chatToUpdate) {
-                    chatToUpdate.messages.push(errorMessage);
-                }
-                saveChatHistory(newHistory);
-                return newHistory;
-            });
-            // Update activeChat for UI display
-            setActiveChat(prevChat => {
-                if (prevChat) {
-                    return { ...prevChat, messages: [...prevChat.messages, errorMessage] };
-                }
-                return null;
-            });
+            // Append an error message from AI if the call fails
+            const errorAiMessage = { sender: 'ai', text: "Sorry, I encountered an error. Please try again.", timestamp: Date.now() };
+            currentActiveChat.messages.push(errorAiMessage);
+            setActiveChat({ ...currentActiveChat });
+            setChatHistory(prevHistory => ({
+                ...prevHistory,
+                [subjectKey]: currentSubjectHistory
+            }));
         } finally {
-            setIsTyping(false);
-            scrollToBottom();
+            setIsSending(false); // Re-enable input
+            if (chatContainerRef.current && 'scrollTop' in chatContainerRef.current && 'scrollHeight' in chatContainerRef.current) {
+                (chatContainerRef.current as HTMLElement).scrollTop = (chatContainerRef.current as HTMLElement).scrollHeight;
+            }
         }
-    }, [currentChatId, currentSubject, activeChat, saveChatHistory, updateStatus, scrollToBottom, isTyping]); // Added isTyping to dependency array
+    };
 
-    // --- Chat Management ---
-    const changeSubject = useCallback((subject: string) => {
+    // --- UI Helper Functions ---
+    const copyToClipboard = (text: string, buttonElement: HTMLElement) => {
+        // Ensure document is available before manipulating it
+        if (typeof document !== 'undefined') {
+            try {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+
+                const successMessage = document.createElement('div');
+                successMessage.classList.add('copy-success-message');
+                successMessage.textContent = 'Copied!';
+                if (buttonElement.parentNode) {
+                    buttonElement.parentNode.appendChild(successMessage);
+                }
+                successMessage.classList.add('visible');
+
+                setTimeout(() => {
+                    successMessage.classList.remove('visible');
+                    successMessage.addEventListener('transitionend', () => {
+                        if (successMessage.parentNode) {
+                            successMessage.parentNode.removeChild(successMessage);
+                        }
+                    }, { once: true });
+                }, 1500);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                updateStatus('Failed to copy text.', true);
+            }
+        }
+    };
+
+    const MessageBubble = ({ message, sender }: { message: string; sender: string }) => {
+        const contentRef = useRef<HTMLDivElement>(null);
+        const handleCopy = () => {
+            if (contentRef.current) {
+                const copyButton = (contentRef.current as HTMLElement).closest('.message')?.querySelector('.copy-button') as HTMLElement | null;
+                if (copyButton) {
+                    copyToClipboard((contentRef.current as HTMLElement).textContent || '', copyButton);
+                }
+            }
+        };
+        return (
+            <div className={`message ${sender}-message p-3 rounded-lg break-words mb-2 relative flex flex-col`}>
+                <div className="message-content" ref={contentRef} dangerouslySetInnerHTML={{ __html: sender === 'ai' ? marked.parse(message) : message }}></div>
+                <div
+                    className={`copy-button-container absolute top-2 ${sender === 'ai' ? 'right-2 justify-end' : 'left-2 justify-start'} flex`}
+                    style={{ zIndex: 2 }}
+                >
+                    <button onClick={handleCopy} className={`copy-button text-xs px-2 py-1 rounded-md ${sender === 'ai' ? 'ai-message' : ''}`}> <i className="fas fa-copy"></i> Copy </button>
+                </div>
+            </div>
+        );
+    };
+
+    const updateStatus = (message, isError = false) => {
+        setStatusMessage(message);
+        setIsStatusError(isError);
+        setTimeout(() => {
+            setStatusMessage('');
+        }, 3000);
+    };
+
+    const getSubjectDisplayName = (subject: string) => {
+        const subjectMap: { [key: string]: string } = {
+            'biology': 'Biology (Edexcel IAL)',
+            'chemistry': 'Chemistry (Edexcel IAL)',
+            'physics': 'Physics (Edexcel IAL)',
+            'math': 'Mathematics (Edexcel IAL)',
+            'chinese': 'Chinese (Edexcel IGCSE)',
+            'ielts-speaking': 'IELTS Speaking',
+            'ielts-writing': 'IELTS Writing',
+            'ielts-reading': 'IELTS Reading',
+            'ielts-listening': 'IELTS Listening',
+            'General': 'General',
+            'general': 'General',
+        };
+        return subjectMap[subject] || subject;
+    };
+
+    const getWelcomeMessage = (subject: string) => {
+        const welcomeMessages: { [key: string]: string } = {
+            'biology': "👋 Welcome to Biology! I'm your Edexcel IAL Biology tutor. I can help with topics like biological molecules, cells, genetics, ecology, and more. What would you like to learn about today?",
+            'chemistry': "👋 Welcome to Chemistry! I'm your Edexcel IAL Chemistry tutor. I can help with topics like atomic structure, bonding, energetics, organic chemistry, and more. What would you like to learn about today?",
+            'physics': "👋 Welcome to Physics! I'm your Edexcel IAL Physics tutor. I can help with topics like mechanics, electricity, waves, fields, nuclear physics, and more. What would you like to learn about today?",
+            'math': "👋 Welcome to Mathematics! I'm your Edexcel IAL Mathematics tutor. I can help with topics like pure mathematics, statistics, mechanics, and more. What would you like to learn about today?",
+            'chinese': "👋 Welcome to Chinese! I'm your Edexcel IGCSE Chinese tutor. I can help with topics like pure reading, writing, translating, Chinese topics and more. What would you like to learn about today?",
+            'ielts-speaking': "👋 Welcome to IELTS Speaking! I can help you prepare for your speaking test with practice questions, vocabulary, strategies, and feedback. How would you like to practice today?",
+            'ielts-writing': "👋 Welcome to IELTS Writing! I can help you improve your writing skills for both Task 1 and Task 2, including essay structure, vocabulary, grammar, and more. What aspect of IELTS writing would you like help with?",
+            'ielts-reading': "👋 Welcome to IELTS Reading! I can help you with reading strategies, practice questions, vocabulary building, and more to improve your reading skills. What aspect of IELTS reading would you like to work on?",
+            'ielts-listening': "👋 Welcome to IELTS Listening! I can help you with listening strategies, practice questions, note-taking skills, and more. How would you like to improve your listening skills today?",
+            'General': "👋 Welcome! How can I help you today?",
+            'general': "👋 Welcome! How can I help you today?",
+        };
+        return welcomeMessages[subject] || "👋 Welcome! How can I help you today?";
+    };
+
+    const changeSubject = (subject: string) => {
         setCurrentSubject(subject);
-        setIsHistoryModalOpen(false); // Close sidebar if open on mobile
-
-        // Load chat history for the selected subject
-        const subjectChats = chatHistory[subject];
-        if (subjectChats && subjectChats.length > 0) {
-            setActiveChat(subjectChats[0]); // Load the most recent chat
+        let chatForSubject: ChatSession;
+        if (chatHistory[subject] && chatHistory[subject].length > 0) {
+            chatForSubject = chatHistory[subject][0];
         } else {
-            // No history for this subject, set a new active chat with welcome message
-            const newChat: ChatSession = {
+            chatForSubject = {
                 id: Date.now(),
                 subject: subject,
-                messages: [{ id: crypto.randomUUID(), sender: 'ai', text: getWelcomeMessage(subject), timestamp: Date.now() }]
+                messages: [{ sender: 'ai', text: getWelcomeMessage(subject), timestamp: Date.now() }]
             };
-            setActiveChat(newChat);
-            setChatHistory(prevHistory => {
-                const updatedHistory = { ...prevHistory };
-                updatedHistory[subject] = [newChat];
-                saveChatHistory(updatedHistory);
-                return updatedHistory;
-            });
+            setChatHistory(prev => ({
+                ...prev,
+                [subject]: [chatForSubject, ...(prev[subject] || []) as ChatSession[]]
+            }));
         }
-        scrollToBottom();
-    }, [chatHistory, getWelcomeMessage, saveChatHistory, scrollToBottom]);
+        setActiveChat(chatForSubject);
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+            toggleSidebar(false as null | boolean);
+        }
+    };
 
-    const loadChat = useCallback((subject: string, chatId: number) => {
-        setCurrentSubject(subject);
+    const toggleSidebar = (forceState: boolean | null | undefined = null) => {
+        if (typeof window !== 'undefined' && window.innerWidth < 768 && sidebarMenuRef.current) {
+            const isOpen = sidebarMenuRef.current.classList.contains('translate-x-0');
+            const newState = forceState !== null && forceState !== undefined ? forceState : !isOpen;
+            if (newState) {
+                sidebarMenuRef.current.classList.remove('-translate-x-full');
+                sidebarMenuRef.current.classList.add('translate-x-0');
+            } else {
+                sidebarMenuRef.current.classList.remove('translate-x-0');
+                sidebarMenuRef.current.classList.add('-translate-x-full');
+            }
+        }
+    };
+
+    const loadChat = (subject: string, chatId: number) => {
+        if (currentSubject !== subject) {
+            setCurrentSubject(subject);
+        }
+
         const chat = chatHistory[subject]?.find(c => c.id === chatId);
         if (chat) {
             setActiveChat(chat);
+            setHistoryModalOpen(false); // Close modal after loading chat
         } else {
             console.warn(`Chat with ID ${chatId} not found for subject ${subject}.`);
         }
-        setIsHistoryModalOpen(false);
-        scrollToBottom();
-    }, [chatHistory, scrollToBottom]);
+    };
 
-    const clearAllHistory = useCallback(() => {
-        // Custom confirmation modal
-        const confirmClear = document.createElement('div');
-        confirmClear.classList.add('fixed', 'inset-0', 'bg-black/50', 'flex', 'items-center', 'justify-center', 'z-50');
-        confirmClear.innerHTML = `
-            <div class="bg-white p-6 rounded-lg shadow-xl text-center">
-                <p class="mb-4 text-gray-800">Are you sure you want to clear all chat history? This cannot be undone.</p>
-                <button id="confirm-clear-yes" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md mr-2">Yes, Clear</button>
-                <button id="confirm-clear-no" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md">No, Cancel</button>
-            </div>
-        `;
-        document.body.appendChild(confirmClear);
+    const clearHistory = () => {
+        setShowConfirmClearModal(true);
+    };
 
-        document.getElementById('confirm-clear-yes')?.addEventListener('click', () => {
+    const handleConfirmClear = (confirm: boolean) => {
+        setShowConfirmClearModal(false);
+        if (confirm) {
             setChatHistory({});
             setActiveChat(null);
-            saveChatHistory({});
-            if (currentSubject) {
-                const newChat: ChatSession = {
-                    id: Date.now(),
-                    subject: currentSubject,
-                    messages: [{ id: crypto.randomUUID(), sender: 'ai', text: getWelcomeMessage(currentSubject), timestamp: Date.now() }]
-                };
-                setActiveChat(newChat);
-                setChatHistory({ [currentSubject]: [newChat] });
-                saveChatHistory({ [currentSubject]: [newChat] });
-            }
-            document.body.removeChild(confirmClear);
-            setIsHistoryModalOpen(false); // Close history modal after clearing
-        });
+            // Re-initialize current subject with welcome message after clearing all history
+            const defaultSubject = currentSubject || 'biology'; // Keep current subject or default
+            changeSubject(defaultSubject);
+        }
+    };
 
-        document.getElementById('confirm-clear-no')?.addEventListener('click', () => {
-            document.body.removeChild(confirmClear);
-        });
-    }, [currentSubject, getWelcomeMessage, saveChatHistory]);
+    // --- Quiz Generation ---
+    const generateQuiz = async (numQuestions: string, difficulty: string, topic: string) => {
+        // Ensure document is available before manipulating it
+        if (typeof document === 'undefined') return;
 
-    // --- Quiz & Revision Plan Generation ---
-    const generateQuiz = useCallback(async () => {
-        if (!currentSubject) {
-            updateStatus('Please select a subject before generating a quiz.', true);
-            return;
+        const quizContentEl = document.getElementById('quiz-content');
+        if (quizContentEl) {
+            quizContentEl.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                        <i class="fas fa-spinner fa-spin text-2xl text-primary-500"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Generating Quiz</h3>
+                    <p class="text-gray-600">Please wait while we create your quiz...</p>
+                </div>
+            `;
         }
 
-        setQuizContentHtml(`
-            <div class="text-center py-8">
-                <div class="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto mb-4 animate-pulse">
-                    <i class="fas fa-spinner fa-spin text-2xl text-primary-500"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-gray-800 mb-2">Generating Quiz</h3>
-                <p class="text-gray-600">Please wait while we create your quiz...</p>
-            </div>
-        `);
-
-        let prompt = `Generate a ${quizNumQuestions}-question ${quizDifficulty} difficulty quiz about ${getSubjectDisplayName(currentSubject)}`;
-        if (quizTopic) {
-            prompt += ` focusing on ${quizTopic}`;
+        let prompt = `Generate a ${numQuestions}-question ${difficulty} difficulty quiz about ${getSubjectDisplayName(currentSubject)}`;
+        if (topic) {
+            prompt += ` focusing on ${topic}`;
         }
         prompt += `. Format: numbered questions with multiple choice options (A, B, C, D) and correct answer marked. Include explanation for each answer.`;
 
         try {
             const response = await fetch('https://server-ef04.onrender.com/api/chat/message', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chatId: currentChatId, message: prompt })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chatId: currentChatId,
+                    message: prompt
+                })
             });
             const data = await response.json();
 
             if (data.success) {
-                displayQuiz(data.response);
+                displayQuiz(data.response, numQuestions, difficulty, topic);
             } else {
                 throw new Error(data.error || 'Failed to generate quiz');
             }
-        } catch (error: any) {
-            setQuizContentHtml(`
-                <div class="text-center py-8">
-                    <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
+        } catch (error) {
+            if (quizContentEl) {
+                quizContentEl.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Error</h3>
+                        <p class="text-gray-600">${error.message}</p>
+                        <button id="retry-quiz-btn" class="mt-4 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition">
+                            Try Again
+                        </button>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Error</h3>
-                    <p class="text-gray-600">${error.message}</p>
-                    <button id="retry-quiz-btn" class="mt-4 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition">
-                        Try Again
-                    </button>
-                </div>
-            `);
-            // Add event listener for retry button
-            setTimeout(() => {
-                document.getElementById('retry-quiz-btn')?.addEventListener('click', () => {
-                    setIsQuizModalOpen(false);
-                    setTimeout(() => setIsQuizModalOpen(true), 300);
-                });
-            }, 0);
+                `;
+                if (document.getElementById('retry-quiz-btn')) {
+                    document.getElementById('retry-quiz-btn').onclick = () => {
+                        setQuizModalOpen(false);
+                        setTimeout(() => setQuizModalOpen(true), 300);
+                    };
+                }
+            }
         }
-    }, [currentSubject, quizNumQuestions, quizDifficulty, quizTopic, currentChatId, updateStatus, getSubjectDisplayName]);
+    };
 
-    const displayQuiz = useCallback((quizText: string) => {
-        setQuizContentHtml(`
-            <div class="p-4">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-semibold text-gray-800">Quiz: ${getSubjectDisplayName(currentSubject || '')}</h3>
-                    <div class="text-sm text-gray-500">${quizDifficulty} · ${quizNumQuestions} questions</div>
+    const displayQuiz = (quizText: string, numQuestions: string, difficulty: string, topic: string) => {
+        // Ensure document is available before manipulating it
+        if (typeof document === 'undefined') return;
+
+        const quizContentEl = document.getElementById('quiz-content');
+        if (quizContentEl) {
+            quizContentEl.innerHTML = `
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">Quiz: ${getSubjectDisplayName(currentSubject)}</h3>
+                        <div class="text-sm text-gray-500">${difficulty} · ${numQuestions} questions</div>
+                    </div>
+                    
+                    <div class="prose prose-sm md:prose-base max-w-none">
+                        ${marked.parse(quizText)}
+                    </div>
+                    
+                    <div class="mt-8 flex justify-between">
+                        <button id="new-quiz-btn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition text-gray-800">
+                            New Quiz
+                        </button>
+                        <button id="save-quiz-btn" class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition">
+                            Save to Chat
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="prose prose-sm md:prose-base max-w-none">
-                    ${marked.parse(quizText)}
-                </div>
-                
-                <div class="mt-8 flex justify-between">
-                    <button id="new-quiz-btn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition text-gray-800">
-                        New Quiz
-                    </button>
-                    <button id="save-quiz-btn" class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition">
-                        Save to Chat
-                    </button>
-                </div>
-            </div>
-        `);
+            `;
+            if (document.getElementById('new-quiz-btn')) {
+                document.getElementById('new-quiz-btn').onclick = () => {
+                    // Reset quiz form and show it again
+                    if (document.getElementById('quiz-num-questions')) document.getElementById('quiz-num-questions').value = '10';
+                    if (document.getElementById('quiz-difficulty')) document.getElementById('quiz-difficulty').value = 'medium';
+                    if (document.getElementById('quiz-topic')) document.getElementById('quiz-topic').value = '';
+                    setQuizModalOpen(false);
+                    setTimeout(() => setQuizModalOpen(true), 300);
+                };
+            }
+            if (document.getElementById('save-quiz-btn')) {
+                document.getElementById('save-quiz-btn').onclick = () => {
+                    const userPrompt = `Generate a ${numQuestions}-question ${difficulty} difficulty quiz${topic ? ` focusing on ${topic}` : ''}.`;
+                    // Add to history
+                    const subjectKey = typeof currentSubject === 'string' ? currentSubject : '';
+                    let currentSubjectHistory = chatHistory[subjectKey] || [];
+                    let currentActiveChat = activeChat;
 
-        setTimeout(() => {
-            document.getElementById('new-quiz-btn')?.addEventListener('click', () => {
-                setQuizNumQuestions('10');
-                setQuizDifficulty('medium');
-                setQuizTopic('');
-                setIsQuizModalOpen(false);
-                setTimeout(() => setIsQuizModalOpen(true), 300);
-            });
-
-            document.getElementById('save-quiz-btn')?.addEventListener('click', () => {
-                const newAiMessage: Message = { id: crypto.randomUUID(), sender: 'ai', text: quizText, timestamp: Date.now() };
-
-                setChatHistory(prevHistory => {
-                    const newHistory = { ...prevHistory };
-                    if (!newHistory[currentSubject!]) {
-                        newHistory[currentSubject!] = [];
-                    }
-                    let currentChat = activeChat;
-                    if (!currentChat || currentChat.subject !== currentSubject) {
-                        currentChat = {
+                    if (!currentActiveChat || currentActiveChat.subject !== subjectKey) {
+                        currentActiveChat = {
                             id: Date.now(),
-                            subject: currentSubject!,
+                            subject: subjectKey,
                             messages: []
                         };
-                        newHistory[currentSubject!].unshift(currentChat);
+                        currentSubjectHistory = [currentActiveChat, ...currentSubjectHistory];
                     }
-                    currentChat.messages.push(newAiMessage);
-                    setActiveChat(currentChat);
-                    saveChatHistory(newHistory);
-                    return newHistory;
-                });
-                setIsQuizModalOpen(false);
-                scrollToBottom();
-            });
-        }, 0);
-    }, [currentSubject, quizNumQuestions, quizDifficulty, quizTopic, getSubjectDisplayName, activeChat, saveChatHistory, scrollToBottom]);
 
-    const generateRevisionPlan = useCallback(async () => {
-        if (!currentSubject) {
-            updateStatus('Please select a subject before generating a revision plan.', true);
-            return;
+                    currentActiveChat.messages.push({ sender: 'user', text: userPrompt, timestamp: Date.now() });
+                    currentActiveChat.messages.push({ sender: 'ai', text: quizText, timestamp: Date.now() });
+
+                    setActiveChat(currentActiveChat);
+                    setChatHistory(prevHistory => ({
+                        ...prevHistory,
+                        [subjectKey]: currentSubjectHistory
+                    }));
+
+                    setQuizModalOpen(false);
+                };
+            }
         }
-        if (!revisionExamDate) {
+    };
+
+    // --- Revision Plan Generation ---
+    const generateRevisionPlan = async (examDate: string, studyHours: string, focusAreas: string) => {
+        // Ensure document is available before manipulating it
+        if (typeof document === 'undefined') return;
+
+        if (!examDate) {
             updateStatus('Please select an exam date to create a revision plan.', true);
             return;
         }
 
-        setRevisionContentHtml(`
-            <div class="text-center py-8">
-                <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4 animate-pulse">
-                    <i class="fas fa-spinner fa-spin text-2xl text-purple-500"></i>
+        const revisionContentEl = document.getElementById('revision-content');
+        if (revisionContentEl) {
+            revisionContentEl.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                        <i class="fas fa-spinner fa-spin text-2xl text-purple-500"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Creating Your Plan</h3>
+                    <p class="text-gray-600">Please wait while we design your personalized revision plan...</p>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-800 mb-2">Creating Your Plan</h3>
-                <p class="text-gray-600">Please wait while we design your personalized revision plan...</p>
-            </div>
-        `);
+            `;
+        }
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const examDay = new Date(revisionExamDate);
+        const examDay = new Date(examDate);
         examDay.setHours(0, 0, 0, 0);
 
-        const diffTime = Math.abs(examDay.getTime() - today.getTime());
+        const diffTime = Math.abs(examDay - today);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         const weeksUntilExam = Math.max(1, Math.ceil(diffDays / 7));
 
-        let prompt = `Create a ${weeksUntilExam}-week revision plan for ${getSubjectDisplayName(currentSubject)} with approximately ${revisionHours} study hours per week`;
-        if (revisionFocus) {
-            prompt += `, focusing on these areas: ${revisionFocus}`;
+        let prompt = `Create a ${weeksUntilExam}-week revision plan for ${getSubjectDisplayName(currentSubject)} with approximately ${studyHours} study hours per week`;
+        if (focusAreas) {
+            prompt += `, focusing on these areas: ${focusAreas}`;
         }
-        prompt += `. The exam is on ${revisionExamDate}. Include specific topics to study each week, recommended resources, and practice questions. Format as a week-by-week schedule.`;
+        prompt += `. The exam is on ${examDate}. Include specific topics to study each week, recommended resources, and practice questions. Format as a week-by-week schedule.`;
 
         try {
             const response = await fetch('https://server-ef04.onrender.com/api/chat/message', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chatId: currentChatId, message: prompt })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chatId: currentChatId,
+                    message: prompt
+                })
             });
             const data = await response.json();
 
             if (data.success) {
-                displayRevisionPlan(data.response);
+                displayRevisionPlan(data.response, examDate, studyHours, focusAreas);
             } else {
                 throw new Error(data.error || 'Failed to generate revision plan');
             }
-        } catch (error: any) {
-            setRevisionContentHtml(`
-                <div class="text-center py-8">
-                    <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
+        } catch (error) {
+            if (revisionContentEl) {
+                revisionContentEl.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Error</h3>
+                        <p class="text-gray-600">${error.message}</p>
+                        <button id="retry-plan-btn" class="mt-4 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
+                            Try Again
+                        </button>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Error</h3>
-                    <p class="text-gray-600">${error.message}</p>
-                    <button id="retry-plan-btn" class="mt-4 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
-                        Try Again
-                    </button>
-                </div>
-            `);
-            // Add event listener for retry button
-            setTimeout(() => {
-                document.getElementById('retry-plan-btn')?.addEventListener('click', () => {
-                    setIsRevisionModalIsOpen(false);
-                    setTimeout(() => setIsRevisionModalIsOpen(true), 300);
-                });
-            }, 0);
+                `;
+                if (document.getElementById('retry-plan-btn')) {
+                    document.getElementById('retry-plan-btn').onclick = () => {
+                        setRevisionModalOpen(false);
+                        setTimeout(() => setRevisionModalOpen(true), 300);
+                    };
+                }
+            }
         }
-    }, [currentSubject, revisionExamDate, revisionHours, revisionFocus, currentChatId, updateStatus, getSubjectDisplayName]);
+    };
 
-    const displayRevisionPlan = useCallback((planText: string) => {
-        setRevisionContentHtml(`
-            <div class="p-4">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-semibold text-gray-800">Revision Plan: ${getSubjectDisplayName(currentSubject || '')}</h3>
-                    <div class="text-sm text-gray-500">Exam date: ${new Date(revisionExamDate).toLocaleDateString()}</div>
+    const displayRevisionPlan = (planText: string, examDate: string, studyHours: string, focusAreas: string) => {
+        // Ensure document is available before manipulating it
+        if (typeof document === 'undefined') return;
+
+        const revisionContentEl = document.getElementById('revision-content');
+        if (revisionContentEl) {
+            revisionContentEl.innerHTML = `
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">Revision Plan: ${getSubjectDisplayName(currentSubject)}</h3>
+                        <div class="text-sm text-gray-500">Exam date: ${new Date(examDate).toLocaleDateString()}</div>
+                    </div>
+                    
+                    <div class="prose prose-sm md:prose-base max-w-none">
+                        ${marked.parse(planText)}
+                    </div>
+                    
+                    <div class="mt-8 flex justify-between">
+                        <button id="new-plan-btn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition text-gray-800">
+                            New Plan
+                        </button>
+                        <button id="save-plan-btn" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
+                            Save to Chat
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="prose prose-sm md:prose-base max-w-none">
-                    ${marked.parse(planText)}
-                </div>
-                
-                <div class="mt-8 flex justify-between">
-                    <button id="new-plan-btn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition text-gray-800">
-                        New Plan
-                    </button>
-                    <button id="save-plan-btn" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
-                        Save to Chat
-                    </button>
-                </div>
-            </div>
-        `);
+            `;
+            if (document.getElementById('new-plan-btn')) {
+                document.getElementById('new-plan-btn').onclick = () => {
+                    const defaultDate = new Date();
+                    defaultDate.setDate(defaultDate.getDate() + 30);
+                    if (document.getElementById('revision-exam-date')) document.getElementById('revision-exam-date').valueAsDate = defaultDate;
+                    if (document.getElementById('revision-hours')) document.getElementById('revision-hours').value = '10';
+                    if (document.getElementById('revision-focus')) document.getElementById('revision-focus').value = '';
+                    setRevisionModalOpen(false);
+                    setTimeout(() => setRevisionModalOpen(true), 300);
+                };
+            }
+            if (document.getElementById('save-plan-btn')) {
+                document.getElementById('save-plan-btn').onclick = () => {
+                    const userPrompt = `Generate a revision plan for ${getSubjectDisplayName(currentSubject)} (Exam: ${new Date(examDate).toLocaleDateString()}, ${studyHours} hours/week${focusAreas ? `, Focus: ${focusAreas}` : ''})`;
 
-        setTimeout(() => {
-            document.getElementById('new-plan-btn')?.addEventListener('click', () => {
-                const defaultDate = new Date();
-                defaultDate.setDate(defaultDate.getDate() + 30);
-                setRevisionExamDate(defaultDate.toISOString().split('T')[0]);
-                setRevisionHours('10');
-                setRevisionFocus('');
-                setIsRevisionModalIsOpen(false);
-                setTimeout(() => setIsRevisionModalIsOpen(true), 300);
-            });
+                    const subjectKey = typeof currentSubject === 'string' ? currentSubject : '';
+                    let currentSubjectHistory = chatHistory[subjectKey] || [];
+                    let currentActiveChat = activeChat;
 
-            document.getElementById('save-plan-btn')?.addEventListener('click', () => {
-                const newAiMessage: Message = { id: crypto.randomUUID(), sender: 'ai', text: planText, timestamp: Date.now() };
-
-                setChatHistory(prevHistory => {
-                    const newHistory = { ...prevHistory };
-                    if (!newHistory[currentSubject!]) {
-                        newHistory[currentSubject!] = [];
-                    }
-                    let currentChat = activeChat;
-                    if (!currentChat || currentChat.subject !== currentSubject) {
-                        currentChat = {
+                    if (!currentActiveChat || currentActiveChat.subject !== subjectKey) {
+                        currentActiveChat = {
                             id: Date.now(),
-                            subject: currentSubject!,
+                            subject: subjectKey,
                             messages: []
                         };
-                        newHistory[currentSubject!].unshift(currentChat);
+                        currentSubjectHistory = [currentActiveChat, ...currentSubjectHistory];
                     }
-                    currentChat.messages.push(newAiMessage);
-                    setActiveChat(currentChat);
-                    saveChatHistory(newHistory);
-                    return newHistory;
-                });
-                setIsRevisionModalIsOpen(false);
-                scrollToBottom();
-            });
-        }, 0);
-    }, [currentSubject, revisionExamDate, revisionHours, revisionFocus, getSubjectDisplayName, activeChat, saveChatHistory, scrollToBottom]);
 
-    // --- Effects ---
+                    currentActiveChat.messages.push({ sender: 'user', text: userPrompt, timestamp: Date.now() });
+                    currentActiveChat.messages.push({ sender: 'ai', text: planText, timestamp: Date.now() });
 
-    // Initial load and setup
-    useEffect(() => {
-        loadChatHistory();
-        initSpeechRecognition();
-        startNewChatSession();
+                    setActiveChat(currentActiveChat);
+                    setChatHistory(prevHistory => ({
+                        ...prevHistory,
+                        [subjectKey]: currentSubjectHistory
+                    }));
 
-        // Set default exam date for revision plan
-        const defaultDate = new Date();
-        defaultDate.setDate(defaultDate.getDate() + 30);
-        setRevisionExamDate(defaultDate.toISOString().split('T')[0]);
-
-        setTimeout(() => {
-            setIsLoading(false);
-            // Set default subject after loading and initial setup
-            setCurrentSubject('biology');
-        }, 2000);
-    }, [loadChatHistory, initSpeechRecognition, startNewChatSession]);
-
-    // Effect to update active chat when currentSubject or chatHistory changes
-    useEffect(() => {
-        if (currentSubject && chatHistory[currentSubject] && chatHistory[currentSubject].length > 0) {
-            setActiveChat(chatHistory[currentSubject][0]); // Load most recent chat
-        } else if (currentSubject) {
-            // If no history for subject, create a new chat with welcome message
-            const newChat: ChatSession = {
-                id: Date.now(),
-                subject: currentSubject,
-                messages: [{ id: crypto.randomUUID(), sender: 'ai', text: getWelcomeMessage(currentSubject), timestamp: Date.now() }]
-            };
-            setActiveChat(newChat);
-            setChatHistory(prevHistory => {
-                const updatedHistory = { ...prevHistory };
-                updatedHistory[currentSubject] = [newChat];
-                saveChatHistory(updatedHistory);
-                return updatedHistory;
-            });
+                    setRevisionModalOpen(false);
+                };
+            }
         }
-        scrollToBottom();
-    }, [currentSubject, chatHistory, getWelcomeMessage, saveChatHistory, scrollToBottom]);
+    };
 
-    // Effect for scrolling to bottom of chat
-    useEffect(() => {
-        scrollToBottom();
-    }, [activeChat, scrollToBottom]); // Scroll when activeChat messages change
-
-    // Effect for auto-expanding textarea
+    // Auto-expanding textarea logic
     useEffect(() => {
         const textarea = messageInputRef.current;
         if (textarea) {
-            textarea.style.height = 'auto'; // Reset height to get the correct scrollHeight
-            textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`; // Set height, max 200px
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 300) + 'px';
+            const container = textarea.parentElement;
+            if (container) {
+                container.style.height = textarea.style.height;
+            }
         }
-    }, [messageInput]); // Re-run when messageInput changes
+    }, [messageInput]);
 
-    // --- Render Logic ---
-    const renderMessages = (messages: Message[]) => {
-        return messages.map((msg) => ( // Removed index, using msg.id for key
-            <div key={msg.id} className={`message ${msg.sender}-message p-3 rounded-lg break-words mb-2 relative`}>
-                <div className="message-content" dangerouslySetInnerHTML={{ __html: msg.sender === 'ai' ? marked.parse(msg.text) : msg.text }}></div>
-                <div className="copy-button-container">
-                    <button
-                        className={`copy-button text-xs px-2 py-1 rounded-md ${msg.sender === 'ai' ? 'ai-message-copy-button' : 'user-message-copy-button'}`}
-                        title="Copy to clipboard"
-                        onClick={(e) => copyToClipboard(msg.text, e.currentTarget)}
-                    >
-                        <i className="fas fa-copy"></i> Copy
-                    </button>
-                </div>
-            </div>
-        ));
-    };
-
-    const renderSidebarSubjects = () => {
-        const subjects = [
-            { id: 'biology', name: 'Biology', icon: 'fas fa-dna', color: 'text-emerald-500', category: 'Edexcel IAL' },
-            { id: 'chemistry', name: 'Chemistry', icon: 'fas fa-flask', color: 'text-red-400', category: 'Edexcel IAL' },
-            { id: 'physics', name: 'Physics', icon: 'fas fa-atom', color: 'text-blue-500', category: 'Edexcel IAL' },
-            { id: 'math', name: 'Mathematics', icon: 'fas fa-calculator', color: 'text-amber-500', category: 'Edexcel IAL' },
-            { id: 'chinese', name: 'Chinese', icon: 'fas fa-language', color: 'text-purple-500', category: 'Edexcel IGCSE' },
-            { id: 'ielts-speaking', name: 'Speaking', icon: 'fas fa-microphone', color: 'text-red-500', category: 'IELTS' },
-            { id: 'ielts-writing', name: 'Writing', icon: 'fas fa-pen-fancy', color: 'text-red-500', category: 'IELTS' },
-            { id: 'ielts-reading', name: 'Reading', icon: 'fas fa-book-open', color: 'text-red-500', category: 'IELTS' },
-            { id: 'ielts-listening', name: 'Listening', icon: 'fas fa-headphones', color: 'text-red-500', category: 'IELTS' },
-        ];
-
-        const categories: { [key: string]: typeof subjects } = subjects.reduce((acc, subject) => {
-            (acc[subject.category] = acc[subject.category] || []).push(subject);
-            return acc;
-        }, {} as { [key: string]: typeof subjects });
-
-        return (
-            <>
-                {Object.entries(categories).map(([category, subjectsInCategory]) => (
-                    <React.Fragment key={category}>
-                        <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-[20px] mt-[10px] h-[30px]">{category}</h3>
-                        {subjectsInCategory.map(subject => (
-                            <button
-                                key={subject.id}
-                                data-sidebar-subject={subject.id}
-                                className={`sidebar-subject-btn w-full text-left px-4 py-2 hover:bg-gray-100 hover:text-black transition-all duration-150 rounded-lg mb-1 flex items-center gap-2
-                                    ${currentSubject === subject.id ? 'active-sidebar-subject bg-blue-100 text-blue-600 font-semibold shadow-sm' : ''}`}
-                                onClick={() => changeSubject(subject.id)}
-                            >
-                                <i className={`${subject.icon} mr-2 ${subject.color} ${currentSubject === subject.id ? 'text-blue-600' : ''}`}></i> {subject.name}
-                            </button>
-                        ))}
-                    </React.Fragment>
-                ))}
-            </>
-        );
-    };
+    // Scroll to bottom of chat container when messages update
+    useEffect(() => {
+        if (chatContainerRef.current && 'scrollTop' in chatContainerRef.current && 'scrollHeight' in chatContainerRef.current) {
+            (chatContainerRef.current as HTMLElement).scrollTop = (chatContainerRef.current as HTMLElement).scrollHeight;
+        }
+    }, [activeChat]);
 
     return (
-        <div className="bg-gray-100 flex items-center justify-center min-h-screen p-4 transition-colors duration-300">
+        <div className="flex h-full items-center justify-center p-0 transition-colors duration-300">
             <style>
                 {`
                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-                /* Import Font Awesome */
-                @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
                 
                 :root {
                     --primary-color: #1E90FF;
@@ -806,13 +738,21 @@ const App: React.FC = () => {
                     --text-secondary: #4a5568;
                 }
 
-             
+                body {
+                    font-family: 'Inter', sans-serif;
+                    margin: 0;
+                    height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background-color: #f0f0f0;
+                }
 
                 #eduai-container {
-                    width: 95vw;
+                    width: 90vw;
                     max-width: 1000px;
-                    
-                    margin: auto;
+                    height: 90vh;
+                    margin: 0 auto;
                 }
 
                 .blur-container {
@@ -834,7 +774,6 @@ const App: React.FC = () => {
                     box-shadow: 0 10px 15px -3px var(--shadow-color);
                 }
 
-                /* Custom scrollbar */
                 ::-webkit-scrollbar {
                     width: 6px;
                     height: 6px;
@@ -849,7 +788,6 @@ const App: React.FC = () => {
                     border-radius: 3px;
                 }
 
-                /* Message animations */
                 .user-message {
                     animation: slideIn 0.3s ease-out;
                     align-self: flex-end;
@@ -870,7 +808,6 @@ const App: React.FC = () => {
                     width: fit-content;
                 }
 
-                /* Typing indicator */
                 .typing-indicator {
                     display: flex;
                     align-items: center;
@@ -912,7 +849,6 @@ const App: React.FC = () => {
                     }
                 }
                 
-                /* Markdown styles for chat messages */
                 .message-content {
                     width: 100%;
                     overflow-wrap: break-word;
@@ -972,24 +908,31 @@ const App: React.FC = () => {
                 }
 
                 .textarea-container {
-                    position: relative;
-                    min-height: 40px; /* Changed from h-[40px] */
+                    min-height: 40px;
+                    height: 40px;
                     display: flex;
                     align-items: flex-end;
                 }
 
                 #message-input {
                     min-height: 40px;
-                    max-height: 200px;
-                    overflow-y: auto;
+                    max-height: 300px;
+                    padding: 5px 15px;
+                    border-radius: 20px;
+                    background-color: #f5f5f5;
+                    transition: background 0.2s;
                     resize: none;
-                    line-height: 1;
-                    justify-content: center;
-                    align-content: center;
-                    padding: 10px 10px;
+                    line-height: 30px;
+                    box-sizing: border-box;
                 }
-                #message-input::-webkit-scrollbar {
-                    display: none;
+                #message-input:disabled {
+                    background-color: #f5f5f5;
+                    color: #b0b0b0;
+                    opacity: 1;
+                }
+                .flex-grow.relative.textarea-container {
+                    min-height: 40px;
+                    height: 40px;
                 }
                 textarea:focus {
                     border-color: #1E90ff;
@@ -998,12 +941,20 @@ const App: React.FC = () => {
                     color: none;
                 }
 
-                /* Copy Button Styles */
                 .copy-button-container {
-                    position: relative;
-                    margin-top: 0.5rem;
-                    display: flex;
+                    position: absolute;
+                    top: 0.5rem;
+                    z-index: 2;
+                }
+                .message.ai-message .copy-button-container {
+                    right: 0.5rem;
+                    left: auto;
                     justify-content: flex-end;
+                }
+                .message.user-message .copy-button-container {
+                    left: 0.5rem;
+                    right: auto;
+                    justify-content: flex-start;
                 }
 
                 .copy-button {
@@ -1054,23 +1005,14 @@ const App: React.FC = () => {
                     opacity: 1;
                 }
 
-                /* Sidebar specific styles */
                 #sidebar-menu {
                     will-change: transform;
                 }
-
-                .sidebar-subject-btn.active-sidebar-subject {
-                    background: #e0e7ff !important;
-                    color: #2563eb !important;
-                    font-weight: 600;
-                    border-radius: 0.75rem;
-                    box-shadow: 0 2px 8px 0 #2563eb10;
-                }
                 `}
             </style>
-            <div id="eduai-container" className="w-full h-[90vh] rounded-xl overflow-hidden shadow-xl border border-gray-200 relative transition-all duration-300 ease-in-out flex flex-col md:flex-row">
+            <div id="eduai-container" className="w-full h-[90vh] rounded-xl overflow-hidden shadow-xl border m-0 border-gray-200 relative transition-all duration-300 ease-in-out flex flex-col md:flex-row">
                 {/* Loading Screen */}
-                {isLoading && (
+                {showLoadingScreen && (
                     <div id="loading-screen" className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-400 to-blue-600 z-50 animate-fade-in">
                         <div className="w-24 h-24 mb-8 relative">
                             <div className="absolute inset-0 rounded-full border-4 border-blue-200 border-t-transparent animate-spin"></div>
@@ -1084,253 +1026,12 @@ const App: React.FC = () => {
                 )}
 
                 {/* Sidebar Menu */}
-                <div id="sidebar-menu" className={`absolute left-0 top-0 h-full w-64 bg-white/50 blur-container transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-40 border-r border-gray-200 overflow-y-auto transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:bg-white md:shadow-md md:z-auto md:flex-shrink-0 md:flex-grow-0 md:rounded-l-xl`}>
-                    <div className="p-4 border-b">
-                        <h3 className="font-bold text-xl text-primary-500" style={{ marginBottom: 0, paddingBottom: 0 }}>AI Teacher Pro</h3>
+                <div ref={sidebarMenuRef} id="sidebar-menu" className="absolute left-0 top-0 h-full w-64 bg-white/50 blur-container transform -translate-x-full z-40 border-r border-gray-200 overflow-y-auto transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:bg-white md:shadow-md md:z-auto md:flex-shrink-0 md:flex-grow-0 md:rounded-l-xl">
+                    <div className="p-4 h-[60px] border-b border-b-[#00000020]">
+                        <h3 className="font-bold text-xl text-primary-500" style={{ marginBottom: 0, paddingBottom: 0 }}>AI Teacher <span className="text-gray-300 font-medium">Pro</span></h3>
                     </div>
                     <div className="py-4">
-                        {renderSidebarSubjects()}
-                        <div className="border-t mt-4 pt-4">
-                            <button id="clear-history-btn" className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700" onClick={clearAllHistory}>
-                                <i className="fas fa-trash-alt mr-2 text-gray-500"></i> Clear History
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Main App Interface */}
-                <div id="app-interface" className={`h-full flex flex-col bg-gray-50 relative ${isLoading ? 'hidden' : 'flex'} flex-grow md:rounded-r-xl md:overflow-hidden`}>
-                    {/* Header */}
-                    <header className="flex justify-between items-center p-4 bg-white border-b h-[60px]">
-                        <div className="flex items-center">
-                            <button id="menu-toggle" className="p-2 rounded-full hover:bg-gray-100 transition mr-2 block md:hidden" style={{ width: 40, height: 40 }} onClick={() => { setIsHistoryModalOpen(false); setIsSidebarOpen(true); }}>
-                                <i className="fas fa-bars text-gray-600"></i>
-                            </button>
-                            <div>
-                                <h1 id="current-subject-header" className="text-xl font-bold text-gray-800" style={{ marginBottom: 0, paddingBottom: 0 }}>{currentSubject ? getSubjectDisplayName(currentSubject) : 'AI Teach'}</h1>
-                                <p className="text-xs text-gray-500 mt-1">Gemini 2.5 Flash</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <button id="quiz-btn" className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm bg-blue-100 text-primary-500 hover:bg-blue-200 hover:text-primary-500 transition" onClick={() => setIsQuizModalOpen(true)}>
-                                <i className="fas fa-question-circle text-xs"></i>
-                                <span>Quiz</span>
-                            </button>
-                            <button id="revision-btn" className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm bg-purple-100 text-purple-500 hover:text-purple-500 hover:bg-purple-200 transition" onClick={() => setIsRevisionModalIsOpen(true)}>
-                                <i className="fas fa-book text-xs"></i>
-                                <span>Plan</span>
-                            </button>
-                            <button id="chat-history-btn" className="p-0 rounded-full hover:bg-gray-100 transition justify-center" style={{ width: 40, height: 40 }} onClick={() => setIsHistoryModalOpen(true)}>
-                                <i className="fas fa-history text-gray-600"></i>
-                            </button>
-                            {/* Settings / Tone Button - Placeholder for now */}
-                            <button id="open-tone-modal-btn" className="p-0 rounded-full hover:bg-gray-100 transition text-gray-600 justify-center" style={{ width: 40, height: 40 }}>
-                                <i className="fas fa-cog text-xl"></i>
-                            </button>
-                        </div>
-                    </header>
-
-                    {/* Chat Container */}
-                    <div id="chat-container" ref={chatContainerRef} className="flex-grow overflow-y-auto text-[12px] p-4 space-y-4 bg-gray-50 pb-20 flex flex-col">
-                        {activeChat?.messages && renderMessages(activeChat.messages)}
-                        {isTyping && (
-                            <div className="typing-indicator ai-message p-3 rounded-lg">
-                                <span></span><span></span><span></span>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Input Area */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 blur-container flex justify-center z-10" style={{ borderTop: '1px solid rgba(0, 0, 0, 0.125)' }}>
-                        <div className="flex gap-3 w-full max-w-xl p-0 min-h-[40px] align-content-flex-end justify-content-flex-end"> {/* Changed h-[40px] to min-h-[40px] */}
-                            <button id="voice-btn" className={`p-2 rounded-full hover:bg-gray-100 transition ${isRecording ? 'text-primary-500' : 'text-gray-500'}`} title="Use voice input" style={{ width: 40, height: 40 }} onClick={toggleRecording}>
-                                <i className={`fas ${isRecording ? 'fa-microphone-slash' : 'fa-microphone'}`}></i>
-                            </button>
-                            <div className="flex-grow relative textarea-container"> {/* Removed h-[40px] from here */}
-                                <textarea
-                                    id="message-input"
-                                    ref={messageInputRef}
-                                    rows={1}
-                                    placeholder={isRecording ? "Listening..." : "Ask anything about your subject..."}
-                                    className="w-full bg-gray-100 rounded-[25px] focus:outline-none blur-container focus:ring-2 focus:ring-primary-500 text-gray-800 resize-none"
-                                    value={messageInput}
-                                    onChange={(e) => setMessageInput(e.target.value)}
-                                    onKeyPress={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                            e.preventDefault();
-                                            sendMessage(messageInput);
-                                        }
-                                    }}
-                                    disabled={isTyping}
-                                ></textarea>
-                                {statusMessage && (
-                                    <div id="status" className={`absolute text-xs bottom-full right-1 m-0 px-2 py-1 rounded-md ${isErrorStatus ? 'bg-red-500' : 'bg-black'} text-white`}>
-                                        {statusMessage}
-                                    </div>
-                                )}
-                            </div>
-                            <button id="send-button" className={`px-[10px] bg-primary-500 rounded-full hover:bg-primary-600 transition text-white ${isTyping ? 'opacity-50 cursor-not-allowed' : ''}`} style={{ width: 40, height: 40, backgroundColor: '#2563eb' }} onClick={() => sendMessage(messageInput)} disabled={isTyping}>
-                                <i className="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Quiz Modal */}
-                {isQuizModalOpen && (
-                    <div id="quiz-modal" className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col animate-fade-in">
-                        <div className="p-4 border-b flex justify-between items-center">
-                            <h2 className="font-semibold text-xl text-gray-800">Quiz Mode</h2>
-                            <button id="close-quiz-btn" className="p-2 rounded-full hover:bg-gray-100 transition" onClick={() => setIsQuizModalOpen(false)}>
-                                <i className="fas fa-times text-gray-600"></i>
-                            </button>
-                        </div>
-                        <div id="quiz-content" className="flex-grow p-6 overflow-y-auto">
-                            {quizContentHtml ? (
-                                <div dangerouslySetInnerHTML={{ __html: quizContentHtml }} />
-                            ) : (
-                                <div className="text-center py-8">
-                                    <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto mb-4 animate-pulse">
-                                        <i className="fas fa-question-circle text-2xl text-primary-500"></i>
-                                    </div>
-                                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Start a Quiz</h3>
-                                    <p className="text-gray-600 mb-6">Test your knowledge with a subject-specific quiz</p>
-
-                                    <div className="max-w-md mx-auto">
-                                        <div className="mb-4">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Number of questions</label>
-                                            <select id="quiz-num-questions" className="w-full p-2 border rounded-lg bg-white text-gray-800" value={quizNumQuestions} onChange={(e) => setQuizNumQuestions(e.target.value)}>
-                                                <option value="5">5 questions</option>
-                                                <option value="10">10 questions</option>
-                                                <option value="15">15 questions</option>
-                                                <option value="20">20 questions</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="mb-4">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Difficulty</label>
-                                            <select id="quiz-difficulty" className="w-full p-2 border rounded-lg bg-white text-gray-800" value={quizDifficulty} onChange={(e) => setQuizDifficulty(e.target.value)}>
-                                                <option value="easy">Easy</option>
-                                                <option value="medium">Medium</option>
-                                                <option value="hard">Hard</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="mb-6">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Topic (optional)</label>
-                                            <input type="text" id="quiz-topic" placeholder="Leave blank for mixed topics" className="w-full p-2 border rounded-lg bg-white text-gray-800" value={quizTopic} onChange={(e) => setQuizTopic(e.target.value)} />
-                                        </div>
-
-                                        <button id="start-quiz-btn" className="w-full py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition" onClick={generateQuiz}>
-                                            Start Quiz
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Revision Plan Modal */}
-                {isRevisionModalOpen && (
-                    <div id="revision-modal" className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col animate-fade-in">
-                        <div className="p-4 border-b flex justify-between items-center">
-                            <h2 className="font-semibold text-xl text-gray-800">Revision Plan</h2>
-                            <button id="close-revision-btn" className="p-2 rounded-full hover:bg-gray-100 transition" onClick={() => setIsRevisionModalIsOpen(false)}>
-                                <i className="fas fa-times text-gray-600"></i>
-                            </button>
-                        </div>
-                        <div id="revision-content" className="flex-grow p-6 overflow-y-auto">
-                            {revisionContentHtml ? (
-                                <div dangerouslySetInnerHTML={{ __html: revisionContentHtml }} />
-                            ) : (
-                                <div className="text-center py-8">
-                                    <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
-                                        <i className="fas fa-calendar-alt text-2xl text-purple-500"></i>
-                                    </div>
-                                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Create a Revision Plan</h3>
-                                    <p className="text-gray-600 mb-6">Let AI create a personalized study schedule</p>
-
-                                    <div className="max-w-md mx-auto">
-                                        <div className="mb-4">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Exam Date</label>
-                                            <input type="date" id="revision-exam-date" className="w-full p-2 border rounded-lg bg-white text-gray-800" value={revisionExamDate} onChange={(e) => setRevisionExamDate(e.target.value)} />
-                                        </div>
-
-                                        <div className="mb-4">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Study hours per week</label>
-                                            <select id="revision-hours" className="w-full p-2 border rounded-lg bg-white text-gray-800" value={revisionHours} onChange={(e) => setRevisionHours(e.target.value)}>
-                                                <option value="5">~5 hours</option>
-                                                <option value="10">10 hours</option>
-                                                <option value="15">~15 hours</option>
-                                                <option value="20">~20 hours</option>
-                                                <option value="30">~30 hours</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="mb-6">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Focus areas (optional)</label>
-                                            <textarea id="revision-focus" rows={3} placeholder="Any specific topics you want to focus on?" className="w-full p-2 border rounded-lg bg-white text-gray-800 resize-none" value={revisionFocus} onChange={(e) => setRevisionFocus(e.target.value)}></textarea>
-                                        </div>
-
-                                        <button id="create-plan-btn" className="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition" onClick={generateRevisionPlan}>
-                                            Create Plan
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Chat History Modal */}
-                {isHistoryModalOpen && (
-                    <div id="history-modal" className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col animate-fade-in">
-                        <div className="p-4 border-b flex justify-between items-center">
-                            <h2 className="font-semibold text-xl text-gray-800">Chat History</h2>
-                            <button id="close-history-btn" className="p-2 rounded-full hover:bg-gray-100 transition" onClick={() => setIsHistoryModalOpen(false)}>
-                                <i className="fas fa-times text-gray-600"></i>
-                            </button>
-                        </div>
-                        <div id="history-content" className="flex-grow p-4 overflow-y-auto">
-                            {Object.keys(chatHistory).length === 0 ? (
-                                <div id="no-history" className="text-center py-8 text-gray-500">
-                                    <i className="fas fa-history text-4xl mb-2"></i>
-                                    <p>No chat history yet</p>
-                                </div>
-                            ) : (
-                                <div id="history-list" className="space-y-3">
-                                    {Object.entries(chatHistory).map(([subject, sessions]) => (
-                                        <React.Fragment key={subject}>
-                                            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-4">{getSubjectDisplayName(subject)}</h3>
-                                            {sessions.map(chat => {
-                                                const firstUserMsg = chat.messages.find(m => m.sender === 'user');
-                                                let preview = firstUserMsg ? firstUserMsg.text : (chat.messages[0]?.text || 'No message preview');
-                                                if (preview.length > 40) {
-                                                    preview = preview.substring(0, 40) + '...';
-                                                }
-                                                const date = new Date(chat.id);
-                                                const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                                                return (
-                                                    <div key={chat.id} className="glass-card p-3 rounded-lg cursor-pointer hover:bg-gray-100" onClick={() => loadChat(subject, chat.id)}>
-                                                        <div className="flex justify-between items-start">
-                                                            <div className="text-sm font-medium text-gray-800">{preview}</div>
-                                                            <div className="text-xs text-gray-500">{dateStr}</div>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </React.Fragment>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-};
-
-export default App;
+                        {/* General subject on top */}
+                        <button
+                            onClick={() => changeSubject('General')}
+                            className={`

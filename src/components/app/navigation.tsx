@@ -60,7 +60,7 @@ export default function AppNavigation() {
                 "flex items-center gap-4 p-3 rounded-lg transition-all duration-300",
                 isActive
                   ? "bg-blue-50 text-blue-700 font-medium"
-                  : "text-black hover:bg-gray-100 hover:text-gray-900"
+                  : "text-black hover:bg-[#00000010] hover:text-gray-900"
               )}
             >
               <Icon size={20} className="min-w-[20px] min-h-[20px] m-0" />
