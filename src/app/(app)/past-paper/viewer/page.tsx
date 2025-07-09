@@ -9,6 +9,7 @@ interface PaperData {
     year: string;
     examBoard: string;
     examLevel: string;
+    type?: string;
 }
 
 // Define the type for the timer state
@@ -25,7 +26,7 @@ const EXAM_MONTH_MAP: { [key: string]: string } = {
     'Nov': 'November'
 };
 
-const IAL_SUBJECT_PREFIXES: { [key]: string } = {
+const IAL_SUBJECT_PREFIXES: { [key: string]: string } = {
     'Physics': 'WPH',
     'Chemistry': 'WCH',
     'Biology': 'WBI'
@@ -111,7 +112,7 @@ const App: React.FC = () => {
                 default: return '';
             }
         } else {
-            const prefix = IAL_SUBJECT_PREFIXES[subject];
+            const prefix = IAL_SUBJECT_PREFIXES[subject as string];
             const unitNumberMatch = paper.match(/Unit\s*(\d+)/i);
             if (prefix && unitNumberMatch && unitNumberMatch[1]) {
                 return `${prefix}1${unitNumberMatch[1]}`;
@@ -348,7 +349,7 @@ const App: React.FC = () => {
         } else {
             setCurrentMode('doPaper');
         }
-        setCurrentLayout('splitScreen'); // Always start in split screen
+        setCurrentLayout('fullScreen'); // Always start in split screen
 
         setDefaultTimerDuration(params);
 
@@ -438,6 +439,20 @@ const App: React.FC = () => {
             </div>
         );
     };
+
+    useEffect(() => {
+        if (typeof document !== 'undefined') {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+            document.head.appendChild(link);
+            return () => {
+                if (document.head.contains(link)) {
+                    document.head.removeChild(link);
+                }
+            };
+        }
+    }, []);
 
     return (
         <div className="antialiased h-screen flex flex-col">
@@ -620,13 +635,13 @@ const App: React.FC = () => {
                     <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1 gap-1">
                         <button
                             onClick={() => setCurrentMode('doPaper')}
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition ${currentMode === 'doPaper' ? 'nav-btn-active' : 'nav-btn-inactive'}`}
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition hover:brightness-[0.9] ${currentMode === 'doPaper' ? 'nav-btn-active' : 'nav-btn-inactive'}`}
                         >
                             Do Paper
                         </button>
                         <button
                             onClick={() => setCurrentMode('reviewPaper')}
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition ${currentMode === 'reviewPaper' ? 'nav-btn-active' : 'nav-btn-inactive'}`}
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition hover:brightness-[0.9] ${currentMode === 'reviewPaper' ? 'nav-btn-active' : 'nav-btn-inactive'}`}
                         >
                             Review Paper
                         </button>
@@ -636,14 +651,14 @@ const App: React.FC = () => {
                     <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1 gap-1">
                         <button
                             onClick={() => setCurrentLayout('fullScreen')}
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition ${currentLayout === 'fullScreen' ? 'nav-btn-active' : 'nav-btn-inactive'}`}
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition hover:brightness-[0.9] ${currentLayout === 'fullScreen' ? 'nav-btn-active' : 'nav-btn-inactive'}`}
                             title="Full Screen Layout"
                         >
                             <i className="fas fa-window-maximize"></i>
                         </button>
                         <button
                             onClick={() => setCurrentLayout('splitScreen')}
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition ${currentLayout === 'splitScreen' ? 'nav-btn-active' : 'nav-btn-inactive'}`}
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition hover:brightness-[0.9] ${currentLayout === 'splitScreen' ? 'nav-btn-active' : 'nav-btn-inactive'}`}
                             title="Split Screen Layout"
                         >
                             <i className="fas fa-columns"></i>

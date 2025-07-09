@@ -59,7 +59,7 @@ export default function AppNavigation() {
               className={cn(
                 "flex items-center gap-4 p-3 rounded-lg transition-all duration-300",
                 isActive
-                  ? "bg-blue-50 text-blue-700 font-medium"
+                  ? "bg-[#BBDEFB50] text-blue-700 font-medium"
                   : "text-black hover:bg-[#00000010] hover:text-gray-900"
               )}
             >

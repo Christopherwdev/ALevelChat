@@ -99,7 +99,14 @@ const App = () => {
                 <p className="text-[#00000080] mb-6 flex-grow">{exam.description}</p>
                 <button
                   onClick={() => navigate(`learn/${exam.id}`)}
-                  className={`flex items-center justify-between px-6 py-3 rounded-full text-white border-black border-[3px] mb-2 font-semibold text-xl transition-all duration-200 ${exam.buttonColor} w-full`}
+                  className={`flex items-center justify-between cursor-pointer px-6 py-3 rounded-full text-white border-black border-[3px] mb-2 font-semibold text-xl transition-all duration-200 ${exam.buttonColor} w-full`}
+                  style={{ boxShadow: '0px 5px 20px #00000010' }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = `0px 0px 0px 7.5px rgba(${rgbColor}, 0.3)`;
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '';none
+                  }}
                 >
                   {exam.buttonText}
                   <svg

@@ -1,94 +1,53 @@
-"use client"
+"use client"; // This directive is placed at the very top as requested
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Chart from 'react-apexcharts'; // Changed import to react-apexcharts
-
-// Define global variables as they would be in the Canvas environment, but unused for localStorage version
-declare global {
-  const __app_id: string | undefined;
-  const __firebase_config: string | undefined;
-  const __initial_auth_token: string | undefined;
-}
-
-// Ensure __app_id is defined for local development/testing
-const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'past-paper-tracker-app-v5';
+// ApexCharts is loaded via CDN in the HTML, so we assume it's globally available.
+// If using a module bundler, you'd typically import it: import ApexCharts from 'apexcharts';
 
 // --- CONFIGURATION ---
-interface SubjectData {
-    papers: string[];
-}
+// Using a new appId to avoid conflicts with previous localStorage data structure
+const appId = 'past-paper-tracker-app-v5-react'; // Changed app ID for new structure
 
-interface ExamLevelConfig {
-    subjectsData: { [key: string]: SubjectData };
-    paperMaxMarks: { [key: string]: number };
-    series: string[];
-    seriesOrder: { [key: string]: number };
-    maxYearSelect: number;
-    maxSeriesSelect: string;
-}
-
-interface AppModes {
-    IAL: {
-        selectedPapers: { [subject: string]: string[] };
-        scores: { [cellId: string]: string };
-        years: { year: number; series: string }[];
-    };
-    IGCSE: {
-        selectedPapers: { [subject: string]: string[] };
-        scores: { [cellId: string]: string };
-        years: { year: number; series: string }[];
-    };
-}
-
-interface DisabledPaper {
-    examBoard: string;
-    examLevel: 'IAL' | 'IGCSE';
-    subject: string;
-    series: string;
-    paper: string | null;
-    year: number | null;
-}
-
-const ialConfig: ExamLevelConfig = {
-    subjectsData: {
-        'Physics': { papers: ['Unit 1', 'Unit 2', 'Unit 3', 'Unit 4', 'Unit 5', 'Unit 6'] },
-        'Chemistry': { papers: ['Unit 1', 'Unit 2', 'Unit 3', 'Unit 4', 'Unit 5', 'Unit 6'] },
-        'Biology': { papers: ['Unit 1', 'Unit 2', 'Unit 3', 'Unit 4', 'Unit 5', 'Unit 6'] },
-        'Math': { papers: ['P1', 'P2', 'P3', 'P4', 'M1', 'M2', 'M3', 'FP1', 'FP2', 'FP3', 'S1', 'S2', 'S3', 'D1', 'D2'] }
-    },
-    paperMaxMarks: {
-        'Unit 1': 80, 'Unit 2': 80, 'Unit 4': 90, 'Unit 5': 90, 'Unit 3': 50, 'Unit 6': 50,
-        'P1': 75, 'P2': 75, 'P3': 75, 'P4': 75, 'M1': 75, 'M2': 75, 'M3': 75,
-        'FP1': 75, 'FP2': 75, 'FP3': 75, 'S1': 75, 'S2': 75, 'S3': 75, 'D1': 75, 'D2': 75
-    },
-    series: ['Jan', 'Jun', 'Oct'],
-    seriesOrder: { 'Jan': 0, 'Jun': 1, 'Oct': 2 },
-    maxYearSelect: 2025,
-    maxSeriesSelect: 'Jun'
+// IAL Specific Data
+const ialSubjectsData = {
+    'Physics': { papers: ['Unit 1', 'Unit 2', 'Unit 3', 'Unit 4', 'Unit 5', 'Unit 6'] },
+    'Chemistry': { papers: ['Unit 1', 'Unit 2', 'Unit 3', 'Unit 4', 'Unit 5', 'Unit 6'] },
+    'Biology': { papers: ['Unit 1', 'Unit 2', 'Unit 3', 'Unit 4', 'Unit 5', 'Unit 6'] },
+    'Math': { papers: ['P1', 'P2', 'P3', 'P4', 'M1', 'M2', 'M3', 'FP1', 'FP2', 'FP3', 'S1', 'S2', 'S3', 'D1', 'D2'] }
 };
-
-const igcseConfig: ExamLevelConfig = {
-    subjectsData: {
-        'Math A': { papers: ['Paper 1', 'Paper 2'] },
-        'Math B': { papers: ['Paper 1', 'Paper 2'] },
-        'Physics': { papers: ['Paper 1', 'Paper 2'] },
-        'Chemistry': { papers: ['Paper 1', 'Paper 2'] },
-        'Biology': { papers: ['Paper 1', 'Paper 2'] },
-        'Chinese': { papers: ['Paper 1', 'Paper 2'] }
-    },
-    paperMaxMarks: {
-        'Paper 1F': 100, 'Paper 1H': 100, 'Paper 2F': 100, 'Paper 2H': 100, // Math
-        'Paper 1': 50, 'Paper 2': 80,
-        'Paper 1P': 60, 'Paper 2P': 60, 'Paper 3P': 60, 'Paper 4P': 60, // Physics
-        'Paper 1C': 60, 'Paper 2C': 60, 'Paper 3C': 60, 'Paper 4C': 60, // Chemistry
-        'Paper 1B': 60, 'Paper 2B': 60, 'Paper 3B': 60, 'Paper 4B': 60 // Biology
-    },
-    series: ['Jan', 'Jun', 'Nov'],
-    seriesOrder: { 'Jan': 0, 'Jun': 1, 'Nov': 2 },
-    maxYearSelect: 2025,
-    maxSeriesSelect: 'Nov'
+const ialPaperMaxMarks: Record<string, number> = {
+    'Unit 1': 80, 'Unit 2': 80, 'Unit 4': 90, 'Unit 5': 90, 'Unit 3': 50, 'Unit 6': 50,
+    'P1': 75, 'P2': 75, 'P3': 75, 'P4': 75, 'M1': 75, 'M2': 75, 'M3': 75,
+    'FP1': 75, 'FP2': 75, 'FP3': 75, 'S1': 75, 'S2': 75, 'S3': 75, 'D1': 75, 'D2': 75
 };
+const ialSeries = ['Jan', 'Jun', 'Oct'];
+const ialSeriesOrder: Record<string, number> = { 'Jan': 0, 'Jun': 1, 'Oct': 2 };
+const ialMaxYearSelect = 2025;
+const ialMaxSeriesSelect = 'Jun';
 
-const disabledPapersList: DisabledPaper[] = [
+// IGCSE Specific Data
+const igcseSubjectsData = {
+    'Math A': { papers: ['Paper 1', 'Paper 2'] },
+    'Math B': { papers: ['Paper 1', 'Paper 2'] },
+    'Physics': { papers:  ['Paper 1', 'Paper 2'] },
+    'Chemistry': { papers: ['Paper 1', 'Paper 2'] },
+    'Biology': { papers: ['Paper 1', 'Paper 2'] },
+    'Chinese': { papers: ['Paper 1', 'Paper 2'] }
+};
+const igcsePaperMaxMarks: Record<string, number> = {
+    'Paper 1F': 100, 'Paper 1H': 100, 'Paper 2F': 100, 'Paper 2H': 100, // Math
+    'Paper 1': 50, 'Paper 2': 80,
+    'Paper 1P': 60, 'Paper 2P': 60, 'Paper 3P': 60, 'Paper 4P': 60, // Physics
+    'Paper 1C': 60, 'Paper 2C': 60, 'Paper 3C': 60, 'Paper 4C': 60, // Chemistry
+    'Paper 1B': 60, 'Paper 2B': 60, 'Paper 3B': 60, 'Paper 4B': 60 // Biology
+};
+const igcseSeries = ['Jan', 'Jun', 'Nov'];
+const igcseSeriesOrder: Record<string, number> = { 'Jan': 0, 'Jun': 1, 'Nov': 2 };
+const igcseMaxYearSelect = 2025;
+const igcseMaxSeriesSelect = 'Nov'; // Max year for IGCSE, adjusted for current year
+
+// Editable list of disabled papers
+const disabledPapersList = [
     { examBoard: 'Edexcel', examLevel: 'IGCSE', subject: 'Chinese', series: 'Jan', paper: null, year: null },
     { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Chinese", series: "Nov", year: 2011, paper: null },
     { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Chinese", series: "Nov", year: 2012, paper: null },
@@ -101,7 +60,6 @@ const disabledPapersList: DisabledPaper[] = [
     { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Chinese", series: "Nov", year: 2018, paper: null },
     { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Chinese", series: "Nov", year: 2019, paper: null },
     { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Chinese", series: "Jun", year: 2020, paper: null },
-    { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Chinese", series: "Jun", year: 2021, paper: null },
     { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Chinese", series: "Nov", year: 2022, paper: null },
     { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Chinese", series: "Nov", year: 2022, paper: null },
     { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Chinese", series: "Nov", year: 2022, paper: null },
@@ -120,107 +78,224 @@ const disabledPapersList: DisabledPaper[] = [
     { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Math A", series: "Nov", year: 2022, paper: null }
 ];
 
-// --- UTILITY FUNCTIONS ---
-const generateYearSeriesRange = (
-    startYear: number, startSeries: string, endYear: number, endSeries: string,
-    seriesOrderObj: { [key: string]: number }, maxYear: number, maxSeries: string
-) => {
-    const result: { year: number; series: string }[] = [];
+interface YearSeries {
+    year: number;
+    series: string;
+}
 
+interface AppStateMode {
+    selectedPapers: Record<string, string[]>;
+    scores: Record<string, string>;
+    years: YearSeries[];
+}
+
+interface AppStateType {
+    currentMode: 'IAL' | 'IGCSE';
+    modes: {
+        IAL: AppStateMode;
+        IGCSE: AppStateMode;
+    };
+}
+
+// --- UTILITY FUNCTIONS ---
+// Generates an array of {year, series} objects within the specified range
+const generateYearSeriesRange = (
+    startYear: number,
+    startSeries: string,
+    endYear: number,
+    endSeries: string,
+    seriesOrderObj: Record<string, number>,
+    maxYear: number,
+    maxSeries: string
+): YearSeries[] => {
+    const result: YearSeries[] = [];
+
+    // Ensure years do not go beyond the maxYearSelect/maxSeriesSelect boundary
     const actualEndYear = Math.min(endYear, maxYear);
     let actualEndSeries = endSeries;
     if (endYear === maxYear && seriesOrderObj[endSeries] > seriesOrderObj[maxSeries]) {
         actualEndSeries = maxSeries;
     }
 
+    // Loop backwards from actualEndYear/actualEndSeries to startYear/startSeries
     for (let year = actualEndYear; year >= startYear; year--) {
-        const currentYearSeries: { year: number; series: string }[] = [];
+        const currentYearSeries: YearSeries[] = [];
+        // Sort series array to ensure iteration order is consistent (Jan, Jun, Oct/Nov)
         const sortedSeriesKeys = Object.keys(seriesOrderObj).sort((a, b) => seriesOrderObj[a] - seriesOrderObj[b]);
 
         for (let i = sortedSeriesKeys.length - 1; i >= 0; i--) {
             const serie = sortedSeriesKeys[i];
+            // Skip series after the actual end series for the end year
             if (year === actualEndYear && seriesOrderObj[serie] > seriesOrderObj[actualEndSeries]) {
                 continue;
             }
+            // Skip series before the start series for the start year
             if (year === startYear && seriesOrderObj[serie] < seriesOrderObj[startSeries]) {
                 continue;
             }
             currentYearSeries.push({ year, series: serie });
         }
+        // Add the series for the current year in correct order (Jan, Jun, Oct/Nov)
         currentYearSeries.sort((a, b) => seriesOrderObj[a.series] - seriesOrderObj[b.series]);
         result.push(...currentYearSeries);
     }
+    // Sort the generated list in descending order (latest year/series first)
     sortYearSeriesList(result, seriesOrderObj);
     return result;
 };
 
-const sortYearSeriesList = (list: { year: number; series: string }[], seriesOrderObj: { [key: string]: number }) => {
+const sortYearSeriesList = (list: YearSeries[], seriesOrderObj: Record<string, number>) => {
     list.sort((a, b) => {
-        if (a.year !== b.year) return b.year - a.year;
-        return seriesOrderObj[b.series] - seriesOrderObj[a.series];
+        if (a.year !== b.year) return b.year - a.year; // Descending year
+        return seriesOrderObj[b.series] - seriesOrderObj[a.series]; // Descending series within year
     });
 };
 
-const calculatePercentile = (scorePercentage: number) => {
+const getFullMonthName = (seriesAbbr: string): string => {
+    const months: Record<string, string> = { 'Jan': 'January', 'Jun': 'June', 'Oct': 'October', 'Nov': 'November' };
+    return months[seriesAbbr] || seriesAbbr; // Return full name or original if not found
+};
+
+// Calculate a simplified percentile based on a skewed distribution with median at 70%
+const calculatePercentile = (scorePercentage: number): string => {
     if (isNaN(scorePercentage)) return '0';
     if (scorePercentage < 0) scorePercentage = 0;
     if (scorePercentage > 100) scorePercentage = 100;
 
-    let percentile;
+    let percentile: number;
     if (scorePercentage <= 70) {
+        // From 0-70% score, map to 0-50th percentile (linear)
         percentile = (scorePercentage / 70) * 50;
     } else {
+        // From 70-100% score, map to 50-100th percentile (linear, but stretched)
         percentile = 50 + ((scorePercentage - 70) / 30) * 50;
     }
-    return percentile.toFixed(0);
+    return percentile.toFixed(0); // Round to nearest whole number
 };
 
-const getFullMonthName = (seriesAbbr: string) => {
-    const months: { [key: string]: string } = { 'Jan': 'January', 'Jun': 'June', 'Oct': 'October', 'Nov': 'November' };
-    return months[seriesAbbr] || seriesAbbr;
-};
+// --- ScoreCell Component ---
+interface ScoreCellProps {
+    id: string;
+    score: string;
+    subject: string;
+    paper: string;
+    year: number;
+    series: string;
+    mode: 'IAL' | 'IGCSE';
+    maxMark: number;
+    isDisabled: boolean;
+    onScoreChange: (id: string, newScore: string, subject: string, paper: string) => void;
+    onCellFocus: (cellData: { id: string, subject: string, paper: string, year: number, series: string, mode: 'IAL' | 'IGCSE' }) => void;
+}
 
+const ScoreCell: React.FC<ScoreCellProps> = React.memo(({
+    id,
+    score,
+    subject,
+    paper,
+    year,
+    series,
+    mode,
+    maxMark,
+    isDisabled,
+    onScoreChange,
+    onCellFocus
+}) => {
+    const cellRef = useRef<HTMLDivElement>(null);
+    // Local state for immediate visual feedback during typing
+    const [currentInput, setCurrentInput] = useState<string>(score);
+
+    // Effect to synchronize the DOM's textContent with the 'score' prop from parent
+    // This runs when 'score' prop changes, but only if the cell is not actively being edited.
+    useEffect(() => {
+        if (cellRef.current) {
+            // Only update the DOM if it's not currently focused by the user
+            // or if the score prop has genuinely changed from the local input
+            if (cellRef.current !== document.activeElement || currentInput !== score) {
+                cellRef.current.textContent = score;
+                setCurrentInput(score); // Keep local state in sync with prop
+            }
+        }
+    }, [score]); // Only re-run if score prop changes
+
+    const handleInput = useCallback((e: React.FormEvent<HTMLDivElement>) => {
+        const newValue = e.currentTarget.textContent || '';
+        setCurrentInput(newValue); // Update local state for immediate visual feedback
+        onScoreChange(id, newValue, subject, paper); // <-- add this line
+    }, [id, onScoreChange, subject, paper]);
+
+    const handleBlur = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
+        const finalValue = e.currentTarget.textContent || '';
+        onScoreChange(id, finalValue, subject, paper); // Propagate change to parent
+    }, [id, onScoreChange, subject, paper]);
+
+    const handleFocus = useCallback(() => {
+        onCellFocus({ id, subject, paper, year, series, mode });
+    }, [id, subject, paper, year, series, mode, onCellFocus]);
+
+    // Calculate percentage and bgColor based on currentInput (local state) for instant feedback
+    const percentage = (currentInput && !isNaN(parseFloat(currentInput)) && maxMark) ?
+        ((parseFloat(currentInput) / maxMark) * 100) : NaN;
+
+    let bgColor = '';
+    if (!isNaN(percentage)) {
+        if (percentage >= 90) bgColor = 'var(--color-90)';
+        else if (percentage >= 80) bgColor = 'var(--color-80)';
+        else if (percentage >= 60) bgColor = 'var(--color-70)';
+        else if (percentage >= 30) bgColor = 'var(--color-50)';
+        else bgColor = 'var(--color-fail)';
+    }
+
+    return (
+        <div
+            ref={cellRef}
+            className={`score-cell ${isDisabled ? 'disabled' : ''}`}
+            contentEditable={!isDisabled}
+            onInput={handleInput}
+            onBlur={handleBlur}
+            onFocus={handleFocus}
+            style={{ backgroundColor: bgColor }}
+            suppressContentEditableWarning={true} // Suppress React warning for contentEditable
+            // No children or dangerouslySetInnerHTML. The DOM's textContent is managed
+            // by the browser during typing, and by the useEffect for external updates.
+        >
+        </div>
+    );
+});
+
+// --- Main App Component ---
 const App: React.FC = () => {
-    const [appState, setAppState] = useState<any>(() => { // Changed to any for simpler initial state handling
+    const [appState, setAppState] = useState<AppStateType>(() => {
+        // Initial state from localStorage or defaults
         try {
-            const saved = localStorage.getItem(APP_ID);
+            const saved = localStorage.getItem(appId);
             if (saved) {
-                const data = JSON.parse(saved);
-                const loadedState: AppModes = {
-                    IAL: data.modes?.IAL || {},
-                    IGCSE: data.modes?.IGCSE || {}
-                };
-
+                const data: AppStateType = JSON.parse(saved);
                 // Ensure nested properties exist and are valid for each mode
-                (['IAL', 'IGCSE'] as Array<'IAL' | 'IGCSE'>).forEach(mode => {
-                    loadedState[mode].selectedPapers = loadedState[mode].selectedPapers || {};
-                    for (const subject in loadedState[mode].selectedPapers) {
-                        if (!Array.isArray(loadedState[mode].selectedPapers[subject])) {
-                            loadedState[mode].selectedPapers[subject] = [];
+                ['IAL', 'IGCSE'].forEach(mode => {
+                    data.modes[mode].selectedPapers = data.modes[mode].selectedPapers || {};
+                    for (const subject in data.modes[mode].selectedPapers) {
+                        if (!Array.isArray(data.modes[mode].selectedPapers[subject])) {
+                            data.modes[mode].selectedPapers[subject] = [];
                         }
                     }
-                    loadedState[mode].scores = loadedState[mode].scores || {};
-
-                    if (!loadedState[mode].years || !Array.isArray(loaded[mode].years) || !loadedState[mode].years.every(y => typeof y === 'object' && y.year && y.series)) {
+                    data.modes[mode].scores = data.modes[mode].scores || {};
+                    if (!data.modes[mode].years || !Array.isArray(data.modes[mode].years) || !data.modes[mode].years.every(y => typeof y === 'object' && y.year && y.series)) {
                         console.warn(`Invalid 'years' data for ${mode} mode in localStorage, using default range.`);
                         if (mode === 'IAL') {
-                            loadedState.IAL.years = generateYearSeriesRange(2019, 'Jan', 2025, 'Jun', ialConfig.seriesOrder, ialConfig.maxYearSelect, ialConfig.maxSeriesSelect);
-                        } else {
-                            loadedState.IGCSE.years = generateYearSeriesRange(2010, 'Jan', 2025, 'Nov', igcseConfig.seriesOrder, igcseConfig.maxYearSelect, igcseConfig.maxSeriesSelect);
+                            data.modes.IAL.years = generateYearSeriesRange(2019, 'Jan', 2025, 'Jun', ialSeriesOrder, ialMaxYearSelect, ialMaxSeriesSelect);
+                        } else { // IGCSE
+                            data.modes.IGCSE.years = generateYearSeriesRange(2010, 'Jan', 2025, 'Nov', igcseSeriesOrder, igcseMaxYearSelect, igcseMaxSeriesSelect);
                         }
                     }
-                    sortYearSeriesList(loadedState[mode].years, (mode === 'IAL' ? ialConfig : igcseConfig).seriesOrder);
+                    sortYearSeriesList(data.modes[mode].years, (mode === 'IAL' ? ialSeriesOrder : igcseSeriesOrder));
                 });
-
-                return {
-                    currentMode: data.currentMode || 'IAL',
-                    modes: loadedState
-                };
+                return data;
             }
         } catch (error) {
             console.error("Error loading state from localStorage:", error);
         }
-        // Default initial state if nothing found or error
+        // Default state if no saved state or error
         return {
             currentMode: 'IAL',
             modes: {
@@ -230,7 +305,7 @@ const App: React.FC = () => {
                         'Physics': ['Unit 1', 'Unit 2']
                     },
                     scores: {},
-                    years: generateYearSeriesRange(2019, 'Jan', 2025, 'Jun', ialConfig.seriesOrder, ialConfig.maxYearSelect, ialConfig.maxSeriesSelect)
+                    years: generateYearSeriesRange(2019, 'Jan', 2025, 'Jun', ialSeriesOrder, ialMaxYearSelect, ialMaxSeriesSelect)
                 },
                 IGCSE: {
                     selectedPapers: {
@@ -238,259 +313,62 @@ const App: React.FC = () => {
                         'Chinese': ['Paper 1H']
                     },
                     scores: {},
-                    years: generateYearSeriesRange(2010, 'Jan', 2025, 'Nov', igcseConfig.seriesOrder, igcseConfig.maxYearSelect, igcseConfig.maxSeriesSelect)
+                    years: generateYearSeriesRange(2010, 'Jan', 2025, 'Nov', igcseSeriesOrder, igcseMaxYearSelect, igcseMaxSeriesSelect)
                 }
             }
         };
     });
 
-    const [showModal, setShowModal] = useState(false);
-    const [headerDate, setHeaderDate] = useState('');
-    const [activeCellData, setActiveCellData] = useState<{
-        subject: string;
-        paper: string;
-        year: number;
-        series: string;
-        mode: 'IAL' | 'IGCSE';
-        score: string;
-        maxMark: number;
-    } | null>(null);
-
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [activeCellData, setActiveCellData] = useState<{ id: string, subject: string, paper: string, year: number, series: string, mode: 'IAL' | 'IGCSE' } | null>(null);
+    const [isBottomActionsVisible, setIsBottomActionsVisible] = useState(false);
     const bottomActionsRef = useRef<HTMLDivElement>(null);
-    const isDragging = useRef(false);
-    const dragOffsets = useRef({ x: 0, y: 0 });
-    const currentPosition = useRef({ left: 0, top: 0 });
-    const saveTimeout = useRef<number | null>(null);
-    // No longer need apexChartInstance ref as Chart component handles it internally
+    const [isDragging, setIsDragging] = useState(false);
+    const dragOffset = useRef({ x: 0, y: 0 });
+    const chartRef = useRef<HTMLDivElement>(null); // New ref for the chart container
 
-    // Helper to get current mode's configuration
-    const getCurrentConfig = useCallback(() => {
-        return appState.currentMode === 'IAL' ? ialConfig : igcseConfig;
+    // --- Memoized Current Mode Data ---
+    const getCurrentSubjectsData = useCallback(() => {
+        return appState.currentMode === 'IAL' ? ialSubjectsData : igcseSubjectsData;
     }, [appState.currentMode]);
 
-    // Save state to localStorage
-    useEffect(() => {
-        if (saveTimeout.current) {
-            clearTimeout(saveTimeout.current);
-        }
-        saveTimeout.current = window.setTimeout(() => {
-            localStorage.setItem(APP_ID, JSON.stringify({
-                currentMode: appState.currentMode,
-                modes: appState.modes
-            }));
-            console.log("State saved to localStorage");
-        }, 500);
-        return () => {
-            if (saveTimeout.current) {
-                clearTimeout(saveTimeout.current);
-            }
-        };
-    }, [appState]);
+    const getCurrentPaperMaxMarks = useCallback(() => {
+        return appState.currentMode === 'IAL' ? ialPaperMaxMarks : igcsePaperMaxMarks;
+    }, [appState.currentMode]);
 
-    // Update header date on mount
-    useEffect(() => {
-        const today = new Date();
-        const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-        setHeaderDate(today.toLocaleDateString('en-US', options));
-    }, []);
+    const getCurrentSeries = useCallback((mode: 'IAL' | 'IGCSE' = appState.currentMode) => {
+        return mode === 'IAL' ? ialSeries : igcseSeries;
+    }, [appState.currentMode]);
 
-    // Initial position for bottom actions bar
-    useEffect(() => {
-        const setInitialBottomBarPosition = () => {
-            const bottomActions = bottomActionsRef.current;
-            if (!bottomActions) return;
+    const getCurrentSeriesOrder = useCallback((mode: 'IAL' | 'IGCSE' = appState.currentMode) => {
+        return mode === 'IAL' ? ialSeriesOrder : igcseSeriesOrder;
+    }, [appState.currentMode]);
 
-            bottomActions.style.transition = 'none';
-            const rect = bottomActions.getBoundingClientRect();
-            currentPosition.current.left = window.innerWidth - rect.width - 60;
-            currentPosition.current.top = window.innerHeight - rect.height - 60;
+    const getCurrentMaxYearSelect = useCallback(() => {
+        return appState.currentMode === 'IAL' ? ialMaxYearSelect : igcseMaxYearSelect;
+    }, [appState.currentMode]);
 
-            bottomActions.style.left = `${currentPosition.current.left}px`;
-            bottomActions.style.top = `${currentPosition.current.top}px`;
-
-            setTimeout(() => {
-                bottomActions.style.transition = '';
-            }, 50);
-        };
-
-        setInitialBottomBarPosition();
-        // Hide on initial render
-        if (bottomActionsRef.current) {
-            bottomActionsRef.current.classList.add('opacity-0', 'translate-y-20', 'invisible');
-        }
-    }, []);
-
-    // Dragging event handlers
-    const startDrag = useCallback((e: React.MouseEvent) => {
-        const bottomActions = bottomActionsRef.current;
-        if (!bottomActions) return;
-
-        // Do not start drag if the event target is an interactive element within the pane
-        if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'SELECT' || (e.target as HTMLElement).getAttribute('contenteditable') === 'true') {
-            return;
-        }
-
-        isDragging.current = true;
-        bottomActions.classList.add('cursor-grabbing');
-        bottomActions.classList.remove('cursor-grab');
-
-        const rect = bottomActions.getBoundingClientRect();
-        currentPosition.current.left = rect.left;
-        currentPosition.current.top = rect.top;
-
-        dragOffsets.current.x = e.clientX - currentPosition.current.left;
-        dragOffsets.current.y = e.clientY - currentPosition.current.top;
-
-        e.preventDefault();
-    }, []);
-
-    const drag = useCallback((e: MouseEvent) => {
-        if (!isDragging.current) return;
-        const bottomActions = bottomActionsRef.current;
-        if (!bottomActions) return;
-
-        e.preventDefault();
-
-        let newX = e.clientX - dragOffsets.current.x;
-        let newY = e.clientY - dragOffsets.current.y;
-
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        const rect = bottomActions.getBoundingClientRect();
-        const elementWidth = rect.width;
-        const elementHeight = rect.height;
-
-        newX = Math.max(0, Math.min(viewportWidth - elementWidth, newX));
-        newY = Math.max(0, Math.min(viewportHeight - elementHeight, newY));
-
-        bottomActions.style.left = `${newX}px`;
-        bottomActions.style.top = `${newY}px`;
-    }, []);
-
-    const endDrag = useCallback(() => {
-        const bottomActions = bottomActionsRef.current;
-        if (!bottomActions) return;
-
-        isDragging.current = false;
-        bottomActions.classList.remove('cursor-grabbing');
-        bottomActions.classList.add('cursor-grab');
-    }, []);
-
-    useEffect(() => {
-        const bottomActions = bottomActionsRef.current;
-        if (bottomActions) {
-            bottomActions.addEventListener('mousedown', startDrag as any); // Type assertion for ReactMouseEvent
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', endDrag);
-        }
-
-        return () => {
-            if (bottomActions) {
-                bottomActions.removeEventListener('mousedown', startDrag as any);
-                document.removeEventListener('mousemove', drag);
-                document.removeEventListener('mouseup', endDrag);
-            }
-        };
-    }, [startDrag, drag, endDrag]);
-
-    const hideBottomActions = useCallback(() => {
-        setActiveCellData(null);
-        if (bottomActionsRef.current) {
-            bottomActionsRef.current.classList.add('translate-y-20', 'opacity-0', 'invisible');
-        }
-    }, []);
-
-    // Chart options for ApexCharts, now derived directly from activeCellData
-    const chartOptions: ApexCharts.ApexOptions = activeCellData ? {
-        chart: {
-            type: "area",
-            height: 40,
-            toolbar: { show: false },
-            sparkline: { enabled: true },
-            animations: { enabled: false },
-            parentHeightOffset: 0
-        },
-        dataLabels: { enabled: false },
-        stroke: {
-            curve: 'smooth',
-            width: 1,
-            colors: ['var(--primary-color)']
-        },
-        series: [{
-            name: "Distribution",
-            data: [1, 2, 5, 10, 20, 40, 70, 90, 100, 95, 80, 60, 40, 20, 10, 5, 2, 1, 0.5, 0.2]
-        }],
-        fill: {
-            type: "gradient",
-            gradient: {
-                shadeIntensity: 1,
-                opacityFrom: 0.7,
-                opacityTo: 0.9,
-                stops: [0, 90, 100],
-                colorStops: [{
-                    offset: 0,
-                    color: 'var(--primary-color)',
-                    opacity: 0.3
-                }, {
-                    offset: 100,
-                    color: 'var(--primary-color)',
-                    opacity: 0.1
-                }]
-            }
-        },
-        xaxis: {
-            categories: Array.from({ length: 20 }, (_, i) => `${i * 5}%`),
-            labels: { show: false },
-            axisBorder: { show: false },
-            axisTicks: { show: false },
-            tooltip: { enabled: false }
-        },
-        yaxis: { show: false },
-        grid: {
-            show: false,
-            padding: { left: -5, right: -5, top: -5, bottom: -5 }
-        },
-        tooltip: { enabled: false }
-    } : {};
-
+    const getCurrentMaxSeriesSelect = useCallback(() => {
+        return appState.currentMode === 'IAL' ? ialMaxSeriesSelect : igcseMaxSeriesSelect;
+    }, [appState.currentMode]);
 
     const getFlatPaperList = useCallback(() => {
         const list: { subject: string; paper: string }[] = [];
-        const currentConfig = getCurrentConfig();
+        const currentSubjectsData = getCurrentSubjectsData();
         const currentSelectedPapers = appState.modes[appState.currentMode].selectedPapers;
 
-        Object.keys(currentConfig.subjectsData).forEach(subject => {
+        Object.keys(currentSubjectsData).forEach(subject => {
             if (currentSelectedPapers[subject] && Array.isArray(currentSelectedPapers[subject])) {
-                const sortedPapers = currentConfig.subjectsData[subject].papers.filter(p => currentSelectedPapers[subject].includes(p));
+                const sortedPapers = currentSubjectsData[subject].papers.filter(p => currentSelectedPapers[subject].includes(p));
                 sortedPapers.forEach(paper => {
                     list.push({ subject, paper });
                 });
             }
         });
         return list;
-    }, [appState.currentMode, appState.modes, getCurrentConfig]);
+    }, [appState.currentMode, getCurrentSubjectsData]);
 
-    const updateCellColor = useCallback((score: string | number, paper: string) => {
-        const currentConfig = getCurrentConfig();
-        const maxMark = currentConfig.paperMaxMarks[paper];
-
-        if (score === '' || score === null || isNaN(Number(score))) {
-            return ''; // Return empty string to reset color
-        }
-
-        const percentage = ((parseFloat(String(score)) / maxMark) * 100).toFixed(0);
-
-        let color = '';
-        if (Number(percentage) >= 90) color = 'var(--color-90)';
-        else if (Number(percentage) >= 80) color = 'var(--color-80)';
-        else if (Number(percentage) >= 60) color = 'var(--color-70)';
-        else if (Number(percentage) >= 30) color = 'var(--color-50)';
-        else color = 'var(--color-fail)';
-
-        return color;
-    }, [getCurrentConfig]);
-
-    const calculateMeanScore = useCallback((subject: string, paper: string) => {
+    const calculateMeanScore = useCallback((subject: string, paper: string): number | null => {
         let totalScore = 0;
         let count = 0;
         const currentScores = appState.modes[appState.currentMode].scores;
@@ -510,147 +388,445 @@ const App: React.FC = () => {
         return count > 0 ? totalScore / count : null;
     }, [appState.currentMode, appState.modes]);
 
-    const handleScoreInput = useCallback((e: React.ChangeEvent<HTMLDivElement>) => {
-        const cell = e.target;
-        if (!cell.classList.contains('score-cell') || cell.getAttribute('contenteditable') === 'false') return;
+    // --- Effects ---
 
-        const { id, paper, subject, year, series, mode } = cell.dataset as { id: string; paper: string; subject: string; year: string; series: string; mode: 'IAL' | 'IGCSE' };
-        const score = cell.textContent || '';
+    // Save state to localStorage whenever appState changes
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            localStorage.setItem(appId, JSON.stringify(appState));
+            console.log("State saved to localStorage");
+        }, 500); // Debounce saving
+        return () => clearTimeout(handler);
+    }, [appState]);
 
+    // Update header date on mount
+    useEffect(() => {
+        const today = new Date();
+        const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+        document.getElementById('header-date')!.textContent = today.toLocaleDateString('en-US', options);
+    }, []);
+
+    // Set initial position of bottom actions bar and recalculate on resize
+    useEffect(() => {
+        const setPosition = () => {
+            if (bottomActionsRef.current) {
+                const rect = bottomActionsRef.current.getBoundingClientRect();
+                const initialLeft = window.innerWidth - rect.width - 60;
+                const initialTop = window.innerHeight - rect.height - 60;
+                bottomActionsRef.current.style.left = `${initialLeft}px`;
+                bottomActionsRef.current.style.top = `${initialTop}px`;
+            }
+        };
+
+        setPosition(); // Set initial position
+        window.addEventListener('resize', setPosition); // Recalculate on resize
+
+        return () => {
+            window.removeEventListener('resize', setPosition); // Cleanup
+        };
+    }, []); // Run once on mount
+
+
+    // useEffect for ApexCharts initialization and updates
+    useEffect(() => {
+        let chart: any;
+        if (activeCellData && chartRef.current && typeof window !== 'undefined' && (window as any).ApexCharts) {
+            const { subject, paper, mode } = activeCellData;
+            const currentScores = appState.modes[mode].scores;
+            const cellId = activeCellData.id; // Use activeCellData.id directly
+            const rawScore = currentScores[cellId] || '';
+            const maxMark = getCurrentPaperMaxMarks()[paper];
+
+            let percentage = 0;
+            if (rawScore && !isNaN(parseFloat(rawScore)) && maxMark && maxMark > 0) {
+                percentage = Math.min(100, (parseFloat(rawScore) / maxMark) * 100);
+            }
+            const currentPercentile = calculatePercentile(percentage);
+
+            const chartOptions = {
+                chart: {
+                    type: "area",
+                    height: 40,
+                    toolbar: { show: false },
+                    sparkline: { enabled: true },
+                    animations: { enabled: false },
+                    parentHeightOffset: 0
+                },
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 1, colors: ['var(--primary-color)'] },
+                series: [{
+                    name: "Distribution",
+                    data: [1, 2, 5, 10, 20, 40, 70, 90, 100, 95, 80, 60, 40, 20, 10, 5, 2, 1, 0.5, 0.2]
+                }],
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.9,
+                        stops: [0, 90, 100],
+                        colorStops: [{
+                            offset: 0, color: 'var(--primary-color)', opacity: 0.3
+                        }, {
+                            offset: 100, color: 'var(--primary-color)', opacity: 0.1
+                        }]
+                    }
+                },
+                xaxis: {
+                    categories: Array.from({ length: 20 }, (_, i) => `${i * 5}%`),
+                    labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false }, tooltip: { enabled: false }
+                },
+                yaxis: { show: false },
+                grid: { show: false, padding: { left: -5, right: -5, top: -5, bottom: -5 } },
+                tooltip: { enabled: false }
+            };
+
+            chart = new (window as any).ApexCharts(chartRef.current, chartOptions);
+            chart.render();
+        }
+
+        return () => {
+            if (chart) {
+                chart.destroy();
+            }
+        };
+    }, [activeCellData, appState.modes, getCurrentPaperMaxMarks]); // Dependencies for the chart effect
+
+
+    // --- Handlers ---
+
+    const handleScoreChange = useCallback((id: string, newScore: string, subject: string, paper: string) => {
         setAppState(prevState => {
             const newState = { ...prevState };
-            newState.modes[mode].scores = {
-                ...newState.modes[mode].scores,
-                [id]: score
+            newState.modes[prevState.currentMode].scores = {
+                ...newState.modes[prevState.currentMode].scores,
+                [id]: newScore
             };
             return newState;
         });
-
-        const currentConfig = getCurrentConfig();
-        setActiveCellData({
-            subject, paper, year: parseInt(year), series, mode, score,
-            maxMark: currentConfig.paperMaxMarks[paper]
-        });
-    }, [getCurrentConfig]);
-
-    const handleCellFocus = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
-        const cell = e.target;
-        if (!cell.classList.contains('score-cell') || cell.getAttribute('contenteditable') === 'false') {
-            return;
-        }
-
-        const { subject, paper, year, series, mode } = cell.dataset as { subject: string; paper: string; year: string; series: string; mode: 'IAL' | 'IGCSE' };
-        const currentConfig = getCurrentConfig();
-        const score = cell.textContent || '';
-        const maxMark = currentConfig.paperMaxMarks[paper];
-
-        setActiveCellData({
-            subject, paper, year: parseInt(year), series, mode, score, maxMark
-        });
-
-        if (bottomActionsRef.current) {
-            if (bottomActionsRef.current.classList.contains('opacity-0') || bottomActionsRef.current.style.left === '' || bottomActionsRef.current.style.top === '') {
-                // Set initial position if it's hidden or not positioned yet
-                const rect = bottomActionsRef.current.getBoundingClientRect();
-                currentPosition.current.left = window.innerWidth - rect.width - 60;
-                currentPosition.current.top = window.innerHeight - rect.height - 60;
-                bottomActionsRef.current.style.left = `${currentPosition.current.left}px`;
-                bottomActionsRef.current.style.top = `${currentPosition.current.top}px`;
+        // Update active cell data if this was the active cell
+        setActiveCellData(prevData => {
+            if (prevData && prevData.id === id) {
+                return { ...prevData, score: newScore }; // Update score in activeCellData
             }
-            bottomActionsRef.current.classList.remove('translate-y-20', 'opacity-0', 'invisible');
-        }
-    }, [getCurrentConfig]);
+            return prevData;
+        });
+    }, []);
 
-    const handleGoToPaper = useCallback((type: 'qp' | 'ms') => {
-        if (!activeCellData) return;
-        const { subject, paper, year, series, mode: examLevel } = activeCellData;
-        const examBoard = "Edexcel"; // Assuming Edexcel
+    const handleCellFocus = useCallback((cellData: { id: string, subject: string, paper: string, year: number, series: string, mode: 'IAL' | 'IGCSE' }) => {
+        setActiveCellData(cellData);
+        setIsBottomActionsVisible(true);
+    }, []);
 
-        const params = new URLSearchParams({
-            subject: subject,
-            paper: paper,
-            series: series,
-            year: String(year),
-            examBoard: examBoard,
-            examLevel: examLevel
-        }).toString();
-
-        window.open(`/past-paper/viewer?${params}&type=${type}`, '_blank');
-    }, [activeCellData]);
-
-    const handlePaperSelectionChange = useCallback((subject: string, paper: string, checked: boolean) => {
+    const handlePaperSelectionChange = useCallback((subject: string, paper: string, isChecked: boolean) => {
         setAppState(prevState => {
             const newState = { ...prevState };
-            const currentSelectedPapers = newState.modes[newState.currentMode].selectedPapers;
+            const currentSelectedPapers = { ...newState.modes[prevState.currentMode].selectedPapers };
+
             if (!currentSelectedPapers[subject]) {
                 currentSelectedPapers[subject] = [];
             }
 
-            if (checked) {
+            if (isChecked) {
                 if (!currentSelectedPapers[subject].includes(paper)) {
                     currentSelectedPapers[subject].push(paper);
                 }
             } else {
                 currentSelectedPapers[subject] = currentSelectedPapers[subject].filter(p => p !== paper);
             }
+            newState.modes[prevState.currentMode].selectedPapers = currentSelectedPapers;
             return newState;
         });
     }, []);
 
-    const handleSelectAllChange = useCallback((subject: string, checked: boolean) => {
+    const handleSelectAllChange = useCallback((subject: string, isChecked: boolean) => {
         setAppState(prevState => {
             const newState = { ...prevState };
-            const currentConfig = getCurrentConfig();
-            const papers = currentConfig.subjectsData[subject].papers;
+            const currentSubjectsData = prevState.currentMode === 'IAL' ? ialSubjectsData : igcseSubjectsData;
+            const papers = currentSubjectsData[subject]?.papers || [];
 
-            if (checked) {
-                newState.modes[newState.currentMode].selectedPapers[subject] = [...papers];
+            if (isChecked) {
+                newState.modes[prevState.currentMode].selectedPapers[subject] = [...papers];
             } else {
-                newState.modes[newState.currentMode].selectedPapers[subject] = [];
+                newState.modes[prevState.currentMode].selectedPapers[subject] = [];
             }
             return newState;
         });
-    }, [getCurrentConfig]);
+    }, []);
 
-    const handleSetYearRangeAndCloseModal = useCallback((startYear: number, startSeries: string, endYear: number, endSeries: string) => {
-        const currentConfig = getCurrentConfig();
-        const startDateWeight = startYear * 100 + currentConfig.seriesOrder[startSeries];
-        const endDateWeight = endYear * 100 + currentConfig.seriesOrder[endSeries];
+    const handleSetYearRangeAndCloseModal = useCallback(() => {
+        const startYear = parseInt((document.getElementById('start-year') as HTMLSelectElement).value);
+        const startSeries = (document.getElementById('start-series') as HTMLSelectElement).value;
+        const endYear = parseInt((document.getElementById('end-year') as HTMLSelectElement).value);
+        const endSeries = (document.getElementById('end-series') as HTMLSelectElement).value;
 
+        const currentSeriesOrderObj = getCurrentSeriesOrder();
+        const startDateWeight = startYear * 100 + currentSeriesOrderObj[startSeries];
+        const endDateWeight = endYear * 100 + currentSeriesOrderObj[endSeries];
+
+        const yearRangeErrorElement = document.getElementById('year-range-error');
         if (startDateWeight > endDateWeight) {
-            // This error handling would typically be shown in the UI, but for now, just log.
-            console.error("Start date cannot be after end date.");
-            return false; // Indicate validation failure
+            yearRangeErrorElement?.classList.remove('hidden');
+            return;
+        } else {
+            yearRangeErrorElement?.classList.add('hidden');
         }
-
-        const newYears = generateYearSeriesRange(startYear, startSeries, endYear, endSeries,
-            currentConfig.seriesOrder, currentConfig.maxYearSelect, currentConfig.maxSeriesSelect);
 
         setAppState(prevState => {
             const newState = { ...prevState };
-            newState.modes[newState.currentMode].years = newYears;
+            const newYears = generateYearSeriesRange(
+                startYear, startSeries, endYear, endSeries,
+                currentSeriesOrderObj, getCurrentMaxYearSelect(), getCurrentMaxSeriesSelect()
+            );
+            newState.modes[prevState.currentMode].years = newYears;
             return newState;
         });
-        setShowModal(false);
-        return true; // Indicate success
-    }, [getCurrentConfig]);
+        setIsModalOpen(false);
+    }, [getCurrentSeriesOrder, getCurrentMaxYearSelect, getCurrentMaxSeriesSelect]);
 
     const switchMode = useCallback((newMode: 'IAL' | 'IGCSE') => {
         setAppState(prevState => ({
             ...prevState,
             currentMode: newMode
         }));
+        setIsBottomActionsVisible(false); // Hide bottom actions when switching mode
     }, []);
 
-    const currentConfig = getCurrentConfig();
+    const handleGoToPaper = useCallback((type: 'qp' | 'ms') => {
+        if (!activeCellData) return;
+        const { subject, paper, year, series, mode: examLevel } = activeCellData;
+        const examBoard = "Edexcel";
+
+        const params = new URLSearchParams({
+            subject: subject,
+            paper: paper,
+            series: series,
+            year: year.toString(),
+            examBoard: examBoard,
+            examLevel: examLevel
+        }).toString();
+
+        window.open(`paper_viewer.html?${params}&type=${type}`, '_blank');
+    }, [activeCellData]);
+
+    const hideBottomActions = useCallback(() => {
+        setIsBottomActionsVisible(false);
+        setActiveCellData(null);
+    }, []);
+
+    // --- Draggable Bottom Actions Bar Logic ---
+    const startDrag = useCallback((e: React.MouseEvent) => {
+        if (!bottomActionsRef.current) return;
+
+        // Do not start drag if the event target is an interactive element within the pane
+        const target = e.target as HTMLElement;
+        if (target.closest('button') || target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.getAttribute('contenteditable') === 'true') {
+            return;
+        }
+
+        setIsDragging(true);
+        bottomActionsRef.current.classList.add('cursor-grabbing');
+        bottomActionsRef.current.classList.remove('cursor-grab');
+
+        const rect = bottomActionsRef.current.getBoundingClientRect();
+        dragOffset.current = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }, []);
+
+    const drag = useCallback((e: MouseEvent) => {
+        if (!isDragging || !bottomActionsRef.current) return;
+
+        e.preventDefault();
+
+        let newX = e.clientX - dragOffset.current.x;
+        let newY = e.clientY - dragOffset.current.y;
+
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const rect = bottomActionsRef.current.getBoundingClientRect();
+        const elementWidth = rect.width;
+        const elementHeight = rect.height;
+
+        newX = Math.max(0, Math.min(viewportWidth - elementWidth, newX));
+        newY = Math.max(0, Math.min(viewportHeight - elementHeight, newY));
+
+        bottomActionsRef.current.style.left = `${newX}px`;
+        bottomActionsRef.current.style.top = `${newY}px`;
+    }, [isDragging]);
+
+    const endDrag = useCallback(() => {
+        setIsDragging(false);
+        if (bottomActionsRef.current) {
+            bottomActionsRef.current.classList.remove('cursor-grabbing');
+            bottomActionsRef.current.classList.add('cursor-grab');
+        }
+    }, []);
+
+    useEffect(() => {
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', endDrag);
+        return () => {
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', endDrag);
+        };
+    }, [drag, endDrag]);
+
+    // --- Render Functions for Sub-components (Modal, Table) ---
+
+    const renderSubjectSelection = useCallback(() => {
+        const currentSubjectsData = getCurrentSubjectsData();
+        const currentSelectedPapers = appState.modes[appState.currentMode].selectedPapers;
+
+        return Object.entries(currentSubjectsData).map(([subject, data]) => {
+            const allPapersSelected = data.papers.every(paper => currentSelectedPapers[subject]?.includes(paper));
+            const somePapersSelected = data.papers.some(paper => currentSelectedPapers[subject]?.includes(paper));
+            const isIndeterminate = !allPapersSelected && somePapersSelected;
+
+            return (
+                <div key={subject} className="mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-bold text-gray-700">{subject}</h3>
+                        <label className="flex items-center space-x-2 text-sm font-medium text-gray-600 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                className="rounded custom-checkbox mr-2"
+                                checked={allPapersSelected}
+                                ref={el => {
+                                    if (el) el.indeterminate = isIndeterminate;
+                                }}
+                                onChange={(e) => handleSelectAllChange(subject, e.target.checked)}
+                            />
+                            Select All
+                        </label>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                        {data.papers.map(paper => (
+                            <label key={paper} className="flex items-center space-x-2 p-2 rounded-md bg-gray-100 hover:bg-gray-200 transition cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    className="rounded custom-checkbox mr-2 paper-checkbox"
+                                    checked={currentSelectedPapers[subject]?.includes(paper) || false}
+                                    onChange={(e) => handlePaperSelectionChange(subject, paper, e.target.checked)}
+                                />
+                                {paper}
+                            </label>
+                        ))}
+                    </div>
+                </div>
+            );
+        });
+    }, [appState.currentMode, appState.modes, getCurrentSubjectsData, handlePaperSelectionChange, handleSelectAllChange]);
+
+    const renderYearRangeSelectors = useCallback(() => {
+        const currentSeriesArr = getCurrentSeries();
+        const currentMaxYear = getCurrentMaxYearSelect();
+        const currentYearsList = appState.modes[appState.currentMode].years;
+
+        let initialStartYear = 2019;
+        let initialStartSeries = 'Jan';
+        let initialEndYear = 2025;
+        let initialEndSeries = 'Jun';
+
+        if (currentYearsList.length > 0) {
+            const latestYearSeries = currentYearsList[0];
+            const earliestYearSeries = currentYearsList[currentYearsList.length - 1];
+            initialStartYear = earliestYearSeries.year;
+            initialStartSeries = earliestYearSeries.series;
+            initialEndYear = latestYearSeries.year;
+            initialEndSeries = latestYearSeries.series;
+        } else {
+            // Fallback for empty years list, should be handled by initial state
+            if (appState.currentMode === 'IGCSE') {
+                initialStartYear = 2010;
+                initialEndSeries = 'Nov';
+            }
+        }
+
+        const currentYear = new Date().getFullYear();
+        const yearsOptions = [];
+        for (let year = Math.max(currentYear, currentMaxYear); year >= 2000; year--) {
+            yearsOptions.push(<option key={year} value={year}>{year}</option>);
+        }
+
+        const seriesOptions = currentSeriesArr.map(s => (
+            <option key={s} value={s}>{s}</option>
+        ));
+
+        return (
+            <div id="year-range-section" className="mt-8 pt-6 border-t border-gray-200">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Set Year Range</h3>
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-4">
+                        <label htmlFor="start-year" className="block text-gray-700 w-24">Start:</label>
+                        <select id="start-year" className="flex-1 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                            defaultValue={initialStartYear}>
+                            {yearsOptions}
+                        </select>
+                        <select id="start-series" className="flex-1 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                            defaultValue={initialStartSeries}>
+                            {seriesOptions}
+                        </select>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                        <label htmlFor="end-year" className="block text-gray-700 w-24">End:</label>
+                        <select id="end-year" className="flex-1 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                            defaultValue={initialEndYear}>
+                            {yearsOptions}
+                        </select>
+                        <select id="end-series" className="flex-1 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                            defaultValue={initialEndSeries}>
+                            {seriesOptions}
+                        </select>
+                    </div>
+                    <p id="year-range-error" className="text-red-500 text-sm hidden">Start date cannot be after end date.</p>
+                </div>
+            </div>
+        );
+    }, [appState.currentMode, getCurrentSeries, getCurrentMaxYearSelect, appState.modes]);
+
+
+    const renderPaperGraphs = useCallback(() => {
+        if (!activeCellData) return null;
+
+        const { subject, paper, year, series, mode } = activeCellData;
+        const currentScores = appState.modes[mode].scores;
+        const cellId = `${mode}_${year}_${series}_${subject}_${paper}`.replace(/\s/g, '_');
+        const rawScore = currentScores[cellId] || '';
+        const maxMark = getCurrentPaperMaxMarks()[paper];
+
+        let percentage = 0;
+        if (rawScore && !isNaN(parseFloat(rawScore)) && maxMark && maxMark > 0) {
+            percentage = Math.min(100, (parseFloat(rawScore) / maxMark) * 100);
+        }
+        const currentPercentile = calculatePercentile(percentage);
+
+        return (
+            <div className="overlay-graphs-container w-full">
+                <div className="overlay-graph">
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'left' }}>
+                        <div className="overlay-graph-title">Grade: A*</div>
+                        <div className="overlay-graph-title">UMS: <span className="text-center mt-1 text-gray-600">{rawScore || 0} / {maxMark || 0}</span></div>
+                    </div>
+                    <div className="progress-bar-container">
+                        <div className="progress-bar" style={{ width: `${percentage}%` }}></div>
+                    </div>
+                </div>
+                <div className="overlay-graph">
+                    <div className="overlay-graph-title">{currentPercentile}th Percentile</div>
+                    <div id="chart-skewed-dist" ref={chartRef}></div> {/* Use the ref here */}
+                </div>
+            </div>
+        );
+    }, [activeCellData, appState.modes, getCurrentPaperMaxMarks, chartRef]); // Added chartRef to dependencies
+
+
     const flatPaperList = getFlatPaperList();
     const currentYears = appState.modes[appState.currentMode].years;
+    const currentPaperMaxMarks = getCurrentPaperMaxMarks();
 
-    const currentYear = new Date().getFullYear();
-    const yearsForSelect = Array.from({ length: currentConfig.maxYearSelect - 2000 + 1 }, (_, i) => currentConfig.maxYearSelect - i);
-
-    // Determine if the "no papers selected" message should be shown
-    const showNoPapersState = flatPaperList.length === 0;
+    const noPapersSelected = flatPaperList.length === 0;
 
     return (
         <div id="app-container" className="w-full h-full flex flex-col box-border">
@@ -672,16 +848,14 @@ const App: React.FC = () => {
                     font-family: 'Inter', sans-serif;
                     background-color: #f8f9fa;
                     color: #333;
-                   
                 }
                 .table-container {
-                    width: calc(100%);
+                    width: 100%;
                     height: calc(100vh - 100px); /* Adjust based on header height */
                     overflow: auto;
                     border: 1px solid #e2e8f0;
-                    border-radius: 0rem;
+                   
                     margin-bottom: 30px;
-                    // align-self: center;
                     position: relative; /* Needed for absolute positioning of message */
                 }
                 .table-container::-webkit-scrollbar {
@@ -693,21 +867,18 @@ const App: React.FC = () => {
                     width: 100%;
                 }
                 th, td {
-                    border: 1px solid #e2e8f0;
+                    border: 1px solid #00000010;
                     padding: 0;
                     white-space: nowrap;
                     text-align: center;
                     position: relative;
                 }
-
                 td {
                     min-width:100px;
                 }
-
                 td:first-child {
                     min-width:170px;
                 }
-                
                 th {
                     background-color: #fff;
                     position: sticky;
@@ -752,11 +923,10 @@ const App: React.FC = () => {
                 #table-head th:first-child button:hover {
                     background-color: #f0f0f0;
                 }
-
                 .score-cell {
                     min-width: 10px;
-                    height: 32px;
-                    line-height: 32px;
+                    height: 34px;
+                    line-height: 34px;
                     outline: none;
                     transition: background-color 0.3s ease;
                     display: flex;
@@ -794,7 +964,6 @@ const App: React.FC = () => {
                     -ms-overflow-style: none;
                     scrollbar-width: none;
                 }
-
                 .modal-overlay {
                     background-color: rgba(0, 0, 0, 0.5);
                     display: flex;
@@ -827,7 +996,6 @@ const App: React.FC = () => {
                     justify-content: flex-end;
                     border-radius: 0 0 0.5rem 0.5rem;
                 }
-
                 .overlay-graphs-container {
                     display: flex;
                     justify-content: center;
@@ -867,12 +1035,11 @@ const App: React.FC = () => {
                     border-radius: 5px;
                 }
                 #bottom-actions {
-                   overflow: hidden;
+                    overflow: hidden;
                 }
                 #bottom-actions::-webkit-scrollbar {
                     display: none;
                 }
-
                 .mean-score-row {
                     font-weight: bold;
                     background-color: #e9e9e9;
@@ -886,7 +1053,6 @@ const App: React.FC = () => {
                 .mean-score-row td:first-child {
                     background-color: #e9e9e9;
                 }
-
                 #chart-skewed-dist {
                     max-width: 100%;
                     margin: 0;
@@ -910,7 +1076,7 @@ const App: React.FC = () => {
 
             <header className="flex justify-between items-center p-4 h-[80px]">
                 <div id="left-header-content">
-                    <h1 className="text-2xl font-bold text-gray-800" id="header-date">{headerDate}</h1>
+                    <h1 className="text-2xl font-bold text-gray-800" id="header-date"></h1>
                     <p className="text-xs text-gray-500 mt-1">Data saved locally in your browser</p>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -926,22 +1092,16 @@ const App: React.FC = () => {
                 </div>
             </header>
 
-            <div id="table-container" className="table-container flex-grow box-content">
-                {showNoPapersState && (
-                    <div id="no-papers-state" className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 text-lg">
-                        <p className="mb-4">No papers selected. Click 'Select Papers' to get started.</p>
-                        <button id="select-papers-intro-btn" className="btn-primary flex items-center gap-2 px-6 py-3 text-lg" onClick={() => setShowModal(true)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                            <span>Select Papers</span>
-                        </button>
-                    </div>
-                )}
-
-                <table id="scores-table" className={showNoPapersState ? 'hidden' : ''}>
+            <div id="table-container" className={`table-container flex-grow box-content ${noPapersSelected ? 'hidden' : ''}`}>
+                <table id="scores-table">
                     <thead id="table-head">
                         <tr>
-                            <th className="p-0">
-                                <button id="open-select-papers-modal-btn-in-table" className="btn-primary flex items-center justify-center" onClick={() => setShowModal(true)}>
+                            <th>
+                                <button
+                                    id="open-select-papers-modal-btn-in-table"
+                                    className="btn-primary flex items-center justify-center"
+                                    onClick={() => setIsModalOpen(true)}
+                                >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
                                     <span className="ml-0">Select Papers</span>
                                 </button>
@@ -970,26 +1130,21 @@ const App: React.FC = () => {
                                         (item.year === null || item.year === year)
                                     ) || (appState.currentMode === 'IAL' && serie === 'Oct' && paper.startsWith('FP'));
 
-                                    const cellColor = updateCellColor(score, paper);
-
                                     return (
                                         <td key={cellId}>
-                                            <div
-                                                className={`score-cell ${isDisabled ? 'disabled' : ''}`}
-                                                contentEditable={!isDisabled}
-                                                style={{ backgroundColor: cellColor }}
-                                                data-id={cellId}
-                                                data-subject={subject}
-                                                data-paper={paper}
-                                                data-year={year}
-                                                data-series={serie}
-                                                data-mode={appState.currentMode}
-                                                onInput={handleScoreInput}
-                                                onFocus={handleCellFocus}
-                                                suppressContentEditableWarning={true} // Suppress React warning
-                                            >
-                                                {isDisabled ? 'N/A' : score}
-                                            </div>
+                                            <ScoreCell
+                                                id={cellId}
+                                                score={score}
+                                                subject={subject}
+                                                paper={paper}
+                                                year={year}
+                                                series={serie}
+                                                mode={appState.currentMode}
+                                                maxMark={currentPaperMaxMarks[paper]}
+                                                isDisabled={isDisabled}
+                                                onScoreChange={handleScoreChange}
+                                                onCellFocus={handleCellFocus}
+                                            />
                                         </td>
                                     );
                                 })}
@@ -1002,10 +1157,27 @@ const App: React.FC = () => {
                             {flatPaperList.map(({ subject, paper }) => {
                                 const mean = calculateMeanScore(subject, paper);
                                 const meanText = mean !== null ? mean.toFixed(1) : 'N/A';
-                                const meanCellColor = updateCellColor(mean !== null ? mean : '', paper);
+                                const scoreForColor = mean !== null ? mean.toString() : ''; // Pass string for color function
+
                                 return (
                                     <td key={`mean-${subject}-${paper}`}>
-                                        <div className="score-cell" style={{ backgroundColor: meanCellColor }}>
+                                        <div
+                                            className="score-cell"
+                                            style={{
+                                                backgroundColor: (() => {
+                                                    let bgColor = '';
+                                                    if (mean !== null) {
+                                                        const percentage = (mean / currentPaperMaxMarks[paper]) * 100;
+                                                        if (percentage >= 90) bgColor = 'var(--color-90)';
+                                                        else if (percentage >= 80) bgColor = 'var(--color-80)';
+                                                        else if (percentage >= 60) bgColor = 'var(--color-70)';
+                                                        else if (percentage >= 30) bgColor = 'var(--color-50)';
+                                                        else bgColor = 'var(--color-fail)';
+                                                    }
+                                                    return bgColor;
+                                                })()
+                                            }}
+                                        >
                                             {meanText}
                                         </div>
                                     </td>
@@ -1016,11 +1188,23 @@ const App: React.FC = () => {
                 </table>
             </div>
 
+            {/* Message and Button for when no papers are selected */}
+            {noPapersSelected && (
+                <div id="no-papers-state" className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 text-lg">
+                    <p className="mb-4">No papers selected. Click 'Select Papers' to get started.</p>
+                    <button id="select-papers-intro-btn" className="btn-primary flex items-center gap-2 px-6 py-3 text-lg" onClick={() => setIsModalOpen(true)}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                        <span>Select Papers</span>
+                    </button>
+                </div>
+            )}
+
             <div
                 id="bottom-actions"
                 ref={bottomActionsRef}
-                className="fixed p-4 bg-white rounded-lg shadow-lg z-20 transform-gpu flex flex-col items-center w-[290px] h-[150px] max-w-sm cursor-grab pt-6"
-                style={{ left: currentPosition.current.left, top: currentPosition.current.top }}
+                className={`fixed p-4 bg-white rounded-xl border-2 border-[#00000015] shadow-2xl shadow-[#00000020] z-20 flex flex-col items-center w-[290px] h-[155px] max-w-sm cursor-grab pt-6 transition-transform duration-300 ${isBottomActionsVisible ? 'translate-y-0 opacity-100 visible' : 'translate-y-20 opacity-0 invisible'}`}
+                onMouseDown={startDrag}
+                style={{ position: 'fixed' }} // Ensure position is fixed for dragging
             >
                 <button id="close-bottom-actions-btn" className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 rounded-full p-1 hover:bg-gray-100 transition-colors" onClick={hideBottomActions}>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -1033,9 +1217,17 @@ const App: React.FC = () => {
                             <span>{activeCellData.subject} {activeCellData.paper}</span><br /><br />
                             <span style={{ fontSize: '30px' }}>{activeCellData.series} {activeCellData.year}</span>
                             <span style={{ fontSize: '20px', fontWeight: 100, color: 'grey' }}>
-                                {activeCellData.score && !isNaN(parseFloat(activeCellData.score)) && activeCellData.maxMark ?
-                                    ` (${((parseFloat(activeCellData.score) / activeCellData.maxMark) * 100).toFixed(0)}%)` :
-                                    activeCellData.score === 'N/A' ? ' (N/A)' : ''}
+                                {(() => {
+                                    const score = appState.modes[activeCellData.mode].scores[activeCellData.id];
+                                    const maxMark = getCurrentPaperMaxMarks()[activeCellData.paper];
+                                    if (score && !isNaN(parseFloat(score)) && maxMark) {
+                                        const percentage = ((parseFloat(score) / maxMark) * 100).toFixed(0);
+                                        return ` (${percentage}%)`;
+                                    } else if (score === 'N/A') {
+                                        return ' (N/A)';
+                                    }
+                                    return '';
+                                })()}
                             </span>
                         </>
                     ) : (
@@ -1047,42 +1239,17 @@ const App: React.FC = () => {
                     <button id="goto-ms-btn" className="btn-primary w-[100%] bg-gray-500 hover:bg-gray-600" onClick={() => handleGoToPaper('ms')}>Answer</button>
                 </div>
                 <div id="paper-graphs" className="overlay-graphs-container w-full">
-                    {activeCellData && (
-                        <>
-                            {/* Score Reached Progress Bar */}
-                            <div className="overlay-graph">
-                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                    <div className="overlay-graph-title">Grade: A*</div>
-                                    <div className="overlay-graph-title">UMS: <span className="text-center mt-1 text-gray-600">{activeCellData.score || 0} / {activeCellData.maxMark || 0}</span></div>
-                                </div>
-                                <div className="progress-bar-container">
-                                    <div className="progress-bar" style={{ width: `${Math.min(100, ((parseFloat(activeCellData.score) || 0) / activeCellData.maxMark) * 100).toFixed(0)}%` }}></div>
-                                </div>
-                            </div>
-                            {/* Skewed Normal Distribution Graph */}
-                            <div className="overlay-graph">
-                                <div className="overlay-graph-title">
-                                    {calculatePercentile(
-                                        (activeCellData.score && !isNaN(parseFloat(activeCellData.score)) && activeCellData.maxMark && activeCellData.maxMark > 0) ?
-                                            (parseFloat(activeCellData.score) / activeCellData.maxMark) * 100 : NaN
-                                    )}th Percentile
-                                </div>
-                                {/* The Chart component from react-apexcharts */}
-                                <Chart
-                                    options={chartOptions}
-                                    series={chartOptions.series}
-                                    type={chartOptions.chart?.type}
-                                    height={chartOptions.chart?.height}
-                                />
-                            </div>
-                        </>
-                    )}
+                    {renderPaperGraphs()}
                 </div>
             </div>
 
             {/* Main Modal for Subject Selection and Year Range */}
-            {showModal && (
-                <div id="modal-container" className="fixed inset-0 modal-overlay z-50">
+            {isModalOpen && (
+                <div id="modal-container" className="fixed inset-0 modal-overlay z-50" onClick={(e) => {
+                    if (e.target === e.currentTarget) {
+                        handleSetYearRangeAndCloseModal();
+                    }
+                }}>
                     <div className="modal-content w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2 className="text-2xl font-bold text-gray-800">Select Subjects and Papers</h2>
@@ -1090,180 +1257,12 @@ const App: React.FC = () => {
                         </div>
                         <div id="modal-content-main" className="modal-body no-scrollbar">
                             <div id="modal-content-subjects">
-                                {Object.entries(currentConfig.subjectsData).map(([subject, data]) => (
-                                    <div key={subject} className="mb-6">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <h3 className="text-lg font-bold text-gray-700">{subject}</h3>
-                                            <label className="flex items-center space-x-2 text-sm font-medium text-gray-600 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    className="rounded custom-checkbox mr-2"
-                                                    data-subject={subject}
-                                                    checked={
-                                                        appState.modes[appState.currentMode].selectedPapers[subject]?.length === data.papers.length && data.papers.length > 0
-                                                    }
-                                                    onChange={(e) => handleSelectAllChange(subject, e.target.checked)}
-                                                    ref={el => {
-                                                        if (el) {
-                                                            const allChecked = appState.modes[appState.currentMode].selectedPapers[subject]?.length === data.papers.length && data.papers.length > 0;
-                                                            const anyChecked = (appState.modes[appState.currentMode].selectedPapers[subject]?.length || 0) > 0 && (appState.modes[appState.currentMode].selectedPapers[subject]?.length || 0) < data.papers.length;
-                                                            el.checked = allChecked;
-                                                            el.indeterminate = anyChecked;
-                                                        }
-                                                    }}
-                                                />
-                                                Select All
-                                            </label>
-                                        </div>
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                                            {data.papers.map(paper => (
-                                                <label key={paper} className="flex items-center space-x-2 p-2 rounded-md bg-gray-100 hover:bg-gray-200 transition cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        className="rounded custom-checkbox mr-2 paper-checkbox"
-                                                        data-subject={subject}
-                                                        data-paper={paper}
-                                                        checked={appState.modes[appState.currentMode].selectedPapers[subject]?.includes(paper) || false}
-                                                        onChange={(e) => handlePaperSelectionChange(subject, paper, e.target.checked)}
-                                                    />
-                                                    {paper}
-                                                </label>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
+                                {renderSubjectSelection()}
                             </div>
-
-                            {/* Year Range Section */}
-                            <div id="year-range-section" className="mt-8 pt-6 border-t border-gray-200">
-                                <h3 className="text-xl font-bold text-gray-800 mb-4">Set Year Range</h3>
-                                <div className="space-y-4">
-                                    <div className="flex items-center space-x-4">
-                                        <label htmlFor="start-year" className="block text-gray-700 w-24">Start:</label>
-                                        <select
-                                            id="start-year"
-                                            className="flex-1 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                                            value={currentYears.length > 0 ? currentYears[currentYears.length - 1].year : yearsForSelect[0]}
-                                            onChange={(e) => {
-                                                const newYear = parseInt(e.target.value);
-                                                setAppState(prevState => {
-                                                    const newState = { ...prevState };
-                                                    const currentModeYears = newState.modes[newState.currentMode].years;
-                                                    const currentStartSeries = currentModeYears.length > 0 ? currentModeYears[currentModeYears.length - 1].series : currentConfig.series[0];
-                                                    const currentEndYear = currentModeYears.length > 0 ? currentModeYears[0].year : currentConfig.maxYearSelect;
-                                                    const currentEndSeries = currentModeYears.length > 0 ? currentModeYears[0].series : currentConfig.maxSeriesSelect;
-
-                                                    newState.modes[newState.currentMode].years = generateYearSeriesRange(
-                                                        newYear, currentStartSeries, currentEndYear, currentEndSeries,
-                                                        currentConfig.seriesOrder, currentConfig.maxYearSelect, currentConfig.maxSeriesSelect
-                                                    );
-                                                    return newState;
-                                                });
-                                            }}
-                                        >
-                                            {yearsForSelect.map(year => (
-                                                <option key={year} value={year}>{year}</option>
-                                            ))}
-                                        </select>
-                                        <select
-                                            id="start-series"
-                                            className="flex-1 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                                            value={currentYears.length > 0 ? currentYears[currentYears.length - 1].series : currentConfig.series[0]}
-                                            onChange={(e) => {
-                                                const newSeries = e.target.value;
-                                                setAppState(prevState => {
-                                                    const newState = { ...prevState };
-                                                    const currentModeYears = newState.modes[newState.currentMode].years;
-                                                    const currentStartYear = currentModeYears.length > 0 ? currentModeYears[currentModeYears.length - 1].year : yearsForSelect[0];
-                                                    const currentEndYear = currentModeYears.length > 0 ? currentModeYears[0].year : currentConfig.maxYearSelect;
-                                                    const currentEndSeries = currentModeYears.length > 0 ? currentModeYears[0].series : currentConfig.maxSeriesSelect;
-
-                                                    newState.modes[newState.currentMode].years = generateYearSeriesRange(
-                                                        currentStartYear, newSeries, currentEndYear, currentEndSeries,
-                                                        currentConfig.seriesOrder, currentConfig.maxYearSelect, currentConfig.maxSeriesSelect
-                                                    );
-                                                    return newState;
-                                                });
-                                            }}
-                                        >
-                                            {currentConfig.series.map(s => (
-                                                <option key={s} value={s}>{s}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="flex items-center space-x-4">
-                                        <label htmlFor="end-year" className="block text-gray-700 w-24">End:</label>
-                                        <select
-                                            id="end-year"
-                                            className="flex-1 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                                            value={currentYears.length > 0 ? currentYears[0].year : currentConfig.maxYearSelect}
-                                            onChange={(e) => {
-                                                const newYear = parseInt(e.target.value);
-                                                setAppState(prevState => {
-                                                    const newState = { ...prevState };
-                                                    const currentModeYears = newState.modes[newState.currentMode].years;
-                                                    const currentStartYear = currentModeYears.length > 0 ? currentModeYears[currentModeYears.length - 1].year : yearsForSelect[0];
-                                                    const currentStartSeries = currentModeYears.length > 0 ? currentModeYears[currentModeYears.length - 1].series : currentConfig.series[0];
-                                                    const currentEndSeries = currentModeYears.length > 0 ? currentModeYears[0].series : currentConfig.maxSeriesSelect;
-
-                                                    newState.modes[newState.currentMode].years = generateYearSeriesRange(
-                                                        currentStartYear, currentStartSeries, newYear, currentEndSeries,
-                                                        currentConfig.seriesOrder, currentConfig.maxYearSelect, currentConfig.maxSeriesSelect
-                                                    );
-                                                    return newState;
-                                                });
-                                            }}
-                                        >
-                                            {yearsForSelect.map(year => (
-                                                <option key={year} value={year}>{year}</option>
-                                            ))}
-                                        </select>
-                                        <select
-                                            id="end-series"
-                                            className="flex-1 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                                            value={currentYears.length > 0 ? currentYears[0].series : currentConfig.maxSeriesSelect}
-                                            onChange={(e) => {
-                                                const newSeries = e.target.value;
-                                                setAppState(prevState => {
-                                                    const newState = { ...prevState };
-                                                    const currentModeYears = newState.modes[newState.currentMode].years;
-                                                    const currentStartYear = currentModeYears.length > 0 ? currentModeYears[currentModeYears.length - 1].year : yearsForSelect[0];
-                                                    const currentStartSeries = currentModeYears.length > 0 ? currentModeYears[currentModeYears.length - 1].series : currentConfig.series[0];
-                                                    const currentEndYear = currentModeYears.length > 0 ? currentModeYears[0].year : currentConfig.maxYearSelect;
-
-                                                    newState.modes[newState.currentMode].years = generateYearSeriesRange(
-                                                        currentStartYear, currentStartSeries, currentEndYear, newSeries,
-                                                        currentConfig.seriesOrder, currentConfig.maxYearSelect, currentConfig.maxSeriesSelect
-                                                    );
-                                                    return newState;
-                                                });
-                                            }}
-                                        >
-                                            {currentConfig.series.map(s => (
-                                                <option key={s} value={s}>{s}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    {/* Year range error message - managed by handleSetYearRangeAndCloseModal */}
-                                    {/* For React, you would typically have a state variable for this error and render conditionally */}
-                                    {/* <p id="year-range-error" className="text-red-500 text-sm hidden">Start date cannot be after end date.</p> */}
-                                </div>
-                            </div>
+                            {renderYearRangeSelectors()}
                         </div>
                         <div className="modal-footer">
-                            <button
-                                id="close-modal-btn"
-                                className="btn-primary"
-                                onClick={() => {
-                                    const startY = parseInt((document.getElementById('start-year') as HTMLSelectElement).value);
-                                    const startS = (document.getElementById('start-series') as HTMLSelectElement).value;
-                                    const endY = parseInt((document.getElementById('end-year') as HTMLSelectElement).value);
-                                    const endS = (document.getElementById('end-series') as HTMLSelectElement).value;
-                                    handleSetYearRangeAndCloseModal(startY, startS, endY, endS);
-                                }}
-                            >
-                                Done
-                            </button>
+                            <button id="close-modal-btn" className="btn-primary" onClick={handleSetYearRangeAndCloseModal}>Done</button>
                         </div>
                     </div>
                 </div>

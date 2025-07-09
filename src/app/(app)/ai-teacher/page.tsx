@@ -9,7 +9,7 @@ type ChatHistory = { [subject: string]: ChatSession[] };
 
 const App = () => {
     // State Management
-    const [currentSubject, setCurrentSubject] = useState<string | null>(null);
+    const [currentSubject, setCurrentSubject] = useState(null);
     const [chatHistory, setChatHistory] = useState<ChatHistory>({}); // { subject: [{ id: timestamp, messages: [{sender, text, timestamp}] }] }
     const [activeChat, setActiveChat] = useState<ChatSession | null>(null); // The currently viewed chat session
     const [quizModalOpen, setQuizModalOpen] = useState(false);
@@ -24,7 +24,7 @@ const App = () => {
     const [showLoadingScreen, setShowLoadingScreen] = useState(true);
     const [showConfirmClearModal, setShowConfirmClearModal] = useState(false);
     const [speechRecognitionSupported, setSpeechRecognitionSupported] = useState(false);
-
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Refs for DOM elements
     const chatContainerRef = useRef(null);
@@ -286,7 +286,8 @@ const App = () => {
     };
 
     const MessageBubble = ({ message, sender }: { message: string; sender: string }) => {
-        const contentRef = useRef<HTMLDivElement>(null);
+        const contentRef = useRef<HTMLDivElement>(null); // Ref to get the text content for copying
+
         const handleCopy = () => {
             if (contentRef.current) {
                 const copyButton = (contentRef.current as HTMLElement).closest('.message')?.querySelector('.copy-button') as HTMLElement | null;
@@ -295,14 +296,15 @@ const App = () => {
                 }
             }
         };
+
         return (
-            <div className={`message ${sender}-message p-3 rounded-lg break-words mb-2 relative flex flex-col`}>
+            <div className={`message ${sender}-message p-3 rounded-lg break-words mb-2 relative`}>
                 <div className="message-content" ref={contentRef} dangerouslySetInnerHTML={{ __html: sender === 'ai' ? marked.parse(message) : message }}></div>
-                <div
-                    className={`copy-button-container absolute top-2 ${sender === 'ai' ? 'right-2 justify-end' : 'left-2 justify-start'} flex`}
-                    style={{ zIndex: 2 }}
-                >
-                    <button onClick={handleCopy} className={`copy-button text-xs px-2 py-1 rounded-md ${sender === 'ai' ? 'ai-message' : ''}`}> <i className="fas fa-copy"></i> Copy </button>
+                {/* Re-added copy button functionality */}
+                <div className="copy-button-container">
+                    <button onClick={handleCopy} className={`copy-button text-xs px-2 py-1 rounded-md ${sender === 'ai' ? 'ai-message' : ''}`}>
+                        <i className="fas fa-copy"></i>
+                    </button>
                 </div>
             </div>
         );
@@ -316,8 +318,8 @@ const App = () => {
         }, 3000);
     };
 
-    const getSubjectDisplayName = (subject: string) => {
-        const subjectMap: { [key: string]: string } = {
+    const getSubjectDisplayName = (subject) => {
+        const subjectMap = {
             'biology': 'Biology (Edexcel IAL)',
             'chemistry': 'Chemistry (Edexcel IAL)',
             'physics': 'Physics (Edexcel IAL)',
@@ -326,15 +328,13 @@ const App = () => {
             'ielts-speaking': 'IELTS Speaking',
             'ielts-writing': 'IELTS Writing',
             'ielts-reading': 'IELTS Reading',
-            'ielts-listening': 'IELTS Listening',
-            'General': 'General',
-            'general': 'General',
+            'ielts-listening': 'IELTS Listening'
         };
         return subjectMap[subject] || subject;
     };
 
-    const getWelcomeMessage = (subject: string) => {
-        const welcomeMessages: { [key: string]: string } = {
+    const getWelcomeMessage = (subject) => {
+        const welcomeMessages = {
             'biology': "👋 Welcome to Biology! I'm your Edexcel IAL Biology tutor. I can help with topics like biological molecules, cells, genetics, ecology, and more. What would you like to learn about today?",
             'chemistry': "👋 Welcome to Chemistry! I'm your Edexcel IAL Chemistry tutor. I can help with topics like atomic structure, bonding, energetics, organic chemistry, and more. What would you like to learn about today?",
             'physics': "👋 Welcome to Physics! I'm your Edexcel IAL Physics tutor. I can help with topics like mechanics, electricity, waves, fields, nuclear physics, and more. What would you like to learn about today?",
@@ -343,39 +343,45 @@ const App = () => {
             'ielts-speaking': "👋 Welcome to IELTS Speaking! I can help you prepare for your speaking test with practice questions, vocabulary, strategies, and feedback. How would you like to practice today?",
             'ielts-writing': "👋 Welcome to IELTS Writing! I can help you improve your writing skills for both Task 1 and Task 2, including essay structure, vocabulary, grammar, and more. What aspect of IELTS writing would you like help with?",
             'ielts-reading': "👋 Welcome to IELTS Reading! I can help you with reading strategies, practice questions, vocabulary building, and more to improve your reading skills. What aspect of IELTS reading would you like to work on?",
-            'ielts-listening': "👋 Welcome to IELTS Listening! I can help you with listening strategies, practice questions, note-taking skills, and more. How would you like to improve your listening skills today?",
-            'General': "👋 Welcome! How can I help you today?",
-            'general': "👋 Welcome! How can I help you today?",
+            'ielts-listening': "👋 Welcome to IELTS Listening! I can help you with listening strategies, practice questions, note-taking skills, and more. How would you like to improve your listening skills today?"
         };
         return welcomeMessages[subject] || "👋 Welcome! How can I help you today?";
     };
 
-    const changeSubject = (subject: string) => {
+    const changeSubject = (subject) => {
         setCurrentSubject(subject);
-        let chatForSubject: ChatSession;
+
+        let chatForSubject = null;
         if (chatHistory[subject] && chatHistory[subject].length > 0) {
-            chatForSubject = chatHistory[subject][0];
+            chatForSubject = chatHistory[subject][0]; // Load the most recent chat
         } else {
+            // No history for this subject, create a new conceptual chat to show welcome message
             chatForSubject = {
                 id: Date.now(),
                 subject: subject,
                 messages: [{ sender: 'ai', text: getWelcomeMessage(subject), timestamp: Date.now() }]
             };
+            // Temporarily update history to include this new chat for display
             setChatHistory(prev => ({
                 ...prev,
-                [subject]: [chatForSubject, ...(prev[subject] || []) as ChatSession[]]
+                [subject]: [chatForSubject, ...(prev[subject] || [])]
             }));
         }
         setActiveChat(chatForSubject);
+
+        // Close sidebar if open (only applies to mobile overlay)
         if (typeof window !== 'undefined' && window.innerWidth < 768) {
-            toggleSidebar(false as null | boolean);
+            toggleSidebar(false);
         }
+
+        setIsSidebarOpen(false);
     };
 
-    const toggleSidebar = (forceState: boolean | null | undefined = null) => {
+    const toggleSidebar = (forceState: boolean | null = null) => {
         if (typeof window !== 'undefined' && window.innerWidth < 768 && sidebarMenuRef.current) {
             const isOpen = sidebarMenuRef.current.classList.contains('translate-x-0');
-            const newState = forceState !== null && forceState !== undefined ? forceState : !isOpen;
+            const newState = forceState !== null ? forceState : !isOpen;
+            setIsSidebarOpen(newState);
             if (newState) {
                 sidebarMenuRef.current.classList.remove('-translate-x-full');
                 sidebarMenuRef.current.classList.add('translate-x-0');
@@ -386,7 +392,7 @@ const App = () => {
         }
     };
 
-    const loadChat = (subject: string, chatId: number) => {
+    const loadChat = (subject, chatId) => {
         if (currentSubject !== subject) {
             setCurrentSubject(subject);
         }
@@ -404,7 +410,7 @@ const App = () => {
         setShowConfirmClearModal(true);
     };
 
-    const handleConfirmClear = (confirm: boolean) => {
+    const handleConfirmClear = (confirm) => {
         setShowConfirmClearModal(false);
         if (confirm) {
             setChatHistory({});
@@ -416,7 +422,7 @@ const App = () => {
     };
 
     // --- Quiz Generation ---
-    const generateQuiz = async (numQuestions: string, difficulty: string, topic: string) => {
+    const generateQuiz = async (numQuestions, difficulty, topic) => {
         // Ensure document is available before manipulating it
         if (typeof document === 'undefined') return;
 
@@ -481,7 +487,7 @@ const App = () => {
         }
     };
 
-    const displayQuiz = (quizText: string, numQuestions: string, difficulty: string, topic: string) => {
+    const displayQuiz = (quizText, numQuestions, difficulty, topic) => {
         // Ensure document is available before manipulating it
         if (typeof document === 'undefined') return;
 
@@ -551,7 +557,7 @@ const App = () => {
     };
 
     // --- Revision Plan Generation ---
-    const generateRevisionPlan = async (examDate: string, studyHours: string, focusAreas: string) => {
+    const generateRevisionPlan = async (examDate, studyHours, focusAreas) => {
         // Ensure document is available before manipulating it
         if (typeof document === 'undefined') return;
 
@@ -630,7 +636,7 @@ const App = () => {
         }
     };
 
-    const displayRevisionPlan = (planText: string, examDate: string, studyHours: string, focusAreas: string) => {
+    const displayRevisionPlan = (planText, examDate, studyHours, focusAreas) => {
         // Ensure document is available before manipulating it
         if (typeof document === 'undefined') return;
 
@@ -749,7 +755,7 @@ const App = () => {
                 }
 
                 #eduai-container {
-                    width: 90vw;
+                    width: 100%;
                     max-width: 1000px;
                     height: 90vh;
                     margin: 0 auto;
@@ -942,24 +948,15 @@ const App = () => {
                 }
 
                 .copy-button-container {
-                    position: absolute;
-                    top: 0.5rem;
-                    z-index: 2;
-                }
-                .message.ai-message .copy-button-container {
-                    right: 0.5rem;
-                    left: auto;
+                    position: relative;
+                    margin-top: 0.5rem;
+                    display: flex;
                     justify-content: flex-end;
-                }
-                .message.user-message .copy-button-container {
-                    left: 0.5rem;
-                    right: auto;
-                    justify-content: flex-start;
                 }
 
                 .copy-button {
-                    background-color: rgba(0, 0, 0, 0.1);
-                    color: rgba(255, 255, 255, 0.8);
+                    background-color: rgba(0, 0, 0, 0);
+                    color: rgba(255, 255, 255, 0.5);
                     border: none;
                     border-radius: 0.375rem;
                     padding: 0.25rem 0.5rem;
@@ -968,23 +965,25 @@ const App = () => {
                     transition: background-color 0.2s ease;
                     display: flex;
                     align-items: center;
+                    
                 }
 
                 .ai-message .copy-button {
-                    background-color: rgba(0, 0, 0, 0.05);
-                    color: var(--text-secondary);
+                    background-color: rgba(0, 0, 0, 0);
+                    color: rgba(0, 0, 0, 0.2);
                 }
 
                 .copy-button:hover {
-                    background-color: rgba(0, 0, 0, 0.2);
+                    background-color: rgba(0, 0, 0, 0.05);
                 }
 
                 .ai-message .copy-button:hover {
-                    background-color: rgba(0, 0, 0, 0.1);
+                    background-color: rgba(0, 0, 0, 0.05);
+                     color: rgba(0, 0, 0, 0.5);
                 }
 
                 .copy-button i {
-                    margin-right: 0.25rem;
+          
                 }
 
                 .copy-success-message {
@@ -1010,7 +1009,7 @@ const App = () => {
                 }
                 `}
             </style>
-            <div id="eduai-container" className="w-full h-[90vh] rounded-xl overflow-hidden shadow-xl border m-0 border-gray-200 relative transition-all duration-300 ease-in-out flex flex-col md:flex-row">
+            <div id="eduai-container" className="w-full h-[90vh] rounded-xl overflow-hidden border m-0 border-gray-200 relative transition-all duration-300 ease-in-out flex flex-col md:flex-row">
                 {/* Loading Screen */}
                 {showLoadingScreen && (
                     <div id="loading-screen" className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-400 to-blue-600 z-50 animate-fade-in">
@@ -1026,12 +1025,331 @@ const App = () => {
                 )}
 
                 {/* Sidebar Menu */}
-                <div ref={sidebarMenuRef} id="sidebar-menu" className="absolute left-0 top-0 h-full w-64 bg-white/50 blur-container transform -translate-x-full z-40 border-r border-gray-200 overflow-y-auto transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:bg-white md:shadow-md md:z-auto md:flex-shrink-0 md:flex-grow-0 md:rounded-l-xl">
+                <div ref={sidebarMenuRef} id="sidebar-menu" className="absolute left-0 top-0 h-full w-64 bg-[#ffffff90] blur-container transform -translate-x-full z-40 border-r border-gray-200 overflow-y-auto transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:bg-white md:z-auto md:flex-shrink-0 md:flex-grow-0 md:rounded-l-xl">
                     <div className="p-4 h-[60px] border-b border-b-[#00000020]">
-                        <h3 className="font-bold text-xl text-primary-500" style={{ marginBottom: 0, paddingBottom: 0 }}>AI Teacher <span className="text-gray-300 font-medium">Pro</span></h3>
+                        <h3 className="font-bold text-xl text-primary-500" style={{ marginBottom: 0, paddingBottom: 0 }}>AI Teacher <span className="text-[#ff3b30]">Pro</span></h3>
                     </div>
                     <div className="py-4">
                         {/* General subject on top */}
                         <button
                             onClick={() => changeSubject('General')}
-                            className={`
+                            className={`sidebar-subject-btn w-full text-left px-4 py-2 mb-2 flex items-center ${currentSubject === 'General' ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-gray-100 hover:text-black'}`}
+                            style={{ borderRadius: '0px' }}
+                        >
+                            <i className="fas fa-comments mr-2 text-blue-500"></i> General
+                        </button>
+                        <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4 h-[25px]">Edexcel IAL</h3>
+                        {['biology', 'chemistry', 'physics', 'math'].map((subject: string) => (
+                            <button
+                                key={subject}
+                                onClick={() => changeSubject(subject)}
+                                className={`sidebar-subject-btn w-full text-left px-4 py-2 flex items-center ${currentSubject === subject ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-gray-100 hover:text-black'}`}
+                                style={{ borderRadius: '0px' }}
+                            >
+                                <i className={`fas ${subject === 'biology' ? 'fa-dna text-emerald-500' : subject === 'chemistry' ? 'fa-flask text-red-400' : subject === 'physics' ? 'fa-atom text-blue-500' : 'fa-calculator text-amber-500'} mr-2`}></i> {getSubjectDisplayName(subject).split(' ')[0]}
+                            </button>
+                        ))}
+                        <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4  h-[25px]">Edexcel IGCSE</h3>
+                        <button
+                            onClick={() => changeSubject('chinese')}
+                            className={`sidebar-subject-btn w-full text-left px-4 py-2 flex items-center ${currentSubject === 'chinese' ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-gray-100 hover:text-black'}`}
+                            style={{ borderRadius: '0px' }}
+                        >
+                            <i className="fas fa-language mr-2 text-purple-500"></i> Chinese
+                        </button>
+
+                        <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4  h-[25px]">IELTS</h3>
+                        {['ielts-speaking', 'ielts-writing', 'ielts-reading', 'ielts-listening'].map((subject: string) => (
+                            <button
+                                key={subject}
+                                onClick={() => changeSubject(subject)}
+                                className={`sidebar-subject-btn w-full text-left px-4 py-2 flex items-center ${currentSubject === subject ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-gray-100 hover:text-black'}`}
+                                style={{ borderRadius: '0px' }}
+                            >
+                                <i className={`fas ${subject === 'ielts-speaking' ? 'fa-microphone' : subject === 'ielts-writing' ? 'fa-pen-fancy' : subject === 'ielts-reading' ? 'fa-book-open' : 'fa-headphones'} mr-2 text-red-500`}></i> {getSubjectDisplayName(subject).split(' ')[1]}
+                            </button>
+                        ))}
+                        <div className="border-t border-t-[#00000020] h-[50px] mt-4 pt-4">
+                            <button onClick={clearHistory} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                <i className="fas fa-trash-alt mr-2 text-gray-500"></i> Clear History
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main App Interface */}
+                <div id="app-interface" className={`h-full flex flex-col bg-gray-50 relative ${showLoadingScreen ? 'hidden' : 'flex'} flex-grow md:rounded-r-xl md:overflow-hidden`}>
+                    {/* Header */}
+                    <header className="flex justify-between items-center p-4 bg-white border-b border-b-[#00000020] h-[60px]">
+                        <div className="flex items-center">
+                            <button onClick={() => toggleSidebar()} id="menu-toggle" className="w-[40px] h-[40px] p-0 rounded-full hover:bg-gray-100 transition mr-2 block md:hidden" style={{ width: '40px', height: '40px' }}>
+                                <i className="fas fa-bars text-gray-600"></i>
+                            </button>
+                            <div>
+                                <h1 id="current-subject-header" className="text-xl font-bold text-gray-800 break-words overflow-hidden line-clamp-2" style={{ marginBottom: 0, paddingBottom: 0 }}>{currentSubject ? getSubjectDisplayName(currentSubject) : 'AI Teach'}</h1>
+                                <p className="text-xs text-gray-500 mt-1">Gemini 2.5 Flash</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <button onClick={() => setQuizModalOpen(true)} id="quiz-btn" className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm bg-blue-100 text-blue-500 hover:bg-blue-200 hover:text-primary-500 transition">
+                                <i className="fas fa-question-circle text-xs"></i>
+                                <span>Quiz</span>
+                            </button>
+                            <button onClick={() => setRevisionModalOpen(true)} id="revision-btn" className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm bg-purple-100 text-purple-500 hover:text-purple-500 hover:bg-purple-200 transition">
+                                <i className="fas fa-book text-xs"></i>
+                                <span>Plan</span>
+                            </button>
+                            <button onClick={() => setHistoryModalOpen(true)} id="chat-history-btn" className="p-0 rounded-full hover:bg-gray-100 transition justify-center" style={{ width: '40px', height: '40px' }}>
+                                <i className="fas fa-history text-gray-600"></i>
+                            </button>
+                            {/* <button id="open-tone-modal-btn" className="p-0 rounded-full hover:bg-gray-100 transition text-gray-600 justify-center" style={{ width: '40px', height: '40px' }}>
+                                <i className="fas fa-cog"></i>
+                            </button> */}
+                        </div>
+                    </header>
+
+                    {/* Chat Container */}
+                    <div ref={chatContainerRef} id="chat-container" className="flex-grow overflow-y-auto text-[12px] p-4 space-y-4 bg-gray-50 pb-20 flex flex-col">
+                        {activeChat?.messages.map((msg: ChatMessage, index: number) => (
+                            <MessageBubble key={index} message={msg.text} sender={msg.sender} />
+                        ))}
+                        {isSending && (
+                            <div className="typing-indicator ai-message p-3 rounded-lg">
+                                <span></span><span></span><span></span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Input Area */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 blur-container flex justify-center z-10" style={{ borderTop: '1px solid #00000020' }}>
+                        <div className="flex gap-3 w-full max-w-xl p-0 h-auto items-end">
+                            <button
+                                onClick={toggleRecording}
+                                id="voice-btn"
+                                className={`p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition ${isRecording ? 'text-primary-500' : 'text-gray-500'}`}
+                                title="Use voice input"
+                                style={{ width: '40px', height: '40px' }}
+                                disabled={!speechRecognitionSupported} // Disable if not supported
+                            >
+                                <i className={`fas ${isRecording ? 'fa-microphone-slash' : 'fa-microphone'}`}></i>
+                            </button>
+                            <div className="flex-grow relative h-[40px] textarea-container">
+                                <textarea
+                                    ref={messageInputRef}
+                                    id="message-input"
+                                    rows="1"
+                                    placeholder="Ask anything about your subject..."
+                                    value={messageInput}
+                                    onChange={(e) => setMessageInput(e.target.value)}
+                                    onKeyPress={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            if (messageInput.trim()) {
+                                                sendMessage(messageInput.trim());
+                                                setMessageInput('');
+                                            }
+                                        }
+                                    }}
+                                    disabled={isSending}
+                                    className="w-full rounded-[20px] focus:outline-none blur-container focus:ring-2 focus:ring-primary-500 text-gray-800 resize-none"
+                                    style={{ padding: '5px 15px' }}
+                                ></textarea>
+                                {statusMessage && (
+                                    <div id="status" className={`absolute text-xs bottom-full right-1 m-0 px-2 py-1 rounded-md ${isStatusError ? 'bg-red-500' : 'bg-black'} text-white`}>
+                                        {statusMessage}
+                                    </div>
+                                )}
+                            </div>
+                            <button
+                                onClick={() => {
+                                    if (messageInput.trim()) {
+                                        sendMessage(messageInput.trim());
+                                        setMessageInput('');
+                                    }
+                                }}
+                                id="send-button"
+                                className={`p-2 bg-primary-500 rounded-full hover:bg-primary-600 transition text-white ${isSending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                style={{ width: '40px', height: '40px', backgroundColor: '#2563eb' }}
+                                disabled={isSending}
+                            >
+                                <i className="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Quiz Modal */}
+                {quizModalOpen && (
+                    <div id="quiz-modal" className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col animate-fade-in">
+                        <div className="p-4 border-b flex justify-between items-center">
+                            <h2 className="font-semibold text-xl text-gray-800">Quiz Mode</h2>
+                            <button onClick={() => setQuizModalOpen(false)} className="p-2 rounded-full hover:bg-gray-100 transition">
+                                <i className="fas fa-times text-gray-600"></i>
+                            </button>
+                        </div>
+                        <div id="quiz-content" className="flex-grow p-6 overflow-y-auto">
+                            <div className="text-center py-8">
+                                <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                                    <i className="fas fa-question-circle text-2xl text-primary-500"></i>
+                                </div>
+                                <h3 className="text-xl font-semibold text-gray-800 mb-2">Start a Quiz</h3>
+                                <p className="text-gray-600 mb-6">Test your knowledge with a subject-specific quiz</p>
+
+                                <div className="max-w-md mx-auto">
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Number of questions</label>
+                                        <select id="quiz-num-questions" className="w-full p-2 border rounded-lg bg-white text-gray-800">
+                                            <option value="5">5 questions</option>
+                                            <option value="10">10 questions</option>
+                                            <option value="15">15 questions</option>
+                                            <option value="20">20 questions</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Difficulty</label>
+                                        <select id="quiz-difficulty" className="w-full p-2 border rounded-lg bg-white text-gray-800">
+                                            <option value="easy">Easy</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="hard">Hard</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="mb-6">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Topic (optional)</label>
+                                        <input type="text" id="quiz-topic" placeholder="Leave blank for mixed topics" className="w-full p-2 border rounded-lg bg-white text-gray-800" />
+                                    </div>
+
+                                    <button onClick={() => generateQuiz(document.getElementById('quiz-num-questions').value, document.getElementById('quiz-difficulty').value, document.getElementById('quiz-topic').value)} id="start-quiz-btn" className="w-full py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition">
+                                        Start Quiz
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Revision Plan Modal */}
+                {revisionModalOpen && (
+                    <div id="revision-modal" className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col animate-fade-in">
+                        <div className="p-4 border-b flex justify-between items-center">
+                            <h2 className="font-semibold text-xl text-gray-800">Revision Plan</h2>
+                            <button onClick={() => setRevisionModalOpen(false)} className="p-2 rounded-full hover:bg-gray-100 transition">
+                                <i className="fas fa-times text-gray-600"></i>
+                            </button>
+                        </div>
+                        <div id="revision-content" className="flex-grow p-6 overflow-y-auto">
+                            <div className="text-center py-8">
+                                <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
+                                    <i className="fas fa-calendar-alt text-2xl text-purple-500"></i>
+                                </div>
+                                <h3 className="text-xl font-semibold text-gray-800 mb-2">Create a Revision Plan</h3>
+                                <p className="text-gray-600 mb-6">Let AI create a personalized study schedule</p>
+
+                                <div className="max-w-md mx-auto">
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Exam Date</label>
+                                        <input type="date" id="revision-exam-date" className="w-full p-2 border rounded-lg bg-white text-gray-800" />
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Study hours per week</label>
+                                        <select id="revision-hours" className="w-full p-2 border rounded-lg bg-white text-gray-800">
+                                            <option value="5">~5 hours</option>
+                                            <option value="10">10 hours</option>
+                                            <option value="15">~15 hours</option>
+                                            <option value="20">~20 hours</option>
+                                            <option value="30">~30 hours</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="mb-6">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Focus areas (optional)</label>
+                                        <textarea id="revision-focus" rows="3" placeholder="Any specific topics you want to focus on?" className="w-full p-2 border rounded-lg bg-white text-gray-800 resize-none"></textarea>
+                                    </div>
+
+                                    <button onClick={() => generateRevisionPlan(document.getElementById('revision-exam-date').value, document.getElementById('revision-hours').value, document.getElementById('revision-focus').value)} id="create-plan-btn" className="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
+                                        Create Plan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Chat History Modal */}
+                {historyModalOpen && (
+                    <div id="history-modal" className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col animate-fade-in">
+                        <div className="p-4 border-b border-[#00000020] flex justify-between items-center">
+                            <h2 className="font-semibold text-xl text-gray-800">Chat History</h2>
+                            <button onClick={() => setHistoryModalOpen(false)} className="h-[40px] w-[40px] justify-center align-center p-0 rounded-full hover:bg-gray-100 transition">
+                                <i className="fas fa-times text-gray-600"></i>
+                            </button>
+                        </div>
+                        <div id="history-content" className="flex-grow p-4 overflow-y-auto">
+                            {Object.keys(chatHistory).length === 0 ? (
+                                <div id="no-history" className="text-center py-8 text-gray-500">
+                                    <i className="fas fa-history text-4xl mb-2"></i>
+                                    <p>No chat history yet</p>
+                                </div>
+                            ) : (
+                                <div id="history-list" className="space-y-3">
+                                    {Object.entries(chatHistory).map(([subject, chats]: [string, ChatSession[]]) => (
+                                        <React.Fragment key={subject}>
+                                            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-4">{getSubjectDisplayName(subject)}</h3>
+                                            {chats.map((chat: ChatSession) => {
+                                                const firstUserMsg = chat.messages?.find((m: ChatMessage) => m.sender === 'user');
+                                                let preview = firstUserMsg ? firstUserMsg.text : (chat.messages?.[0]?.text || 'No message preview');
+                                                if (preview.length > 40) {
+                                                    preview = preview.substring(0, 40) + '...';
+                                                }
+                                                const date = new Date(chat.id);
+                                                const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                                                return (
+                                                    <div
+                                                        key={chat.id}
+                                                        onClick={() => loadChat(subject, chat.id)}
+                                                        className="glass-card p-3 rounded-lg cursor-pointer hover:bg-gray-100"
+                                                    >
+                                                        <div className="flex justify-between items-start">
+                                                            <div className="text-sm font-medium text-gray-800">{preview}</div>
+                                                            <div className="text-xs text-gray-500">{dateStr}</div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Confirm Clear History Modal */}
+                {showConfirmClearModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-xl text-center">
+                            <p className="mb-4 text-gray-800">Are you sure you want to clear all chat history? This cannot be undone.</p>
+                            <button onClick={() => handleConfirmClear(true)} className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md mr-2">Yes, Clear</button>
+                            <button onClick={() => handleConfirmClear(false)} className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md">No, Cancel</button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Overlay for mobile sidebar */}
+                {isSidebarOpen && (
+                    <div
+                        className="fixed inset-0 z-30 bg-transparent md:hidden"
+                        onClick={() => toggleSidebar(false)}
+                        aria-label="Close sidebar overlay"
+                        style={{ pointerEvents: 'auto' }}
+                    />
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default App;
