@@ -14,8 +14,8 @@ const navItems = [
   { name: "Past Papers", href: "/past-paper", icon: BookOpen },
   { name: "AI Teacher", href: "/ai-teacher", icon: BotMessageSquare },
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Resources", href: "/resources", icon: Library },
-  { name: "Social", href: "/social", icon: Users },
+  // { name: "Resources", href: "/resources", icon: Library },
+  // { name: "Social", href: "/social", icon: Users },
 ];
 
 export default function AppNavigation() {
@@ -34,7 +34,7 @@ export default function AppNavigation() {
       onMouseLeave={handleMouseLeave}
       className={cn(
         "h-full z-1000 flex flex-col items-start bg-[rgba(255,255,255,0.90)] backdrop-blur-[15px] text-gray-900 transition-all duration-300 border-r-[#00000010] border-r-2",
-        isExpanded ? "w-64" : "w-[70px]"
+        isExpanded ? "w-50" : "w-[70px]"
       )}
     >
       {/* Account Button (circular, user icon) */}
