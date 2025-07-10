@@ -3,7 +3,8 @@
 import { useEffect, useState, useTransition, useRef } from 'react';
 import { type User } from '@supabase/supabase-js';
 import Image from 'next/image';
-import { updateProfile } from './actions';
+import Link from 'next/link';
+import { updateProfile } from '../actions';
 import { signOut } from '@/app/auth/actions';
 import { type UserProfile, type School } from '@/lib/types/auth';
 
@@ -79,6 +80,19 @@ export default function AccountForm({ user, profile, schools }: {
 
   return (
     <div>
+      {/* Cancel Button */}
+      <div className="mb-6">
+        <Link 
+          href="/profile"
+          className="inline-flex items-center text-gray-600 hover:text-gray-900"
+        >
+          <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Profile
+        </Link>
+      </div>
+
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
           <p className="text-red-600 text-sm">{error}</p>
