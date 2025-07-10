@@ -26,17 +26,22 @@ const hexToRgb = (hex: string) => {
 // In a real application, you would import this from your components directory.
 
 
-// Main App component (representing the Edexcel IAL page)
+// Main App component (representing the Edexcel IGCSE page)
 const App = () => {
   // State for the active tab in the 3-pane window
   const [activeTab, setActiveTab] = useState('details'); // 'details', 'timetable', 'find-tutor'
 
   // Data for exams and subjects (re-used from previous component for consistency)
-  
+ 
+
+  // Define the subject data for Edexcel IGCSE specifically
+  const IGCSESubjects = [
+    { id: 'chinese', name: 'Chinese', category: 'Edexcel IGCSE', bgColorClass: 'card-chinese', baseColor: '#ff3b30' },
+    ];
 
   // Revision Tools data
   const revisionTools = [
-    { id: 'past-papers', titleTop: 'Edexcel IAL', titleBottom: 'Past Papers', icon: FileText },
+    { id: 'past-papers', titleTop: 'Edexcel IGCSE', titleBottom: 'Past Papers', icon: FileText },
     { id: 'ai-teacher', titleTop: 'AI Teacher', titleBottom: '& Grading', icon: Lightbulb },
     { id: 'ask-help', titleTop: 'Ask for', titleBottom: 'Our Help', icon: HelpCircle },
   ];
@@ -44,7 +49,7 @@ const App = () => {
   // Function to handle subject card click (similar to previous component)
   const handleSubjectClick = useCallback((subjectId: string) => {
     // In a real application, this would navigate to the subject-specific revision page
-    window.location.href = `/learn/edexcel-ial/${subjectId}`;
+    window.location.href = `/learn/edexcel-IGCSE/${subjectId}`;
   }, []);
 
   // Function to handle navigation (for breadcrumbs and other links)
@@ -55,12 +60,12 @@ const App = () => {
   // Content for the "Details" tab
   const DetailsContent = () => (
     <div className="p-6 bg-white rounded-xl shadow-sm">
-      <h3 className="text-2xl font-semibold text-gray-800 mb-4">Edexcel IAL Details</h3>
+      <h3 className="text-2xl font-semibold text-gray-800 mb-4">Edexcel IGCSE Details</h3>
       <p className="text-gray-700 leading-relaxed mb-4">
-        The Edexcel International Advanced Level (IAL) is a globally recognized qualification, equivalent to A-levels in the UK. It's designed for students who wish to progress to higher education. For each of the subjects below, there are comprehensive revision notes, factsheets, questions from past exam papers separated by topic, and other worksheets to aid your learning.
+      The IGCSE, or International General Certificate of Secondary Education, is a globally recognized secondary school qualification, often taken by students in Years 10 and 11 (ages 14-16). It's an English-language based qualification that is similar to the GCSE in the UK and is often used as a stepping stone to A-Levels or other higher-level studies. 
       </p>
       <p className="text-gray-700 leading-relaxed">
-        Our platform provides a structured approach to your IAL revision, offering AI-powered mock tests, detailed solutions, and access to AI teachers and private tutors for personalized support. Prepare effectively and achieve your best results!
+        Our platform provides a structured approach to your IGCSE revision, offering AI-powered mock tests, detailed solutions, and access to AI teachers and private tutors for personalized support. Prepare effectively and achieve your best results!
       </p>
     </div>
   );
@@ -70,7 +75,7 @@ const App = () => {
     <div className="p-6 bg-white rounded-xl shadow-sm">
       <h3 className="text-2xl font-semibold text-gray-800 mb-4">Exam Timetable</h3>
       <p className="text-gray-700 mb-4">
-        Here you can find the provisional and final timetables for upcoming Edexcel IAL examinations. Please check regularly for updates.
+        Here you can find the provisional and final timetables for upcoming Edexcel IGCSE examinations. Please check regularly for updates.
       </p>
       <ul className="list-disc list-inside text-gray-700 space-y-2">
         <li>Summer 2025 Exam Series: Provisional Timetable (Available Now)</li>
@@ -78,7 +83,7 @@ const App = () => {
         <li>January 2026 Exam Series: Provisional Timetable (Expected November 2025)</li>
       </ul>
       <p className="mt-4 text-sm text-gray-500">
-        *Dates are subject to change. Always refer to the official Edexcel website for the most accurate and up-to-date information.
+        *Dates are subject to change. Always refer to the officIGCSE Edexcel website for the most accurate and up-to-date information.
       </p>
     </div>
   );
@@ -88,21 +93,21 @@ const App = () => {
     <div className="p-6 bg-white rounded-xl shadow-sm">
       <h3 className="text-2xl font-semibold text-gray-800 mb-4">Find a Private Tutor</h3>
       <p className="text-gray-700 mb-4">
-        Need personalized help? Our platform connects you with experienced private tutors specializing in Edexcel IAL subjects.
+        Need personalized help? Our platform connects you with experienced private tutors specIGCSEizing in Edexcel IGCSE subjects.
       </p>
       <form className="space-y-4">
         <div>
           <label htmlFor="subject" className="block text-gray-700 text-sm font-semibold mb-2">Subject:</label>
           <select id="subject" name="subject" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
             <option value="">Select a Subject</option>
-            {ialSubjects.map(subject => (
+            {IGCSESubjects.map(subject => (
               <option key={subject.id} value={subject.id}>{subject.name}</option>
             ))}
           </select>
         </div>
         <div>
           <label htmlFor="level" className="block text-gray-700 text-sm font-semibold mb-2">Level:</label>
-          <input type="text" id="level" name="level" value="Edexcel IAL" readOnly className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" />
+          <input type="text" id="level" name="level" value="Edexcel IGCSE" readOnly className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" />
         </div>
         <div>
           <label htmlFor="message" className="block text-gray-700 text-sm font-semibold mb-2">Your Message:</label>
@@ -128,7 +133,7 @@ const App = () => {
           }
           :root {
             --primary-color: #007aff;
-            --biology-bg: #0fBD8C;
+            --chinese-bg: #ff3b30;
             --chemistry-bg: #FF6B6B;
             --physics-bg: #4081FF;
             --math-bg: #ffab1a;
@@ -194,10 +199,11 @@ const App = () => {
           }
 
           /* Specific card background colors */
-          .card-biology { background-color: var(--biology-bg); }
+          .card-chinese { background-color: var(--chinese-bg); }
           .card-chemistry { background-color: var(--chemistry-bg); }
           .card-physics { background-color: var(--physics-bg); }
           .card-math { background-color: var(--math-bg); }
+          .card-wip { background-color: #00000050; }
         `}
       </style>
 
@@ -208,20 +214,20 @@ const App = () => {
         <nav className="text-gray-500 text-sm mb-6 font-semibold">
           <a href="#" onClick={() => navigate('/')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
           <span className="mx-2">/</span>
-          <span>Edexcel IAL</span>
+          <span>Edexcel IGCSE</span>
         </nav>
 
         {/* Page Title */}
-        <h1 className="text-6xl font-extrabold text-gray-400 mb-8">
-        <span className="text-[#ff3b30]">Edexcel</span> IAL<br></br> <span className="font-medium text-[#000000]">Revision</span>
+        <h1 className="text-6xl font-bold text-black mb-8">
+        <span className="">Edexcel</span> IGCSE <span className="font-medium text-[#ff3b30]">Revision</span>
         </h1>
         <p className="text-gray-700 text-lg mb-10 max-w-3xl">
           For each of the subjects below, there are revision notes, factsheets, questions from past exam papers separated by topic and other worksheets.
         </p>
 
         {/* Subject Cards Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {ialSubjects.map((subject) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {IGCSESubjects.map((subject) => (
             <div
               key={subject.id}
               className={`subject-card ${subject.bgColorClass}`}
@@ -233,6 +239,17 @@ const App = () => {
               <button className="start-now-btn">START NOW</button>
             </div>
           ))}
+
+          <div
+              key={'coming-soon'}
+              className={`subject-card card-wip`}
+             
+              
+            >
+              <span className="subject-tag">Edexcel IGCSE</span>
+              <span className="subject-name">Coming Soon...</span>
+              <button className="start-now-btn">START NOW</button>
+            </div>
         </div>
 
         {/* Revision Tools Section */}
