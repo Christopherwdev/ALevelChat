@@ -32,7 +32,12 @@ const App = () => {
   const [activeTab, setActiveTab] = useState('details'); // 'details', 'timetable', 'find-tutor'
 
   // Data for exams and subjects (re-used from previous component for consistency)
-  
+  const ialSubjects = [
+    { id: 'biology', name: 'Biology', category: 'Edexcel IAL', bgColorClass: 'card-biology', baseColor: '#0fBD8C' },
+    { id: 'chemistry', name: 'Chemistry', category: 'Edexcel IAL', bgColorClass: 'card-chemistry', baseColor: '#FF6B6B' },
+    { id: 'physics', name: 'Physics', category: 'Edexcel IAL', bgColorClass: 'card-physics', baseColor: '#4081FF' },
+    { id: 'math', name: 'Math', category: 'Edexcel IAL', bgColorClass: 'card-math', baseColor: '#ffab1a' },
+];
 
   // Revision Tools data
   const revisionTools = [
@@ -205,15 +210,16 @@ const App = () => {
 
       <div className="max-w-5xl mx-auto px-4 py-8 rounded-sm">
         {/* Breadcrumbs */}
-        <nav className="text-gray-500 text-sm mb-6 font-semibold">
+        <nav className="inline-block text-gray-500 text-sm mb-6 font-light border-[1px] bg-[#00000010] border-[#00000020] px-3 py-1 rounded-lg">
+        
           <a href="#" onClick={() => navigate('/')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
           <span className="mx-2">/</span>
           <span>Edexcel IAL</span>
         </nav>
 
         {/* Page Title */}
-        <h1 className="text-6xl font-extrabold text-gray-400 mb-8">
-        <span className="text-[#ff3b30]">Edexcel</span> IAL<br></br> <span className="font-medium text-[#000000]">Revision</span>
+        <h1 className="text-5xl font-bold text-black mb-8">
+       Edexcel IAL <span className="font-medium text-[#ff3b30]">Revision</span>
         </h1>
         <p className="text-gray-700 text-lg mb-10 max-w-3xl">
           For each of the subjects below, there are revision notes, factsheets, questions from past exam papers separated by topic and other worksheets.

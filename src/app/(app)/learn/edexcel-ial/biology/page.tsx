@@ -6,12 +6,12 @@ import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle } fr
 import { marked } from 'marked'; // Import marked library
 
 // Import content from separate JS files
-import { CHEMISTRY_UNIT_1_CONTENT } from './Unit1.js';
-import { CHEMISTRY_UNIT_2_CONTENT } from './Unit2.js';
-import { CHEMISTRY_UNIT_3_CONTENT } from './Unit3.js';
-import { CHEMISTRY_UNIT_4_CONTENT } from './Unit4.js';
-import { CHEMISTRY_UNIT_5_CONTENT } from './Unit5.js';
-import { CHEMISTRY_UNIT_6_CONTENT } from './Unit6.js';
+import { BIOLOGY_UNIT_1_CONTENT } from './Unit1.js';
+import { BIOLOGY_UNIT_2_CONTENT } from './Unit2.js';
+import { BIOLOGY_UNIT_3_CONTENT } from './Unit3.js';
+import { BIOLOGY_UNIT_4_CONTENT } from './Unit4.js';
+import { BIOLOGY_UNIT_5_CONTENT } from './Unit5.js';
+import { BIOLOGY_UNIT_6_CONTENT } from './Unit6.js';
 
 
 interface UnitContent {
@@ -19,26 +19,26 @@ interface UnitContent {
 }
 
 const UNIT_NOTES_CONTENT: UnitContent = {
-    1: CHEMISTRY_UNIT_1_CONTENT,
-    2: CHEMISTRY_UNIT_2_CONTENT,
-    3: CHEMISTRY_UNIT_3_CONTENT,
-    4: CHEMISTRY_UNIT_4_CONTENT,
-    5: CHEMISTRY_UNIT_5_CONTENT,
-    6: CHEMISTRY_UNIT_6_CONTENT,
+    1: BIOLOGY_UNIT_1_CONTENT,
+    2: BIOLOGY_UNIT_2_CONTENT,
+    3: BIOLOGY_UNIT_3_CONTENT,
+    4: BIOLOGY_UNIT_4_CONTENT,
+    5: BIOLOGY_UNIT_5_CONTENT,
+    6: BIOLOGY_UNIT_6_CONTENT,
 };
 
 
 const revisionTools = [
-    { id: 'past-papers', titleTop: 'Chemistry', titleBottom: 'Past Papers', icon: FileText },
+    { id: 'past-papers', titleTop: 'Biology', titleBottom: 'Past Papers', icon: FileText },
     { id: 'ai-teacher', titleTop: 'AI Teacher', titleBottom: '& Grading', icon: Lightbulb },
     { id: 'ask-help', titleTop: 'Ask for', titleBottom: 'Our Help', icon: HelpCircle },
 ];
 
 
 // --- CONFIGURATION FOR EASY ADAPTATION ---
-const CURRENT_SUBJECT = 'Chemistry';
-const SUBJECT_COLOR = '#FF6B6B'; // Corresponds to primary color in Tailwind config
-const SUBJECT_ICON_CLASS = 'fas fa-flask'; // Font Awesome icon for Chemistry
+const CURRENT_SUBJECT = 'Biology';
+const SUBJECT_COLOR = '#0fbd8c'; // Corresponds to primary color in Tailwind config
+const SUBJECT_ICON_CLASS = 'fas fa-flask'; // Font Awesome icon for Biology
 const UNIT_PREFIX = 'Unit'; // For units like "Unit 1", "Unit 2"
 const TOTAL_UNITS = 6; // Number of units for the subject
 // Key prefix for local storage. Now includes unit and section.
@@ -79,12 +79,12 @@ const App: React.FC = () => {
     // Content for the "Details" tab
     const DetailsContent = () => (
         <div className="p-6 bg-white rounded-xl shadow-sm">
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Chemistry IAL Details</h3>
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Biology IAL Details</h3>
             <p className="text-gray-700 leading-relaxed mb-4">
-                The Edexcel International Advanced Level (IAL) Chemistry is a globally recognized qualification, equivalent to A-levels in the UK. It's designed for students who wish to progress to higher education. For Chemistry, there are comprehensive revision notes, factsheets, questions from past exam papers separated by topic, and other worksheets to aid your learning.
+                The Edexcel International Advanced Level (IAL) Biology is a globally recognized qualification, equivalent to A-levels in the UK. It's designed for students who wish to progress to higher education. For Biology, there are comprehensive revision notes, factsheets, questions from past exam papers separated by topic, and other worksheets to aid your learning.
             </p>
             <p className="text-gray-700 leading-relaxed">
-                Our platform provides a structured approach to your Chemistry IAL revision, offering AI-powered mock tests, detailed solutions, and access to AI teachers and private tutors for personalized support. Prepare effectively and achieve your best results!
+                Our platform provides a structured approach to your Biology IAL revision, offering AI-powered mock tests, detailed solutions, and access to AI teachers and private tutors for personalized support. Prepare effectively and achieve your best results!
             </p>
         </div>
     );
@@ -94,7 +94,7 @@ const App: React.FC = () => {
         <div className="p-6 bg-white rounded-xl shadow-sm">
             <h3 className="text-2xl font-semibold text-gray-800 mb-4">Exam Timetable</h3>
             <p className="text-gray-700 mb-4">
-                Here you can find the provisional and final timetables for upcoming Edexcel IAL Chemistry examinations. Please check regularly for updates.
+                Here you can find the provisional and final timetables for upcoming Edexcel IAL Biology examinations. Please check regularly for updates.
             </p>
             <ul className="list-disc list-inside text-gray-700 space-y-2">
                 <li>Summer 2025 Exam Series: Provisional Timetable (Available Now)</li>
@@ -112,13 +112,13 @@ const App: React.FC = () => {
         <div className="p-6 bg-white rounded-xl shadow-sm">
             <h3 className="text-2xl font-semibold text-gray-800 mb-4">Find a Private Tutor</h3>
             <p className="text-gray-700 mb-4">
-                Need personalized help? Our platform connects you with experienced private tutors specializing in Edexcel IAL Chemistry.
+                Need personalized help? Our platform connects you with experienced private tutors specializing in Edexcel IAL Biology.
             </p>
             <form className="space-y-4">
                 <div>
                     <label htmlFor="subject" className="block text-gray-700 text-sm font-semibold mb-2">Subject:</label>
                     <select id="subject" name="subject" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="chemistry">Chemistry</option>
+                        <option value="biology">Biology</option>
                     </select>
                 </div>
                 <div>
@@ -234,10 +234,10 @@ const App: React.FC = () => {
             if (h1Token && isTextToken(h1Token)) {
                 headingTitle = h1Token.text;
             } else {
-                headingTitle = `${unitName}: Chemistry Notes`;
+                headingTitle = `${unitName}: Biology Notes`;
             }
         } else {
-            headingTitle = `${unitName}: Chemistry Notes`;
+            headingTitle = `${unitName}: Biology Notes`;
         }
         setCurrentNotesTitle(headingTitle);
         setCurrentNotesDuration('');
@@ -417,7 +417,7 @@ const App: React.FC = () => {
     const ContinueLessonButton: React.FC = () => {
         return (
             <div id="continue-lesson-button" className="continue-lesson-card flex items-center justify-center" style={{ width: 150, height: 150 }}>
-                <i className="fas fa-flask text-6xl text-[#FF6B6B]" />
+                <i className="fas fa-dna text-6xl text-[#0fbd8c]" />
             </div>
         );
     };
@@ -476,8 +476,8 @@ const App: React.FC = () => {
                     theme: {
                         extend: {
                             colors: {
-                                primary: '#FF6B6B', /* Custom primary color for Chemistry, matches #ff6b6b */
-                                subjectColor: '#FF6B6B', /* Dynamic subject color */
+                                primary: '#0fbd8c', /* Custom primary color for Biology, matches #0fbd8c */
+                                subjectColor: '#0fbd8c', /* Dynamic subject color */
                             },
                         },
                     },
@@ -486,9 +486,9 @@ const App: React.FC = () => {
                 /* Custom styles for the app */
                 :root {
                     /* This variable will be dynamically updated by JavaScript based on the subject */
-                    --subject-primary-color: #FF6B6B;
-                    --subject-primary-color-trans: #FF6B6B70;
-                    /* Default for Chemistry */
+                    --subject-primary-color: #0fbd8c;
+                    --subject-primary-color-trans: #0fbd8c70;
+                    /* Default for Biology */
                     --subject-primary-color-rgb: 255, 107, 107;
                     /* RGB equivalent for rgba usage */
                 }
@@ -1176,13 +1176,13 @@ const App: React.FC = () => {
                                                 <span className="mx-2">/</span>
                                                 <a href="#" onClick={() => navigate('/learn/edexcel-ial')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Edexcel IAL</a>
                                                 <span className="mx-2">/</span>
-                                                <span className='font-semibold'>Chemistry</span>
+                                                <span className='font-semibold'>Biology</span>
                                             </nav>
                                             {/* Page Title */}
                                             <div className="text-5xl font-bold text-black mb-8">
                                                 Edexcel IAL <span className="font-medium" style={{ color: 'var(--subject-primary-color)'}}>{CURRENT_SUBJECT}</span>
                                             </div>
-                                            <p  className="text-gray-700 text-lg mb-10 max-w-3xl">Welcome to the Chemistry Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
+                                            <p  className="text-gray-700 text-lg mb-10 max-w-3xl">Welcome to the Biology Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
