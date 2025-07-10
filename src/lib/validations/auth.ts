@@ -58,6 +58,9 @@ export const profileUpdateSchema = z.object({
     .regex(/^[a-z0-9_.]+$/, 'Username can only contain lowercase letters, numbers, dots, and underscores')
     .optional()
     .or(z.literal('')),
+  bio: z.string().max(500, 'Bio must be less than 500 characters')
+    .optional()
+    .or(z.literal('')),
   school: z.string().optional(),
   language: z.enum(['en-us', 'en-gb', 'es-es']).default('en-us'),
   isSocialEnabled: z.boolean().default(true),
