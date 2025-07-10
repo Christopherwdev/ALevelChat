@@ -1,14 +1,12 @@
 import AppNavigation from "@/components/app/navigation";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { headers } from "next/headers";
-import { cn }  from "@/lib/utils/cn";
 
-const COLLAPSED_WIDTH = 70; // px, match with AppNavigation collapsed width
+const SIDEBAR_COLLAPSED_WIDTH = 70; // px, match with AppNavigation collapsed width
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
   const currentPath = headersList.get('x-current-path');
-  const mainComponentLeftMargin = `ml-[${COLLAPSED_WIDTH}px]`;
 
   return (
     <ProtectedRoute currentPath={currentPath || '/'}>
@@ -18,7 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           top: 0,
           left: 0,
           height: "100vh",
-          width: `${COLLAPSED_WIDTH}px`,
+          width: `${SIDEBAR_COLLAPSED_WIDTH}px`,
           borderRight: "1px solid #eee",
           overflow: "visible",
           zIndex: 100,
@@ -26,9 +24,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         
         }}
       >
-        <AppNavigation collapsedWidth={COLLAPSED_WIDTH} />
+        <AppNavigation collapsedWidth={SIDEBAR_COLLAPSED_WIDTH} />
       </aside>
-      <main className={cn("flex-1", mainComponentLeftMargin)}>
+      <main className="flex-1" style={{ marginLeft: `${SIDEBAR_COLLAPSED_WIDTH}px` }}>
         {children}
       </main>
     </ProtectedRoute>
