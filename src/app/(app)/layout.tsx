@@ -1,6 +1,7 @@
 import AppNavigation from "@/components/app/navigation";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { headers } from "next/headers";
+import { cn }  from "@/lib/utils/cn";
 
 const COLLAPSED_WIDTH = 70; // px, match with AppNavigation collapsed width
 
@@ -26,7 +27,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       >
         <AppNavigation collapsedWidth={COLLAPSED_WIDTH} />
       </aside>
-      <main style={{ marginLeft: `${COLLAPSED_WIDTH}px`, flex: 1 }}>
+      <main className={cn("flex-1", `ml-[${COLLAPSED_WIDTH}px]`)}>
         {children}
       </main>
     </ProtectedRoute>
