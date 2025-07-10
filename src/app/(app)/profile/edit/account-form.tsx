@@ -24,6 +24,7 @@ export default function AccountForm({ user, profile, schools }: {
   const [isSocialEnabled, setIsSocialEnabled] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -38,7 +39,14 @@ export default function AccountForm({ user, profile, schools }: {
         setIsSocialEnabled(profile.settings.is_social_enabled === true);
       }
     }
-  }, [profile]);
+
+    // Cleanup function to revoke object URL
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [profile, previewUrl]);
 
   async function handleSubmit(formData: FormData) {
     setError('');
@@ -49,6 +57,11 @@ export default function AccountForm({ user, profile, schools }: {
       
       if (result.success) {
         setSuccess(result.message || 'Profile updated successfully!');
+        // Clear preview URL after successful update
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl(null);
+        }
       } else {
         setError(result.message || 'An error occurred');
       }
@@ -76,6 +89,16 @@ export default function AccountForm({ user, profile, schools }: {
       setError('File must be an image');
       return;
     }
+
+    // Clear any previous preview
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    // Create new preview
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+    setError(''); // Clear any previous errors
   }
 
   return (
@@ -109,7 +132,15 @@ export default function AccountForm({ user, profile, schools }: {
         {/* Profile Picture Section */}
         <div className="flex flex-col items-center mb-6">
           <div className="relative w-32 h-32 mb-4">
-            {profilePicture ? (
+            {previewUrl ? (
+              <Image
+                src={previewUrl}
+                alt="Profile Preview"
+                width={128}
+                height={128}
+                className="rounded-full object-cover"
+              />
+            ) : profilePicture ? (
               <Image
                 src={profilePicture}
                 alt="Profile"
