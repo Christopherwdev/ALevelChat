@@ -9,6 +9,8 @@ export type AuthError =
   | 'INVALID_TOKEN'
   | 'TOKEN_EXPIRED'
   | 'NETWORK_ERROR'
+  | 'INVALID_FILE'
+  | 'UPLOAD_ERROR'
   | 'UNKNOWN_ERROR';
 
 // Authentication result types
@@ -26,6 +28,8 @@ export interface UserProfile {
   email: string;
   username?: string;
   full_name?: string;
+  bio?: string;
+  profile_picture_url?: string;
   school_id?: string;
   school?: {
     name: string;

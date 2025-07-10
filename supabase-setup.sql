@@ -20,9 +20,50 @@ CREATE TABLE IF NOT EXISTS profiles (
     school_id UUID REFERENCES schools(id) ON DELETE SET NULL, -- Foreign key to schools, can be NULL if not associated with a school
     -- NOTE: consider switching back to multiple columns in the future
     settings JSONB DEFAULT '{"is_social_enabled": true, "language": "en-us"}'::jsonb,
+    profile_picture_url TEXT,
+    bio TEXT CHECK (char_length(bio) <= 500),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT valid_username CHECK (username IS NULL OR username ~ '^[a-z0-9_.]{1,30}$')
+);
+
+-- Create storage bucket for profile pictures if it doesn't exist
+INSERT INTO storage.buckets (id, name, public) 
+SELECT 'profile-pictures', 'profile-pictures', true
+WHERE NOT EXISTS (
+    SELECT 1 FROM storage.buckets WHERE id = 'profile-pictures'
+);
+
+-- Set up storage policy for profile pictures
+CREATE POLICY "Users can upload their own profile picture" 
+ON storage.objects FOR INSERT 
+WITH CHECK (
+    bucket_id = 'profile-pictures' AND 
+    auth.role() = 'authenticated' AND
+    owner = auth.uid() AND
+    (auth.uid())::text = SPLIT_PART(name, '/', 1)
+);
+
+CREATE POLICY "Profile pictures are publicly accessible" 
+ON storage.objects FOR SELECT 
+USING (bucket_id = 'profile-pictures');
+
+CREATE POLICY "Users can update their own profile picture" 
+ON storage.objects FOR UPDATE 
+USING (
+    bucket_id = 'profile-pictures' AND 
+    auth.role() = 'authenticated' AND
+    owner = auth.uid() AND
+    (auth.uid())::text = SPLIT_PART(name, '/', 1)
+);
+
+CREATE POLICY "Users can delete their own profile picture" 
+ON storage.objects FOR DELETE 
+USING (
+    bucket_id = 'profile-pictures' AND 
+    auth.role() = 'authenticated' AND
+    owner = auth.uid() AND
+    (auth.uid())::text = SPLIT_PART(name, '/', 1)
 );
 
 CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
