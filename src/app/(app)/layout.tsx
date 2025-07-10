@@ -8,7 +8,8 @@ const COLLAPSED_WIDTH = 70; // px, match with AppNavigation collapsed width
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
   const currentPath = headersList.get('x-current-path');
-  
+  const mainComponentLeftMargin = `ml-[${COLLAPSED_WIDTH}px]`;
+
   return (
     <ProtectedRoute currentPath={currentPath || '/'}>
       <aside
@@ -27,7 +28,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       >
         <AppNavigation collapsedWidth={COLLAPSED_WIDTH} />
       </aside>
-      <main className={cn("flex-1", `ml-[${COLLAPSED_WIDTH}px]`)}>
+      <main className={cn("flex-1", mainComponentLeftMargin)}>
         {children}
       </main>
     </ProtectedRoute>
