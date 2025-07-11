@@ -11,8 +11,8 @@ const navItems = [
   { name: "Past Papers", href: "/past-paper", icon: Files },
   { name: "AI Teacher", href: "/ai-teacher", icon: BotMessageSquare },
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Resources", href: "/resources", icon: Library },
-  { name: "Social", href: "/social", icon: Users },
+  // { name: "Resources", href: "/resources", icon: Library },
+  // { name: "Social", href: "/social", icon: Users },
   { name: "Profile", href: "/profile", icon: User },
 ];
 
