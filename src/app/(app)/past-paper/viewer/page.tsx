@@ -720,7 +720,7 @@ const App: React.FC = () => {
             )}
 
             {/* Audio Player Overlay */}
-            <div id="audio-overlay-container" className="fixed bottom-4 left-4 z-50 flex items-end gap-3">
+            <div id="audio-overlay-container" className="fixed bottom-4 left-20 z-50 flex items-end gap-3">
                 {showAudioPlayerButton && (
                     <button onClick={toggleCompactAudioPlayer} className="audio-toggle-button">
                         <i className="fas fa-headphones"></i>

@@ -188,6 +188,12 @@ const generateAllPapers = (): Paper[] => {
 
 const allPapers: Paper[] = generateAllPapers();
 
+// Add normalization function near the top
+const normalizeSubject = (subj: string) => {
+    if (!subj) return '';
+    return subj.charAt(0).toUpperCase() + subj.slice(1).toLowerCase();
+};
+
 // Tailwind CSS configuration (moved here for React context)
 const tailwindConfig = `
     tailwind.config = {
@@ -200,7 +206,7 @@ const tailwindConfig = `
                     chemistry: '#FF8585',
                     physics: '#4081FF',
                     math: '#FFAB1A',
-                    chinese: '#9C27B0'
+                    chinese: '#ff3b30'
                 },
             },
         },
@@ -235,7 +241,7 @@ const App: React.FC = () => {
         
         if (examBoardParam) setExamBoard(examBoardParam);
         if (examLevelParam) setExamLevel(examLevelParam);
-        if (subjectParam) setSubject(subjectParam);
+        if (subjectParam) setSubject(normalizeSubject(subjectParam));
         if (paperParam) setUnit(paperParam);
     }, []);
     const [searchTerm, setSearchTerm] = useState<string>('');
@@ -244,17 +250,17 @@ const App: React.FC = () => {
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState<boolean>(false);
 
     // Helper to get subject color class
+    const subjectColorMap: Record<string, string> = {
+        Biology: '#0FBD8C',
+        Chemistry: '#FF8585',
+        Physics: '#4081FF',
+        Math: '#FFAB1A',
+        'Math A': '#FFAB1A',
+        'Math B': '#FFAB1A',
+        Chinese: '#ff3b30',
+    };
     const getSubjectColor = useCallback((subj: string): string => {
-        switch (subj) {
-            case 'Biology': return 'biology';
-            case 'Chemistry': return 'chemistry';
-            case 'Physics': return 'physics';
-            case 'Math':
-            case 'Math A':
-            case 'Math B': return 'math';
-            case 'Chinese': return 'chinese';
-            default: return 'primary';
-        }
+        return subjectColorMap[subj] || '#FF3B30';
     }, []);
 
     // Function to apply filters and search
@@ -357,7 +363,7 @@ const App: React.FC = () => {
                 setExamLevel(newExamLevel);
             }
             if (newSubject && newSubject !== subject) {
-                setSubject(newSubject);
+                setSubject(normalizeSubject(newSubject));
             }
             if (newPaper && newPaper !== unit) {
                 setUnit(newPaper);
@@ -565,7 +571,6 @@ const App: React.FC = () => {
                 }
                 .paper-card {
                     transition: all 0.2s ease;
-                    border: 1px solid #e2e8f0;
                 }
                 .camera-overlay {
                     background: rgba(0, 0, 0, 0.9);
@@ -604,6 +609,13 @@ const App: React.FC = () => {
                 }
                 #left-sidebar::-webkit-scrollbar {
                     display: none
+                }
+                /* Hover shadow for Question and Answer buttons */
+                .qp-btn:hover {
+                    box-shadow: 0px 0px 0px 6px rgba(59, 130, 246, 0.15); /* blue-500 @ 15% */
+                }
+                .ms-btn:hover {
+                    box-shadow: 0px 0px 0px 6px rgba(34, 197, 94, 0.15); /* green-500 @ 15% */
                 }
                 `}
             </style>
@@ -789,7 +801,7 @@ const App: React.FC = () => {
 
                     {/* Right Content Area - Papers List */}
                     <div className="flex-1 overflow-auto p-6 bg-gray-50 dark:bg-gray-900 flex justify-center">
-                        <div id="papers-container" className="space-y-6 max-w-[1200px] mx-auto w-full">
+                        <div id="papers-container" className="space-y-6 max-w-[600px] mx-auto w-full">
                             {renderPapers(filteredPapers)}
                         </div>
                     </div>
@@ -814,7 +826,7 @@ const PaperCard: React.FC<PaperCardProps> = ({ paper, getSubjectColor, getFullMo
     const paperPartDisplay = paper.paper === 'N/A' ? '' : paper.paper;
 
     return (
-        <div className="paper-card gap-[80px] bg-white dark:bg-gray-800 rounded-lg p-2 shadow-2xl border border-gray-200 dark:border-gray-700 flex justify-between items-center text-sm">
+        <div className="paper-card gap-[10px] bg-white dark:bg-gray-800 rounded-lg p-2 shadow-2xl border border-[#00000020] flex justify-between items-center text-sm">
             {paper.isComingSoon ? (
                 <div className="flex items-center space-x-2">
                     <span className={`font-semibold text-${subjectColor}`}>{paper.subject}</span>
@@ -822,7 +834,7 @@ const PaperCard: React.FC<PaperCardProps> = ({ paper, getSubjectColor, getFullMo
                 </div>
             ) : (
                 <div className="flex items-center space-x-2">
-                    <span className={`font-semibold text-${subjectColor}`}>{paper.subject}</span>
+                    <span className="font-semibold" style={{ color: getSubjectColor(paper.subject) }}>{paper.subject}</span>
                     <span className="text-gray-700 dark:text-gray-300">{paperPartDisplay}</span>
                     <span className="text-gray-500 dark:text-gray-400">{seriesDisplay}{yearDisplay}</span>
                 </div>

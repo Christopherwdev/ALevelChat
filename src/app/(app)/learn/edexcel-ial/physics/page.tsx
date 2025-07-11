@@ -1202,6 +1202,11 @@ const App: React.FC = () => {
                                                     e.currentTarget.style.borderColor = "#00000010";
                                                     e.currentTarget.style.boxShadow = "none";
                                                 }}
+                                                onClick={() => {
+                                                    if (tool.id === 'past-papers') navigate('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Physics&paper=Unit+1');
+                                                    else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
+                                                    else if (tool.id === 'ask-help') navigate('/social');
+                                                }}
                                             >
                                                 <div className="border-2 p-3 rounded-full" style={{ borderColor: SUBJECT_COLOR }}>
                                                     <tool.icon className="w-6 h-6" style={{ color: SUBJECT_COLOR }} />

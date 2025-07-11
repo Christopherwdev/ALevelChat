@@ -414,6 +414,17 @@ const App: React.FC = () => {
         }
     };
 
+    // Handler for revision tool buttons
+    const handleRevisionToolClick = (toolId: string) => {
+        if (toolId === 'past-papers') {
+            router.push('/past-paper?examBoard=Edexcel&examLevel=IGCSE&subject=Chinese&paper=Paper+1');
+        } else if (toolId === 'ai-teacher') {
+            router.push('/ai-teacher');
+        } else if (toolId === 'ask-help') {
+            window.open('https://aitolearn.xyz/contact/', '_blank');
+        }
+    };
+
     // --- Components for Home Page ---
     const ContinueLessonButton: React.FC = () => {
         return (
@@ -1138,6 +1149,7 @@ const App: React.FC = () => {
                                             style={{
                                                 borderColor: "#00000010",
                                             }}
+                                            onClick={() => handleRevisionToolClick(tool.id)}
                                             onMouseEnter={e => {
                                                 e.currentTarget.style.borderColor = SUBJECT_COLOR;
                                                 e.currentTarget.style.boxShadow = `0 0 0 10px ${SUBJECT_COLOR}20`;

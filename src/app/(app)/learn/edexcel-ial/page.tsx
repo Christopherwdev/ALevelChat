@@ -1,8 +1,9 @@
 "use client"; // This directive marks the component as a Client Component
 
 import AppHeader from '@/components/app/header';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle } from 'lucide-react'; // Importing Lucide React icons
+import { useRouter } from 'next/navigation';
 
 // Helper function to convert hex color to RGB string (re-used from previous component)
 const hexToRgb = (hex: string) => {
@@ -28,6 +29,7 @@ const hexToRgb = (hex: string) => {
 
 // Main App component (representing the Edexcel IAL page)
 const App = () => {
+  const router = useRouter();
   // State for the active tab in the 3-pane window
   const [activeTab, setActiveTab] = useState('details'); // 'details', 'timetable', 'find-tutor'
 
@@ -51,6 +53,17 @@ const App = () => {
     // In a real application, this would navigate to the subject-specific revision page
     window.location.href = `/learn/edexcel-ial/${subjectId}`;
   }, []);
+
+  // Handler for revision tool buttons
+  const handleRevisionToolClick = (toolId: string) => {
+    if (toolId === 'past-papers') {
+      window.open('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Biology&paper=Unit+1');
+    } else if (toolId === 'ai-teacher') {
+      window.open('/ai-teacher');
+    } else if (toolId === 'ask-help') {
+      window.open('https://aitolearn.xyz/contact/', '_blank');
+    }
+  };
 
   // Function to handle navigation (for breadcrumbs and other links)
   const navigate = (path: string) => {
@@ -119,6 +132,18 @@ const App = () => {
       </form>
     </div>
   );
+
+  const normalizeSubject = (subj: string) => {
+    if (!subj) return '';
+    return subj.charAt(0).toUpperCase() + subj.slice(1).toLowerCase();
+};
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const subjectParam = urlParams.get('subject');
+    if (subjectParam) setSubject(normalizeSubject(subjectParam));
+    // ... rest unchanged
+}, []);
 
 
   return (
@@ -253,7 +278,15 @@ const App = () => {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {revisionTools.map((tool) => (
-            <div key={tool.id} className="bg-white p-6 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[5px] border-[#00000010] transition duration-200 hover:border-[5px] hover:border-[#ff3b30] hover:ring-[10px] hover:ring-[#ff3b3020]">
+            <div
+              key={tool.id}
+              className="bg-white p-6 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[5px] border-[#00000010] transition duration-200 hover:border-[5px] hover:border-[#ff3b30] hover:ring-[10px] hover:ring-[#ff3b3020]"
+              onClick={() => {
+                if (tool.id === 'past-papers') navigate('/past-paper');
+                else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
+                else if (tool.id === 'ask-help') navigate('/social');
+              }}
+            >
               <div className="border-2 border-[#ff3b30] p-3 rounded-full">
                 <tool.icon className="w-6 h-6 text-[#ff3b30]" />
               </div>

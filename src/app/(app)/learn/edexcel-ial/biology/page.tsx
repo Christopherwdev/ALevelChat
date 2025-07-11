@@ -1192,7 +1192,11 @@ const App: React.FC = () => {
                                                 className="bg-white p-4 mt-0 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[5px] transition duration-200"
                                                 style={{
                                                     borderColor: "#00000010",
-                                                    // Optionally, you can add a boxShadow or borderColor on hover using a custom CSS class or inline event
+                                                }}
+                                                onClick={() => {
+                                                    if (tool.id === 'past-papers') navigate('//past-paper?examBoard=Edexcel&examLevel=IAL&subject=Chemistry&paper=Unit+1');
+                                                    else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
+                                                    else if (tool.id === 'ask-help') navigate('/social');
                                                 }}
                                                 onMouseEnter={e => {
                                                     e.currentTarget.style.borderColor = SUBJECT_COLOR;
