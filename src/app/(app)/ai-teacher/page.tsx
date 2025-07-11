@@ -1087,18 +1087,18 @@ const App = () => {
                             </button>
                             <div>
                                 <h1 id="current-subject-header" className="text-xl font-bold text-gray-800 break-words overflow-hidden line-clamp-2" style={{ marginBottom: 0, paddingBottom: 0 }}>{currentSubject ? getSubjectDisplayName(currentSubject) : 'AI Teach'}</h1>
-                                <p className="text-xs text-gray-500 mt-1">Gemini 2.5 Flash</p>
+                                <p className="text-xs text-gray-500 mt-0">Gemini 2.5 Flash</p>
                             </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                            <button onClick={() => setQuizModalOpen(true)} id="quiz-btn" className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm bg-blue-100 text-blue-500 hover:bg-blue-200 hover:text-primary-500 transition">
+                            {/* <button onClick={() => setQuizModalOpen(true)} id="quiz-btn" className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm bg-blue-100 text-blue-500 hover:bg-blue-200 hover:text-primary-500 transition">
                                 <i className="fas fa-question-circle text-xs"></i>
                                 <span>Quiz</span>
                             </button>
                             <button onClick={() => setRevisionModalOpen(true)} id="revision-btn" className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm bg-purple-100 text-purple-500 hover:text-purple-500 hover:bg-purple-200 transition">
                                 <i className="fas fa-book text-xs"></i>
                                 <span>Plan</span>
-                            </button>
+                            </button> */}
                             <button onClick={() => setHistoryModalOpen(true)} id="chat-history-btn" className="p-0 rounded-full hover:bg-gray-100 transition justify-center" style={{ width: '40px', height: '40px' }}>
                                 <i className="fas fa-history text-gray-600"></i>
                             </button>
@@ -1138,7 +1138,7 @@ const App = () => {
                                     ref={messageInputRef}
                                     id="message-input"
                                     rows="1"
-                                    placeholder="Ask anything about your subject..."
+                                    placeholder="Type a message..."
                                     value={messageInput}
                                     onChange={(e) => setMessageInput(e.target.value)}
                                     onKeyPress={(e) => {

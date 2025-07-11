@@ -691,7 +691,7 @@ const App: React.FC = () => {
                     {/* Mobile overlay backdrop */}
                     {mobileSidebarOpen && (
                         <div 
-                            className="lg:hidden fixed inset-0 bg-[#00000050] backdrop-blur bg-opacity-50 z-40"
+                            className="lg:hidden fixed inset-0 bg-[#00000050] transition duration-300 backdrop-blur bg-opacity-50 z-40"
                             onClick={toggleMobileSidebar}
                         />
                     )}
@@ -831,7 +831,7 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Right Content Area - Papers List */}
-                    <div className="flex-1 overflow-auto p-6 pb-12 bg-gray-50 dark:bg-gray-900 flex justify-center">
+                    <div className="flex-1 overflow-auto p-4 pb-12 bg-gray-50 dark:bg-gray-900 flex justify-center">
                         <div id="papers-container" className="space-y-6 max-w-[600px] mx-auto w-full">
                             {renderPapers(filteredPapers)}
                             <div style={{ height: '3rem' }} />
@@ -866,8 +866,10 @@ const PaperCard: React.FC<PaperCardProps> = ({ paper, getSubjectColor, getFullMo
                 </div>
             ) : (
                 <div className="flex items-center space-x-2">
+                    <div className="flex flex-col space-x-2 md:flex-row">
                     <span className="font-semibold" style={{ color: getSubjectColor(paper.subject) }}>{paper.subject}</span>
-                    <span className="text-gray-700 dark:text-gray-300">{paperPartDisplay}</span>
+                    <span className="text-gray-700 dark:text-gray-300 font-semibold">{paperPartDisplay}</span>
+                    </div>
                     <span className="text-gray-500 dark:text-gray-400">{seriesDisplay}{yearDisplay}</span>
                 </div>
             )}
