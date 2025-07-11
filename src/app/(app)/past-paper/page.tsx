@@ -644,7 +644,7 @@ const App: React.FC = () => {
                         <div className="relative">
                             <select
                                 id="exam-level-select"
-                                className="w-[150px] p-2 text-base bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                                className="w-[100px] p-2 text-base bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
                                 value={examLevel}
                                 onChange={(e) => setExamLevel(e.target.value)}
                             >

@@ -48,7 +48,7 @@ export default function AppNavigation({ collapsedWidth = 70 }: AppNavigationProp
       {/* Home Button */}
       <Link
         href="/"
-        className="m-3 w-[44px] h-[44px] bg-gray-100 rounded-full hover:bg-gray-200 transition text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center content-center justify-content-center align-content-center lg:block hidden"
+        className="m-3 w-[44px] h-[44px] p-[10px] bg-gray-100 rounded-full hover:bg-gray-200 transition text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center content-center lg:block hidden"
         aria-label="Home"
       >
         <Home size={24} />
