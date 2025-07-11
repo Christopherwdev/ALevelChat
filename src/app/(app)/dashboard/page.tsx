@@ -319,6 +319,8 @@ const App: React.FC = () => {
         };
     });
 
+    const currentMode: 'IAL' | 'IGCSE' = appState.currentMode;
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeCellData, setActiveCellData] = useState<{ id: string, subject: string, paper: string, year: number, series: string, mode: 'IAL' | 'IGCSE' } | null>(null);
     const [isBottomActionsVisible, setIsBottomActionsVisible] = useState(false);
@@ -326,6 +328,43 @@ const App: React.FC = () => {
     const [isDragging, setIsDragging] = useState(false);
     const dragOffset = useRef({ x: 0, y: 0 });
     const chartRef = useRef<HTMLDivElement>(null); // New ref for the chart container
+
+    // Add state for dashboard mode
+    const [dashboardMode, setDashboardMode] = useState<'score' | 'calendar'>('score');
+    const [calendarRange, setCalendarRange] = useState<{start: string, end: string}>(() => {
+        const today = new Date();
+        const start = new Date(today.getFullYear(), today.getMonth()-1, 1).toISOString().slice(0, 10);
+        const end = new Date(today.getFullYear(), today.getMonth() + 3, 0).toISOString().slice(0, 10);
+        return { start, end };
+    });
+    const [calendarData, setCalendarData] = useState<Record<string, string>>({});
+
+    // Add state for calendar modal
+    const [isCalendarRangeModalOpen, setIsCalendarRangeModalOpen] = useState(false);
+    const [calendarRangeDraft, setCalendarRangeDraft] = useState(calendarRange);
+
+    // Helper to generate calendar days between two dates
+    function getCalendarDays(start: string, end: string) {
+        const days = [];
+        let current = new Date(start);
+        const last = new Date(end);
+        while (current <= last) {
+            days.push(new Date(current));
+            current.setDate(current.getDate() + 1);
+        }
+        return days;
+    }
+
+    // Helper to group days by month for table rendering
+    function groupDaysByMonth(days: Date[]) {
+        const months: Record<string, Date[]> = {};
+        days.forEach(day => {
+            const key = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}`;
+            if (!months[key]) months[key] = [];
+            months[key].push(day);
+        });
+        return months;
+    }
 
     // --- Memoized Current Mode Data ---
     const getCurrentSubjectsData = useCallback(() => {
@@ -355,7 +394,7 @@ const App: React.FC = () => {
     const getFlatPaperList = useCallback(() => {
         const list: { subject: string; paper: string }[] = [];
         const currentSubjectsData = getCurrentSubjectsData();
-        const currentSelectedPapers = appState.modes[appState.currentMode].selectedPapers;
+        const currentSelectedPapers = appState.modes[currentMode].selectedPapers;
 
         Object.keys(currentSubjectsData).forEach(subject => {
             if (currentSelectedPapers[subject] && Array.isArray(currentSelectedPapers[subject])) {
@@ -371,8 +410,8 @@ const App: React.FC = () => {
     const calculateMeanScore = useCallback((subject: string, paper: string): number | null => {
         let totalScore = 0;
         let count = 0;
-        const currentScores = appState.modes[appState.currentMode].scores;
-        const currentYears = appState.modes[appState.currentMode].years;
+        const currentScores = appState.modes[currentMode].scores;
+        const currentYears = appState.modes[currentMode].years;
 
         currentYears.forEach(({ year, series: serie }) => {
             const cellId = `${appState.currentMode}_${year}_${serie}_${subject}_${paper}`.replace(/\s/g, '_');
@@ -432,7 +471,7 @@ const App: React.FC = () => {
         let chart: any;
         if (activeCellData && chartRef.current && typeof window !== 'undefined' && (window as any).ApexCharts) {
             const { subject, paper, mode } = activeCellData;
-            const currentScores = appState.modes[mode].scores;
+            const currentScores = appState.modes[mode as 'IAL' | 'IGCSE'].scores;
             const cellId = activeCellData.id; // Use activeCellData.id directly
             const rawScore = currentScores[cellId] || '';
             const maxMark = getCurrentPaperMaxMarks()[paper];
@@ -521,7 +560,7 @@ const App: React.FC = () => {
     const handlePaperSelectionChange = useCallback((subject: string, paper: string, isChecked: boolean) => {
         setAppState(prevState => {
             const newState = { ...prevState };
-            const currentSelectedPapers = { ...newState.modes[prevState.currentMode].selectedPapers };
+            const currentSelectedPapers = { ...newState.modes[prevState.currentMode as 'IAL' | 'IGCSE'].selectedPapers };
 
             if (!currentSelectedPapers[subject]) {
                 currentSelectedPapers[subject] = [];
@@ -534,7 +573,7 @@ const App: React.FC = () => {
             } else {
                 currentSelectedPapers[subject] = currentSelectedPapers[subject].filter(p => p !== paper);
             }
-            newState.modes[prevState.currentMode].selectedPapers = currentSelectedPapers;
+            newState.modes[prevState.currentMode as 'IAL' | 'IGCSE'].selectedPapers = currentSelectedPapers;
             return newState;
         });
     }, []);
@@ -546,9 +585,9 @@ const App: React.FC = () => {
             const papers = currentSubjectsData[subject]?.papers || [];
 
             if (isChecked) {
-                newState.modes[prevState.currentMode].selectedPapers[subject] = [...papers];
+                newState.modes[prevState.currentMode as 'IAL' | 'IGCSE'].selectedPapers[subject] = [...papers];
             } else {
-                newState.modes[prevState.currentMode].selectedPapers[subject] = [];
+                newState.modes[prevState.currentMode as 'IAL' | 'IGCSE'].selectedPapers[subject] = [];
             }
             return newState;
         });
@@ -578,7 +617,7 @@ const App: React.FC = () => {
                 startYear, startSeries, endYear, endSeries,
                 currentSeriesOrderObj, getCurrentMaxYearSelect(), getCurrentMaxSeriesSelect()
             );
-            newState.modes[prevState.currentMode].years = newYears;
+            newState.modes[prevState.currentMode as 'IAL' | 'IGCSE'].years = newYears;
             return newState;
         });
         setIsModalOpen(false);
@@ -677,7 +716,7 @@ const App: React.FC = () => {
 
     const renderSubjectSelection = useCallback(() => {
         const currentSubjectsData = getCurrentSubjectsData();
-        const currentSelectedPapers = appState.modes[appState.currentMode].selectedPapers;
+        const currentSelectedPapers = appState.modes[currentMode].selectedPapers;
 
         return Object.entries(currentSubjectsData).map(([subject, data]) => {
             const allPapersSelected = data.papers.every(paper => currentSelectedPapers[subject]?.includes(paper));
@@ -722,7 +761,7 @@ const App: React.FC = () => {
     const renderYearRangeSelectors = useCallback(() => {
         const currentSeriesArr = getCurrentSeries();
         const currentMaxYear = getCurrentMaxYearSelect();
-        const currentYearsList = appState.modes[appState.currentMode].years;
+        const currentYearsList = appState.modes[currentMode].years;
 
         let initialStartYear = 2019;
         let initialStartSeries = 'Jan';
@@ -791,7 +830,7 @@ const App: React.FC = () => {
         if (!activeCellData) return null;
 
         const { subject, paper, year, series, mode } = activeCellData;
-        const currentScores = appState.modes[mode].scores;
+        const currentScores = appState.modes[mode as 'IAL' | 'IGCSE'].scores;
         const cellId = `${mode}_${year}_${series}_${subject}_${paper}`.replace(/\s/g, '_');
         const rawScore = currentScores[cellId] || '';
         const maxMark = getCurrentPaperMaxMarks()[paper];
@@ -823,7 +862,7 @@ const App: React.FC = () => {
 
 
     const flatPaperList = getFlatPaperList();
-    const currentYears = appState.modes[appState.currentMode].years;
+    const currentYears = appState.modes[currentMode].years;
     const currentPaperMaxMarks = getCurrentPaperMaxMarks();
 
     const noPapersSelected = flatPaperList.length === 0;
@@ -1079,169 +1118,287 @@ const App: React.FC = () => {
                     <h1 className="text-2xl font-bold text-gray-800" id="header-date"></h1>
                     <p className="text-xs text-gray-500 mt-1">Data saved locally in your browser</p>
                 </div>
+
+                <div className="flex rounded-full overflow-hidden border border-[#ff3b30] bg-white shadow" style={{boxShadow:'0 2px 8px #0001'}}>
+                    <button
+                        className={`px-6 py-2 font-semibold transition-all ${dashboardMode==='score' ? 'bg-[#ff3b30] text-white' : 'text-[#ff3b30] bg-white'}`}
+                        style={{outline:'none'}}
+                        onClick={()=>setDashboardMode('score')}
+                    >Score</button>
+                    <button
+                        className={`px-6 py-2 font-semibold transition-all ${dashboardMode==='calendar' ? 'bg-[#ff3b30] text-white' : 'text-[#ff3b30] bg-white'}`}
+                        style={{outline:'none'}}
+                        onClick={()=>setDashboardMode('calendar')}
+                    >Calendar</button>
+                </div>
                 <div className="flex items-center space-x-2">
-                    <select
-                        id="exam-level-select"
-                        className="w-[150px] p-2 text-base bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                        value={appState.currentMode}
-                        onChange={(e) => switchMode(e.target.value as 'IAL' | 'IGCSE')}
-                    >
-                        <option value="IAL">IAL</option>
-                        <option value="IGCSE">IGCSE</option>
-                    </select>
+                    {dashboardMode === 'score' ? (
+                        <select
+                            id="exam-level-select"
+                            className="w-[150px] p-2 text-base bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                            value={appState.currentMode}
+                            onChange={(e) => switchMode(e.target.value as 'IAL' | 'IGCSE')}
+                        >
+                            <option value="IAL">IAL</option>
+                            <option value="IGCSE">IGCSE</option>
+                        </select>
+                    ) : (
+                        <button
+                            className="btn-primary px-4 py-2 text-white bg-[#ff3b30] rounded-md font-semibold"
+                            onClick={() => {
+                                setCalendarRangeDraft(calendarRange);
+                                setIsCalendarRangeModalOpen(true);
+                            }}
+                        >Set Date Range</button>
+                    )}
                 </div>
             </header>
 
-            <div id="table-container" className={`table-container flex-grow box-content ${noPapersSelected ? 'hidden' : ''}`}>
-                <table id="scores-table">
-                    <thead id="table-head">
-                        <tr>
-                            <th>
-                                <button
-                                    id="open-select-papers-modal-btn-in-table"
-                                    className="btn-primary flex items-center justify-center"
-                                    onClick={() => setIsModalOpen(true)}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                                    <span className="ml-0">Select Papers</span>
-                                </button>
-                            </th>
-                            {flatPaperList.map(({ subject, paper }) => (
-                                <th key={`${subject}-${paper}`}>
-                                    <div>{subject}</div>
-                                    <div className="font-normal text-sm">{paper}</div>
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                        {currentYears.map(({ year, series: serie }) => (
-                            <tr key={`${year}-${serie}`}>
-                                <td>{`${year} ${serie}`}</td>
-                                {flatPaperList.map(({ subject, paper }) => {
-                                    const cellId = `${appState.currentMode}_${year}_${serie}_${subject}_${paper}`.replace(/\s/g, '_');
-                                    const score = appState.modes[appState.currentMode].scores[cellId] || '';
+          
 
-                                    const isDisabled = disabledPapersList.some(item =>
-                                        item.examLevel === appState.currentMode &&
-                                        item.subject === subject &&
-                                        item.series === serie &&
-                                        (item.paper === null || item.paper === paper) &&
-                                        (item.year === null || item.year === year)
-                                    ) || (appState.currentMode === 'IAL' && serie === 'Oct' && paper.startsWith('FP'));
-
-                                    return (
-                                        <td key={cellId}>
-                                            <ScoreCell
-                                                id={cellId}
-                                                score={score}
-                                                subject={subject}
-                                                paper={paper}
-                                                year={year}
-                                                series={serie}
-                                                mode={appState.currentMode}
-                                                maxMark={currentPaperMaxMarks[paper]}
-                                                isDisabled={isDisabled}
-                                                onScoreChange={handleScoreChange}
-                                                onCellFocus={handleCellFocus}
-                                            />
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        ))}
-                    </tbody>
-                    <tfoot id="table-foot">
-                        <tr className="mean-score-row">
-                            <td>Mean Score</td>
-                            {flatPaperList.map(({ subject, paper }) => {
-                                const mean = calculateMeanScore(subject, paper);
-                                const meanText = mean !== null ? mean.toFixed(1) : 'N/A';
-                                const scoreForColor = mean !== null ? mean.toString() : ''; // Pass string for color function
-
-                                return (
-                                    <td key={`mean-${subject}-${paper}`}>
-                                        <div
-                                            className="score-cell"
-                                            style={{
-                                                backgroundColor: (() => {
-                                                    let bgColor = '';
-                                                    if (mean !== null) {
-                                                        const percentage = (mean / currentPaperMaxMarks[paper]) * 100;
-                                                        if (percentage >= 90) bgColor = 'var(--color-90)';
-                                                        else if (percentage >= 80) bgColor = 'var(--color-80)';
-                                                        else if (percentage >= 60) bgColor = 'var(--color-70)';
-                                                        else if (percentage >= 30) bgColor = 'var(--color-50)';
-                                                        else bgColor = 'var(--color-fail)';
-                                                    }
-                                                    return bgColor;
-                                                })()
-                                            }}
+            {dashboardMode === 'score' ? (
+                <>
+                    <div id="table-container" className={`table-container flex-grow box-content ${noPapersSelected ? 'hidden' : ''}`}>
+                        <table id="scores-table">
+                            <thead id="table-head">
+                                <tr>
+                                    <th>
+                                        <button
+                                            id="open-select-papers-modal-btn-in-table"
+                                            className="btn-primary flex items-center justify-center"
+                                            onClick={() => setIsModalOpen(true)}
                                         >
-                                            {meanText}
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                                            <span className="ml-0">Select Papers</span>
+                                        </button>
+                                    </th>
+                                    {flatPaperList.map(({ subject, paper }) => (
+                                        <th key={`${subject}-${paper}`}>
+                                            <div>{subject}</div>
+                                            <div className="font-normal text-sm">{paper}</div>
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                {currentYears.map(({ year, series: serie }) => (
+                                    <tr key={`${year}-${serie}`}>
+                                        <td>{`${year} ${serie}`}</td>
+                                        {flatPaperList.map(({ subject, paper }) => {
+                                            const cellId = `${appState.currentMode}_${year}_${serie}_${subject}_${paper}`.replace(/\s/g, '_');
+                                            const score = appState.modes[currentMode].scores[cellId] || '';
+
+                                            const isDisabled = disabledPapersList.some(item =>
+                                                item.examLevel === appState.currentMode &&
+                                                item.subject === subject &&
+                                                item.series === serie &&
+                                                (item.paper === null || item.paper === paper) &&
+                                                (item.year === null || item.year === year)
+                                            ) || (appState.currentMode === 'IAL' && serie === 'Oct' && paper.startsWith('FP'));
+
+                                            return (
+                                                <td key={cellId}>
+                                                    <ScoreCell
+                                                        id={cellId}
+                                                        score={score}
+                                                        subject={subject}
+                                                        paper={paper}
+                                                        year={year}
+                                                        series={serie}
+                                                        mode={appState.currentMode}
+                                                        maxMark={currentPaperMaxMarks[paper]}
+                                                        isDisabled={isDisabled}
+                                                        onScoreChange={handleScoreChange}
+                                                        onCellFocus={handleCellFocus}
+                                                    />
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                ))}
+                            </tbody>
+                            <tfoot id="table-foot">
+                                <tr className="mean-score-row">
+                                    <td>Mean Score</td>
+                                    {flatPaperList.map(({ subject, paper }) => {
+                                        const mean = calculateMeanScore(subject, paper);
+                                        const meanText = mean !== null ? mean.toFixed(1) : 'N/A';
+                                        const scoreForColor = mean !== null ? mean.toString() : ''; // Pass string for color function
+
+                                        return (
+                                            <td key={`mean-${subject}-${paper}`}>
+                                                <div
+                                                    className="score-cell"
+                                                    style={{
+                                                        backgroundColor: (() => {
+                                                            let bgColor = '';
+                                                            if (mean !== null) {
+                                                                const percentage = (mean / currentPaperMaxMarks[paper]) * 100;
+                                                                if (percentage >= 90) bgColor = 'var(--color-90)';
+                                                                else if (percentage >= 80) bgColor = 'var(--color-80)';
+                                                                else if (percentage >= 60) bgColor = 'var(--color-70)';
+                                                                else if (percentage >= 30) bgColor = 'var(--color-50)';
+                                                                else bgColor = 'var(--color-fail)';
+                                                            }
+                                                            return bgColor;
+                                                        })()
+                                                    }}
+                                                >
+                                                    {meanText}
+                                                </div>
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    {/* Message and Button for when no papers are selected */}
+                    {noPapersSelected && (
+                        <div id="no-papers-state" className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 text-lg">
+                            <p className="mb-4">No papers selected. Click 'Select Papers' to get started.</p>
+                            <button id="select-papers-intro-btn" className="btn-primary flex items-center gap-2 px-6 py-3 text-lg" onClick={() => setIsModalOpen(true)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                                <span>Select Papers</span>
+                            </button>
+                        </div>
+                    )}
+
+                    <div
+                        id="bottom-actions"
+                        ref={bottomActionsRef}
+                        className={`fixed p-4 bg-white rounded-xl border-2 border-[#00000015] shadow-2xl shadow-[#00000020] z-20 flex flex-col items-center w-[290px] h-[155px] max-w-sm cursor-grab pt-6 transition-transform duration-300 ${isBottomActionsVisible ? 'translate-y-0 opacity-100 visible' : 'translate-y-20 opacity-0 invisible'}`}
+                        onMouseDown={startDrag}
+                        style={{ position: 'fixed' }} // Ensure position is fixed for dragging
+                    >
+                        <button id="close-bottom-actions-btn" className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 rounded-full p-1 hover:bg-gray-100 transition-colors" onClick={hideBottomActions}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                        <div id="active-cell-info" className="leading-[1.2em] text-gray-700 text-sm mb-[15px] font-semibold pt-0 flex-col w-full">
+                            {activeCellData ? (
+                                <>
+                                    <span>{activeCellData.subject} {activeCellData.paper}</span><br /><br />
+                                    <span style={{ fontSize: '30px' }}>{activeCellData.series} {activeCellData.year}</span>
+                                    <span style={{ fontSize: '20px', fontWeight: 100, color: 'grey' }}>
+                                        {(() => {
+                                            const score = appState.modes[activeCellData.mode as 'IAL' | 'IGCSE'].scores[activeCellData.id];
+                                            const maxMark = getCurrentPaperMaxMarks()[activeCellData.paper];
+                                            if (score && !isNaN(parseFloat(score)) && maxMark) {
+                                                const percentage = ((parseFloat(score) / maxMark) * 100).toFixed(0);
+                                                return ` (${percentage}%)`;
+                                            } else if (score === 'N/A') {
+                                                return ' (N/A)';
+                                            }
+                                            return '';
+                                        })()}
+                                    </span>
+                                </>
+                            ) : (
+                                <span>Loading...</span>
+                            )}
+                        </div>
+                        <div className="flex space-x-2 mb-2 w-full">
+                            <button id="goto-qp-btn" className="btn-primary w-[100%]" onClick={() => handleGoToPaper('qp')}>Question</button>
+                            <button id="goto-ms-btn" className="btn-primary w-[100%] bg-gray-500 hover:bg-gray-600" onClick={() => handleGoToPaper('ms')}>Answer</button>
+                        </div>
+                        <div id="paper-graphs" className="overlay-graphs-container w-full">
+                            {renderPaperGraphs()}
+                        </div>
+                    </div>
+                </>
+            ) : (
+                // Calendar mode
+                <div className="flex flex-col items-center w-full h-[calc(100vh-80px-60px)] min-h-[500px] overflow-scroll">
+                    <div className="flex gap-4 mt-2">
+                        {/* Remove the Set Date Range button from here */}
+                    </div>
+                    <div className="flex-1 w-full flex justify-center items-stretch">
+                        <div className="overflow-auto w-full h-full min-h-0">
+                            {/* Render calendar table */}
+                            {(() => {
+                                const days = getCalendarDays(calendarRange.start, calendarRange.end);
+                                if (!days.length) return <div className="text-gray-400">No days in range</div>;
+                                const months = groupDaysByMonth(days);
+                                return Object.entries(months).map(([monthKey, monthDays]) => {
+                                    const firstDay = monthDays[0];
+                                    const year = firstDay.getFullYear();
+                                    const month = firstDay.getMonth();
+                                    const monthName = firstDay.toLocaleString('default', { month: 'long' });
+                                    // Find the weekday of the 1st (0=Sun, 1=Mon...)
+                                    const firstWeekday = new Date(year, month, 1).getDay();
+                                    // Build weeks
+                                    const weeks: (Date|null)[][] = [[]];
+                                    let week = weeks[0];
+                                    for (let i=0; i<firstWeekday; ++i) week.push(null);
+                                    monthDays.forEach((date, idx) => {
+                                        if (week.length === 7) { week = []; weeks.push(week); }
+                                        week.push(date);
+                                    });
+                                    while (week.length < 7) week.push(null);
+                                    return (
+                                        <div key={monthKey} className="mb-8 w-full">
+                                            <div className="text-xl font-bold mb-0 bg-white text-center">{monthName} {year}</div>
+                                            <div className="overflow-auto w-full">
+                                                <table className="w-full border-collapse bg-white shadow rounded-lg overflow-hidden min-w-[900px]" style={{tableLayout:'fixed'}}>
+                                                    <thead>
+                                                        <tr className="bg-[#ff3b30] text-white">
+                                                            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>(<th key={d} className="py-2 font-semibold">{d}</th>))}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {weeks.map((week,wi)=>(
+                                                            <tr key={wi}>
+                                                                {week.map((date,di)=>(
+                                                                    <td key={di} className="align-top border border-gray-200 h-32 p-1 relative group min-w-[120px] min-h-[100px]">
+                                                                        {date && (
+                                                                            <div className="absolute top-1 left-2 text-sm font-bold text-gray-500">{date.getDate()}</div>
+                                                                        )}
+                                                                        {date && (
+                                                                            <textarea
+                                                                                className="w-full h-full p-2 pt-6 resize-none bg-transparent focus:bg-[#fff3f2] border-none outline-none text-sm text-gray-800"
+                                                                                placeholder=""
+                                                                                value={calendarData[date.toISOString().slice(0,10)]||''}
+                                                                                onChange={e=>setCalendarData(d=>({...d,[date.toISOString().slice(0,10)]:e.target.value}))}
+                                                                            />
+                                                                        )}
+                                                                    </td>
+                                                                ))}
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
-                                    </td>
-                                );
-                            })}
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-
-            {/* Message and Button for when no papers are selected */}
-            {noPapersSelected && (
-                <div id="no-papers-state" className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 text-lg">
-                    <p className="mb-4">No papers selected. Click 'Select Papers' to get started.</p>
-                    <button id="select-papers-intro-btn" className="btn-primary flex items-center gap-2 px-6 py-3 text-lg" onClick={() => setIsModalOpen(true)}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                        <span>Select Papers</span>
-                    </button>
-                </div>
-            )}
-
-            <div
-                id="bottom-actions"
-                ref={bottomActionsRef}
-                className={`fixed p-4 bg-white rounded-xl border-2 border-[#00000015] shadow-2xl shadow-[#00000020] z-20 flex flex-col items-center w-[290px] h-[155px] max-w-sm cursor-grab pt-6 transition-transform duration-300 ${isBottomActionsVisible ? 'translate-y-0 opacity-100 visible' : 'translate-y-20 opacity-0 invisible'}`}
-                onMouseDown={startDrag}
-                style={{ position: 'fixed' }} // Ensure position is fixed for dragging
-            >
-                <button id="close-bottom-actions-btn" className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 rounded-full p-1 hover:bg-gray-100 transition-colors" onClick={hideBottomActions}>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                </button>
-                <div id="active-cell-info" className="leading-[1.2em] text-gray-700 text-sm mb-[15px] font-semibold pt-0 flex-col w-full">
-                    {activeCellData ? (
-                        <>
-                            <span>{activeCellData.subject} {activeCellData.paper}</span><br /><br />
-                            <span style={{ fontSize: '30px' }}>{activeCellData.series} {activeCellData.year}</span>
-                            <span style={{ fontSize: '20px', fontWeight: 100, color: 'grey' }}>
-                                {(() => {
-                                    const score = appState.modes[activeCellData.mode].scores[activeCellData.id];
-                                    const maxMark = getCurrentPaperMaxMarks()[activeCellData.paper];
-                                    if (score && !isNaN(parseFloat(score)) && maxMark) {
-                                        const percentage = ((parseFloat(score) / maxMark) * 100).toFixed(0);
-                                        return ` (${percentage}%)`;
-                                    } else if (score === 'N/A') {
-                                        return ' (N/A)';
-                                    }
-                                    return '';
-                                })()}
-                            </span>
-                        </>
-                    ) : (
-                        <span>Loading...</span>
+                                    );
+                                });
+                            })()}
+                        </div>
+                    </div>
+                    {/* Calendar Date Range Modal */}
+                    {isCalendarRangeModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" onClick={e => { if (e.target === e.currentTarget) setIsCalendarRangeModalOpen(false); }}>
+                            <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+                                <h3 className="text-lg font-semibold mb-4 text-gray-800">Set Calendar Date Range</h3>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                                    <input type="date" value={calendarRangeDraft.start} onChange={e=>setCalendarRangeDraft(r=>({...r,start:e.target.value}))} className="w-full border border-gray-300 rounded-md p-2" />
+                                </div>
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                                    <input type="date" value={calendarRangeDraft.end} onChange={e=>setCalendarRangeDraft(r=>({...r,end:e.target.value}))} className="w-full border border-gray-300 rounded-md p-2" />
+                                </div>
+                                <div className="flex justify-end space-x-3">
+                                    <button onClick={()=>setIsCalendarRangeModalOpen(false)} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">Cancel</button>
+                                    <button onClick={()=>{setCalendarRange(calendarRangeDraft);setIsCalendarRangeModalOpen(false);}} className="px-4 py-2 bg-[#ff3b30] text-white rounded-md hover:bg-red-600 transition">Done</button>
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
-                <div className="flex space-x-2 mb-2 w-full">
-                    <button id="goto-qp-btn" className="btn-primary w-[100%]" onClick={() => handleGoToPaper('qp')}>Question</button>
-                    <button id="goto-ms-btn" className="btn-primary w-[100%] bg-gray-500 hover:bg-gray-600" onClick={() => handleGoToPaper('ms')}>Answer</button>
-                </div>
-                <div id="paper-graphs" className="overlay-graphs-container w-full">
-                    {renderPaperGraphs()}
-                </div>
-            </div>
+            )}
 
             {/* Main Modal for Subject Selection and Year Range */}
             {isModalOpen && (
