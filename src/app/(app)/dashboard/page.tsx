@@ -333,8 +333,8 @@ const App: React.FC = () => {
     const [dashboardMode, setDashboardMode] = useState<'score' | 'calendar'>('score');
     const [calendarRange, setCalendarRange] = useState<{start: string, end: string}>(() => {
         const today = new Date();
-        const start = new Date(today.getFullYear(), today.getMonth()-1, 1).toISOString().slice(0, 10);
-        const end = new Date(today.getFullYear(), today.getMonth() + 3, 0).toISOString().slice(0, 10);
+        const start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
+        const end = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().slice(0, 10);
         return { start, end };
     });
     const [calendarData, setCalendarData] = useState<Record<string, string>>({});
@@ -915,9 +915,6 @@ const App: React.FC = () => {
                 td {
                     min-width:100px;
                 }
-                td:first-child {
-                    min-width:170px;
-                }
                 th {
                     background-color: #fff;
                     position: sticky;
@@ -932,7 +929,7 @@ const App: React.FC = () => {
                     left: 0;
                     z-index: 11;
                     background-color: #fff;
-                    padding: 0.25rem 0.75rem;
+                   
                     font-weight: 500;
                 }
                 th:first-child {
@@ -1118,15 +1115,14 @@ const App: React.FC = () => {
                     <h1 className="text-2xl font-bold text-gray-800" id="header-date"></h1>
                     <p className="text-xs text-gray-500 mt-1">Data saved locally in your browser</p>
                 </div>
-
-                <div className="flex rounded-full overflow-hidden border border-[#ff3b30] bg-white shadow" style={{boxShadow:'0 2px 8px #0001'}}>
+                <div className="flex rounded-full overflow-hidden border border-[#00000020] bg-white shadow" style={{boxShadow:'0 2px 8px #0001'}}>
                     <button
-                        className={`px-6 py-2 font-semibold transition-all ${dashboardMode==='score' ? 'bg-[#ff3b30] text-white' : 'text-[#ff3b30] bg-white'}`}
+                        className={`px-6 py-2 font-semibold transition-all rounded-full m-1 ${dashboardMode==='score' ? 'bg-[#ff3b30] text-white' : 'text-black bg-white hover:bg-[#00000010]'}`}
                         style={{outline:'none'}}
                         onClick={()=>setDashboardMode('score')}
                     >Score</button>
                     <button
-                        className={`px-6 py-2 font-semibold transition-all ${dashboardMode==='calendar' ? 'bg-[#ff3b30] text-white' : 'text-[#ff3b30] bg-white'}`}
+                        className={`px-6 py-2 font-semibold transition-all rounded-full m-1 ${dashboardMode==='calendar' ? 'bg-[#ff3b30] text-white' : 'text-black bg-white hover:bg-[#00000010]'}`}
                         style={{outline:'none'}}
                         onClick={()=>setDashboardMode('calendar')}
                     >Calendar</button>
@@ -1311,12 +1307,12 @@ const App: React.FC = () => {
                 </>
             ) : (
                 // Calendar mode
-                <div className="flex flex-col items-center w-full h-[calc(100vh-80px-60px)] min-h-[500px] overflow-scroll">
+                <div className="flex flex-col items-center w-full h-[calc(100vh-80px)]">
                     <div className="flex gap-4 mt-2">
-                        {/* Remove the Set Date Range button from here */}
+                        {/* Removed Set Date Range button from here */}
                     </div>
-                    <div className="flex-1 w-full flex justify-center items-stretch">
-                        <div className="overflow-auto w-full h-full min-h-0">
+                    <div className="flex-1 w-full flex justify-center items-stretch overflow-y-scroll">
+                        <div className=" w-full max-w-4xl h-full min-h-0">
                             {/* Render calendar table */}
                             {(() => {
                                 const days = getCalendarDays(calendarRange.start, calendarRange.end);
@@ -1340,9 +1336,9 @@ const App: React.FC = () => {
                                     while (week.length < 7) week.push(null);
                                     return (
                                         <div key={monthKey} className="mb-8 w-full">
-                                            <div className="text-xl font-bold mb-0 bg-white text-center">{monthName} {year}</div>
+                                            <div className="text-xl font-bold mb-2 text-center">{monthName} {year}</div>
                                             <div className="overflow-auto w-full">
-                                                <table className="w-full border-collapse bg-white shadow rounded-lg overflow-hidden min-w-[900px]" style={{tableLayout:'fixed'}}>
+                                                <table className="w-full border-collapse bg-white shadow rounded-lg overflow-hidden" style={{tableLayout:'fixed'}}>
                                                     <thead>
                                                         <tr className="bg-[#ff3b30] text-white">
                                                             {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>(<th key={d} className="py-2 font-semibold">{d}</th>))}
@@ -1352,13 +1348,13 @@ const App: React.FC = () => {
                                                         {weeks.map((week,wi)=>(
                                                             <tr key={wi}>
                                                                 {week.map((date,di)=>(
-                                                                    <td key={di} className="align-top border border-gray-200 h-32 p-1 relative group min-w-[120px] min-h-[100px]">
+                                                                    <td key={di} className="align-top border border-gray-200 h-32 p-[0px] relative group">
                                                                         {date && (
-                                                                            <div className="absolute top-1 left-2 text-sm font-bold text-gray-500">{date.getDate()}</div>
+                                                                            <div className="absolute top-1 left-2 text-xs font-bold text-gray-500">{date.getDate()}</div>
                                                                         )}
                                                                         {date && (
                                                                             <textarea
-                                                                                className="w-full h-full p-2 pt-6 resize-none bg-transparent focus:bg-[#fff3f2] border-none outline-none text-sm text-gray-800"
+                                                                                className="w-full h-full resize-none m-0 p-2 pt-6 bg-transparent focus:bg-[#fff3f2] border-none outline-none text-sm text-gray-800"
                                                                                 placeholder=""
                                                                                 value={calendarData[date.toISOString().slice(0,10)]||''}
                                                                                 onChange={e=>setCalendarData(d=>({...d,[date.toISOString().slice(0,10)]:e.target.value}))}
