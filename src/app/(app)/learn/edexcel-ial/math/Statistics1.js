@@ -1,358 +1,270 @@
 export const STATISTICS_1_CONTENT = `
-# Unit 5: Physics from Creation to Collapse  
-
-## 12. Heat and gases
-
-### Temperature and pressure
-
-- As temperature rises, average molecular KE rises  
-- \<c2\> and momentum rises  
-- Change of momentum of molecules with walls rises  
-- Rate of collision of molecules with walls rises  
-- So Rate of change of momentum rises  
-- So F rises and by P=F/A, p rises
-
-### Microwave principle
-
-- Rotating water molecules collide with food molecules  
-- Transfer of KE  
-- Average molecular KE and internal KE rises so temperature rises
-
-### Why ice worse than water in microwave
-
-- **Ice is a solid so molecules in fixed positions**  
-- **So molecules can’t rotate**
-
-## 13. Simple harmonic motion
-
-### SHM definition
-
-- Force/acceleration directly proportional to displacement **from equilibrium position**  
-- Always towards equilibrium position
-
-### Measuring T
-
-- Use **marker** at equilibrium position  
-- As moving fastest so %U is least  
-- Measure 30 oscillations  
-- Time duration rises so %U lowers  
-- Repeat timing and calculate mean  
-- Swing a few times before measuring  
-- As first oscillation affected by force
-
-### Why equilibrium position
-
-- Mass moving fastest  
-- So period more precise  
-- %U is least  
-- Center is fixed but amplitude lowers over time  
-- Because there is damping  
-- So mass may not pass other points
-
-### Damping
-
-- **By frictional forces**  
-- Dissipates energy  
-- Prevents rise in amplitude  
-- Which would damage the structure  
-- So oscillation dies out quickly
-
-### Dampers
-
-- Energy transferred from bridge to damper  
-- Energy dissipated in dampers  
-- So bridge amplitude is small
-
-### Plastic damping
-
-- Changes shape and absorbs energy  
-- Doesn’t return to original shape  
-- Energy dissipated
-
-### Why large mass for pendulum
-
-- Damping  
-- If m large, less deceleration by F \= ma  
-- Speed lowers less
-
-### Resonance
-
-- When a system is forced to oscillate at natural frequency  
-- Max transfer of energy  
-- Raises amplitude to maximum
-
-### Resonance example
-
-- Vibration of air in musical instrument  
-- Occurs at particular frequency related to size of resonating cavity  
-- So musical sounds produced
-
-### Induced pendulum
-
-- Forced oscillation on B  
-- A and B same oscillation f as same length  
-- If driving frequency \= oscillation frequency, resonance occurs  
-- Max energy transfer  
-- B also acts as driver on A  
-- If length not equal, driving frequency \=/= oscillation frequency, little energy transfer
-
-### Woodboxes
-
-- Speaker drives wood to oscillate  
-- So wood drives larger volume of air to oscillate
-
-### Why lose contact
-
-- Acceleration always towards equilibrium position  
-- W \- R \= ma  
-- If a \>= g, R \= 0 so lose contact
-
-## 14. Radioactivity
-
-### Radioactive atom definition
-
-- An atom with an unstable nucleus  
-- Which emits a, B or y radiation
-
-### Spontaneous definition
-
-- Decay happens without any external stimulus.  
-- Decay unaffected by external factors
-
-### Random definition
-
-- Can’t identify which nucleus will be next to decay  
-- Can’t say when a nucleus will decay
-
-### Why is radioactive count repeated
-
-- **Random process**  
-- Repeating enables mean to be calculated
-
-### Nuclear binding energy
-
-- The energy equivalent to **mass deficit**  
-- When nucleons bind to form atomic nucleus
-
-### Why is energy released
-
-- Nucleus splits to form less massive nuclei  
-- Binding energy per nucleon rises  
-- As large no. of nucleons, much energy released
-
-- **Total mass lowers**  
-- E \= mc2, **where c is speed of light**  
-- Mass energy conserved, so energy released  
-- As c2 large, much energy released
-
-### Fe
-
-- Highest binding energy per nucleon  
-- So most stable  
-- Need most energy to break nucleus  
-- Release most energy when nucleus forms  
-- **Fission of more massive nuclei releases energy**  
-- **Fusion of less massive nuclei releases energy**
-
-### Why alpha larger KE than Np in decay
-
-- Alpha smaller mass  
-- Both same momentum  
-- By KE \= p2/2m, alpha KE is larger
-
-### Why alpha likely to be emitted in decay
-
-- High binding energy per nucleon  
-- So greatest energy released by nucleus
-
-### Conditions for fusion
-
-- 4 \+ 2  
-- Requires high temperature  
-- Nuclei positive charge so large repulsive force  
-- At high temperature high KE to overcome repulsion  
-- Nuclei must get close enough to fuse  
-- Requires high density  
-- Collision rate high enough to sustain fusion
-
-- **Reference to extreme conditions leading to containment problems**
-
-### Criticise count rate experiments
-
-- Count rate \=/= activity  
-- Counts not corrected for background  
-- GM tube too far from source  
-- Alpha particles won’t reach GM tube as short range in air  
-- Radiation spreads out from the source, so not all reach the GM tube  
-- GM tube won’t detect all gammas which enter it
-
-- Alpha particles could have been absorbed by the glass  
-- Alpha particles will be emitted in all directions  
-- Alpha particles could have come from other parts of the vase  
-- **The decay products can also emit radiation**
-
-### Why choose long half life for testing
-
-- **Activity** doesn’t change significantly over time
-
-### Radioisotope sterilisation
-
-- Alpha unsuitable as strongly ionising so won’t pass through packaging  
-- Beta unsuitable as moderately ionising so won’t pass through metal  
-- Gamma suitable as penetrate packaging and metal  
-- Gamma weakly ionising so strong source needed to ensure sterilisation
-
-### Why bags are safe to contain alpha radionuclides
-
-- Alpha won’t penetrate the bag so gas can’t escape  
-- Alpha won’t penetrate the bag so no risk
-
-### Why alpha particles only dangerous when ingested
-
-- Alpha particles very ionising  
-- So low penetrating power
-
-### Why gamma is dangerous when exposed externally
-
-- Gamma very penetrating
-
-### Radionuclide safety precaution
-
-1. Make source at least 30 cm from body  
-2. Make source pointed away to minimize exposure  
-3. Use one source at a time to minimize exposure  
-- The source emits ionising radiation which is harmful to cells  
-- Ionising effect is cumulative
-
-- **Handled using long tongs**  
-- **As intensity inversely proportional to distance**  
-- **Keep in lead-lined box**
-
-### Why radioactive decay lowers exponentially
-
-- **Fixed probability λ** for a nucleus having decay  
-- For a sample with many unstable nuclei there is a predictable pattern  
-- Fraction of nuclei decaying is equal to **decay constant λ**  
-- A \= λN  
-- N \=  N0e\-λt, the number of unstable nuclei lowers exponentially  
-- So A \= A0e\-λt
-
-### Fusion difficulties
-
-- Little possibility of a runaway fusion reaction  
-- Hydrogen abundant, fuel for fission limited  
-- Less radioactive waste produced from fusion process  
-- High temperature needed  
-- Plasma must not touch reactor walls, so strong magnetic fields needed  
-- If plasma touches walls **the temperature falls**
-
-### Why need concrete walls
-
-- Decay products are radioactive  
-- Neutron can only be stopped by large thickness of concrete
-
-## 15. Astronomy
-
-### Parallax method
-
-- Star viewed from 2 positions at 6 months intervals  
-- Measure change in angular position against backdrop of fixed stars  
-- Trigonometry used to calculate d  
-- **The diameter of Earth’s orbit around the sun must be known**
-
-### Standard candle
-
-- A standard candle is identified in galaxy  
-- Radiation flux received on Earth is measured  
-- Inverse square law to determine distance using luminosity of candle  
-- F \= L/4πd2
-
-### Hubble constant
-
-- Frequency of line in spectrum measured  
-- Determine difference in frequency with same line in lab source  
-- ∆λ/λ \= v/c to calculate v  
-- Hubble’s law used to determine distance
-
-### Velocity radius curve
-
-- V2 \= M/r  
-- Dark matter raises M  
-- If M rises r rises then v may be constant
-
-### Doppler shift
-
-- Fractional change in λ due to relative motion between source and observer  
-- λ by star compared to λ in lab  
-- ∆λ/λ \= v/c to calculate v  
-- λ rises if star receding
-
-### Range of wavelength
-
-- Doppler shift  
-- **Moving both away and towards**  
-- If moving away then λ rises  
-- Have range of v so range of λ
-
-### Why smaller stars harder to detect
-
-- Smaller gravitational force  
-- Orbit radius lowers  
-- So change in λ smaller and undetectable
-
-### How dark matter determines universe fate
-
-- **Dark matter raises mass**  
-- Dark matter raises density  
-- Fate of universe depends on density  
-- If density \> critical then universe reaches maximum size and contracts
-
-### Why universe expanding
-
-- Red shift in all distant galaxies  
-- Shift rises as distance rises  
-- All galaxies moving away from each other
-
-### Why universe not expanding
-
-- More distant galaxies seen in their past  
-- Photons less energetic in the past  
-- So frequency less by distant galaxies
-
-### Main sequence definition
-
-- A star fusing Hydrogen in its **core**  
-- Constant luminosity
-
-### White dwarf definition
-
-- Small surface area so dwarf  
-- High temperature and emit all λ so white
-
-### Why more massive star higher luminosity
-
-- More **gravitational force**  
-- The **core** has higher density and temperature  
-- Fusion occurs much faster  
-- Surface temperature is greatest  
-- Surface area is greatest  
-- So by Stefan’s law, L is greatest
-
-### Why more massive star less time in main sequence
-
-- More **gravitational force**  
-- The **core** has higher density and temperature  
-- Fusion occurs much faster  
-- Hydrogen used up much faster  
-- So shorter main sequence lifetime
-
-### Red giant formation
-
-- The core runs out of Hydrogen  
-- Core temperature falls  
-- Gravitation forces cause the core to contract releasing energy  
-- So core temperature rises  
-- Helium fuses to heavier elements  
-- Star expands and surface temperature falls forming red giant
+# Statistics 1  
+
+## 1. Mathematical Models in Probability and Statistics
+### 1.1 Statistical Modeling
+- Purpose:
+- To represent real-world situations mathematically
+- To make predictions based on data
+- To test hypotheses about populations
+- Process:
+- Identify the problem or question
+- Collect relevant data
+- Choose an appropriate statistical model
+- Analyze the data using the model
+- Interpret results and draw conclusions
+- Refine the model if necessary
+- Examples:
+- Probability distributions for random phenomena
+- Regression models for relationships between variables
+- Hypothesis tests for making decisions based on data
+## 2. Representation and Summary of Data
+### 2.1 Graphical Representations
+- Histograms:
+- Used for continuous data
+- Rectangles represent frequency within class intervals
+- Area of each rectangle proportional to frequency
+- Vertical axis can show frequency, relative frequency, or frequency density
+- Stem and Leaf Diagrams:
+- Displays both the distribution shape and the actual data values
+- Stem: Leading digit(s)
+- Leaf: Final digit
+- Back-to-back diagrams compare two distributions
+- Box Plots:
+- Box shows interquartile range (IQR) with median marked
+- Whiskers extend to minimum and maximum values, or to 1.5×IQR
+- Shows median, quartiles, range, and potential outliers
+- Multiple box plots allow for easy comparison of distributions
+### 2.2 Measures of Location
+- Mean:
+- Sum of values divided by number of values
+- x̄ = Σx/n for ungrouped data
+- x̄ = Σfx/Σf for grouped data
+- Influenced by extreme values (not resistant)
+- Median:
+- Middle value when data is arranged in order
+- For n values: (n+1)/2 position if n is odd; average of n/2 and (n/2)+1 positions if n is even
+- More resistant to outliers than the mean
+- Mode:
+- Most frequently occurring value(s)
+- Can have multiple modes (bimodal, multimodal)
+- For grouped data, modal class has highest frequency
+- Data Coding:
+- Transformation of data to simplify calculations
+- y = (x - a)/b where a and b are constants
+- Effect on mean: ȳ = (x̄ - a)/b
+- No effect on shape of distribution
+### 2.3 Measures of Dispersion
+- Range:
+- Difference between maximum and minimum values
+- Simple but affected by outliers
+- Interquartile Range (IQR):
+- Difference between upper and lower quartiles: Q₃ - Q₁
+- Covers the middle 50% of data
+- More resistant to outliers than range
+- Variance:
+- Average of squared deviations from the mean
+- σ² = Σ(x - x̄)²/n for a population
+- s² = Σ(x - x̄)²/(n-1) for a sample
+- Units are square of original data units
+- Standard Deviation:
+- Square root of variance
+- σ or s
+- Same units as original data
+- Measures average distance from the mean
+- Interpercentile Ranges:
+- Difference between specific percentiles
+- Examples: 10-90 percentile range, 5-95 percentile range
+- Used to exclude extreme values
+### 2.4 Skewness and Outliers
+- Skewness:
+- Measure of asymmetry in a distribution
+- Positive (right) skew: Mean > Median, long tail to the right
+- Negative (left) skew: Mean < Median, long tail to the left
+- Symmetric: Mean ≈ Median
+- Outliers:
+- Values that differ significantly from other observations
+- Can be identified using box plots
+- Common rule: Value is an outlier if it's more than 1.5×IQR below Q₁ or above Q₃
+- Should be investigated to determine if they represent errors or important phenomena
+## 3. Probability
+### 3.1 Elementary Probability
+- Basic Definition:
+- Probability of event A = P(A) = Number of favorable outcomes / Total number of possible outcomes
+- 0 ≤ P(A) ≤ 1
+- P(certain event) = 1
+- P(impossible event) = 0
+- Rules:
+- P(not A) = 1 - P(A)
+- P(A or B) = P(A) + P(B) - P(A and B)
+- For mutually exclusive events: P(A or B) = P(A) + P(B)
+3.2 Sample Space and Events
+- Sample Space:
+- Set of all possible outcomes of an experiment
+- Denoted by S or Ω
+- Event:
+- A subset of the sample space
+- Collection of outcomes
+- Types of Events:
+- Exclusive (mutually exclusive): Cannot occur simultaneously (A ∩ B = ∅)
+- Complementary: A' or Ā contains all outcomes not in A, and A ∪ A' = S
+- Conditional: Probability of an event given that another event has occurred
+- Conditional Probability:
+- P(A|B) = P(A ∩ B) / P(B)
+- Probability of A given that B has occurred
+### 3.3 Independence
+- Independent Events:
+- Occurrence of one event does not affect the probability of the other
+- P(A|B) = P(A) and P(B|A) = P(B)
+- P(A ∩ B) = P(A) × P(B)
+- Testing Independence:
+- Check if P(A ∩ B) = P(A) × P(B)
+- Check if P(A|B) = P(A)
+- Applications:
+- Multiple trials of the same experiment
+- Events from different experiments
+- Selecting items with replacement
+### 3.4 Probability Laws
+- Sum Law:
+- P(A ∪ B) = P(A) + P(B) - P(A ∩ B)
+- For n events: P(A₁ ∪ A₂ ∪ ... ∪ Aₙ) = ΣP(Aᵢ) - ΣP(Aᵢ ∩ Aⱼ) + ΣP(Aᵢ ∩ Aⱼ ∩ Aₖ) - ... + (-1)ⁿ⁺¹P(A₁ ∩ A₂ ∩ ... ∩ Aₙ)
+- Product Law:
+- P(A ∩ B) = P(A) × P(B|A) = P(B) × P(A|B)
+- For n events: P(A₁ ∩ A₂ ∩ ... ∩ Aₙ) = P(A₁) × P(A₂|A₁) × P(A₃|A₁ ∩ A₂) × ... × P(Aₙ|A₁ ∩ A₂ ∩ ... ∩ Aₙ₋₁)
+- Tools:
+- Tree diagrams for sequential events
+- Venn diagrams for set relationships
+- Tables for two-way classifications
+- Sampling:
+- With replacement: Independent selections
+- Without replacement: Dependent selections
+- Probability changes after each selection if without replacement
+## 4. Correlation and Regression
+### 4.1 Scatter Diagrams and Linear Regression
+- Scatter Diagram:
+- Graphical representation of bivariate data
+- Each point represents a pair of values (x, y)
+- Reveals patterns, trends, and possible relationships
+- Linear Relationship:
+- When points approximately follow a straight line
+- Positive: y tends to increase as x increases
+- Negative: y tends to decrease as x increases
+- Strength indicated by how closely points cluster around the line
+- Regression Line:
+- Line of best fit through data points
+- Minimizes the sum of squared vertical distances from points to line
+- Equation: y = a + bx
+- Least squares method gives b = Σ[(x - x̄)(y - ȳ)] / Σ[(x - x̄)²] and a = ȳ - bx̄
+### 4.2 Explanatory and Response Variables
+- Definitions:
+- Explanatory (independent) variable: Typically plotted on x-axis
+- Response (dependent) variable: Typically plotted on y-axis
+- Relationship: Changes in explanatory variable may cause or be associated with changes in response variable
+- Applications:
+- Prediction: Using the regression line to estimate y for a given x value
+- Interpolation: Predictions within the range of observed x values
+- Extrapolation: Predictions outside the range of observed x values (potentially unreliable)
+- Variable Transformation:
+- Linear change of variable: y = ax + b
+- Logarithmic transformation: ln(y) = a + b ln(x) for power relationships
+- Used to linearize non-linear relationships
+### 4.3 Correlation Coefficient
+- Product Moment Correlation Coefficient:
+- Measures strength and direction of linear relationship
+- Formula: r = Σ[(x - x̄)(y - ȳ)] / √[Σ(x - x̄)² × Σ(y - ȳ)²]
+- Range: -1 ≤ r ≤ 1
+- Interpretation:
+- r ≈ 1: Strong positive correlation
+- r ≈ -1: Strong negative correlation
+- r ≈ 0: Little or no linear correlation
+- |r| > 0.8: Strong correlation
+- 0.5 < |r| < 0.8: Moderate correlation
+- |r| < 0.5: Weak correlation
+- Limitations:
+- Only measures linear relationship
+- Sensitive to outliers
+- Correlation does not imply causation
+- May hide non-linear relationships
+## 5. Discrete Random Variables
+### 5.1 Concept of a Discrete Random Variable
+- Definition:
+- A variable that can take discrete values with specific probabilities
+- Each value has a non-zero probability
+- Sum of all probabilities equals 1
+- Examples:
+- Number of heads in coin tosses
+- Number of defective items in a sample
+- Number of accidents per day
+### 5.2 Probability and Distribution Functions
+- Probability Function:
+- p(x) = P(X = x)
+- Gives probability for each possible value of X
+- Properties:
+- p(x) ≥ 0 for all x
+- Σp(x) = 1 for all possible x values
+- Cumulative Distribution Function (CDF):
+- F(x) = P(X ≤ x) = Σp(t) for all t ≤ x
+- Gives probability that X is less than or equal to x
+- Properties:
+- 0 ≤ F(x) ≤ 1
+- F(x) is non-decreasing
+- lim(x→-∞) F(x) = 0 and lim(x→∞) F(x) = 1
+### 5.3 Mean and Variance
+- Expected Value (Mean):
+- E(X) = μ = Σ[x × p(x)] for all possible x values
+- Represents the long-run average value
+- Variance:
+- Var(X) = σ² = E[(X - μ)²] = Σ[(x - μ)² × p(x)]
+- Alternative formula: Var(X) = E(X²) - [E(X)]²
+- Where E(X²) = Σ[x² × p(x)]
+- Properties:
+- For constant a and b:
+- E(aX + b) = aE(X) + b
+- Var(aX + b) = a²Var(X)
+### 5.4 Discrete Uniform Distribution
+- Definition:
+- Equal probability for each possible value
+- X ~ U(a, b) where a, b are integers and a < b
+- Probability Function:
+- p(x) = 1/(b - a + 1) for x = a, a+1, a+2, ..., b
+- p(x) = 0 otherwise
+- Mean and Variance:
+- E(X) = (a + b)/2
+- Var(X) = [(b - a + 1)² - 1]/12
+- Examples:
+- Fair die roll: X ~ U(1, 6)
+- Random selection of a day in a week: X ~ U(1, 7)
+## 6. The Normal Distribution
+### 6.1 Properties of the Normal Distribution
+- Definition:
+- Continuous probability distribution
+- Notation: X ~ N(μ, σ²)
+- Parameters: Mean μ and variance σ²
+- Characteristics:
+- Bell-shaped and symmetric about the mean
+- Mean = median = mode
+- Asymptotic to the x-axis (never touches)
+- Approximately 68% of data within μ ± σ
+- Approximately 95% of data within μ ± 2σ
+- Approximately 99.7% of data within μ ± 3σ
+- Standard Normal Distribution:
+- Z ~ N(0, 1)
+- Transformation: Z = (X - μ)/σ
+- Used with tables of the cumulative distribution function
+### 6.2 Using Normal Distribution Tables
+- Standardization:
+- Convert X ~ N(μ, σ²) to Z ~ N(0, 1) using Z = (X - μ)/σ
+- Find probabilities using standard normal tables
+- Finding Probabilities:
+- P(X ≤ a) = P(Z ≤ (a - μ)/σ)
+- P(X > a) = 1 - P(X ≤ a)
+- P(a < X ≤ b) = P(X ≤ b) - P(X ≤ a)
+- Finding Values:
+- For probability p, find z value where P(Z ≤ z) = p
+- Convert back to x using x = μ + zσ
+- Applications:
+- Calculating probabilities for normal random variables
+- Finding confidence intervals
+- Hypothesis testing
 
 `;

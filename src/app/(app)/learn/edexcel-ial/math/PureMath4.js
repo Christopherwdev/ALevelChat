@@ -1,291 +1,281 @@
 export const PURE_MATH_4_CONTENT = `
-# Unit 4: Physics on the Move  
-
-## 9. Circular motion and momentum
-
-### Definition
-
-- Radius of orbit constant (r)  
-- Angular velocity constant (ω)  
-- By v=rω, linear speed constant (v)   
-- Linear instantaneous velocity is NOT a constant since direction changes
-
-### Derive the expression a \= v2/r θ
-
-- Δv/v \= Δs/r  
-- Δs \= rθ  
-  - Δv/v \= θ  
-- v \= rω and ω \= θ/Δt  
-  - v \= rθ/Δt  
-  - θ \= vΔt/r  
-- Combine:  
-  - Δv/v \= vΔt/r  
-  - Δv/Δt \= v2/r  
-- a \= Δv/Δt  
-  - A \= v2/r
-
-## 10. Electric and Magnetic Field
-
-### Electric field definition
-
-- A region where a charged particle experiences acceleration and force
-
-### Electric field strength definition
-
-- An electric force per unit charge  
-- On a positive charge
-
-### Why velocity diagram shows conservation of momentum
-
-- Initial momentum \= final momentum  
-- As mass same, initial velocity \= final velocity
-
-### Why will particle path not follow electric field lines
-
-- Field lines show force  
-- So field lines show acceleration  
-- Straight line, so particle will follow line  
-- Curved line, so acceleration always changing direction, but velocity not in direction of acceleration so not true
-
-### EM induction
-
-1. Relative motion between a coil and a magnet   
-2. Change in magnetic flux linkage   
-3. Induced e.m.f. \[Faraday’s law\]  
-- (E.m.f. proportional to the rate of change of magnetic flux linkage)  
-- (As magnet accelerates, rate of change increases, so e.m.f. rises)  
-4. Closed circuit / full conducting path   
-5. Induced current   
-6. Current produces a magnetic field, interacting with the magnetic field produced by magnets, forming a magnetic force  
-7. \[Lenz’s law\] The direction of magnetic force should oppose the change in motion  
-- \[Conservation of energy\] Change in KE \+ GPE \= Change in EPE, By P=I2R, energy dissipated by current so kinetic energy decreases  
-- \[Newton’s Third Law\] …  
-- \[Fleming’s left-hand rule\] …   
-- The coil moves in the same direction to reduce changes in flux linkage  
-- As current increases, braking force increases 
-
-### Lenz’s law
-
-- the direction of induced emf/current is such as to oppose the change in flux that produces it   
-- p.d. produced opposite to battery p.d  
-- opposes current / reducing rate of increase of current
-
-### Plate with slit
-
-- Eddy current  
-- Number of possible conducting paths ↓  
-- (The slit will limit the size of the induced current)   
-- \[Lenz’s law\] resistive magnetic force ↓ (to opposite the change in motion)
-
-1. Change in magnetic flux linkage → induced emf  
-2. Induced emf is proportional to the rate of change of magnetic flux linkage   
-- The greater the rate of change of magnetic flux linkage, the greater the induced emf  
-3. (As the magnet gets closer to the coil) initial Φ ↑ emf ↑   
-4. (When the midpoint of magnet in the coil) max. Φ emf \= 0  
-5. (When the magnet leaves the coil) Φ ↓ emf ↓ (+ve region)   
-- (After the south pole reaches the coil) by Lenz’s law the polarity of the coil changes to continue to resist the motion of the magnet, the flux linkage starts to decrease   
-- Induced e.m.f. is negative  
-6. Magnet accelerates under gravity / Greater rate of change of Φ / Greater induced emf   
-7. Amplitude of second peak \> first peak / Duration of second peak \< first peak  
-8. Areas of \+ve and \-ve parts of the graph will be the same (NΦ constant)
-
-### Working principles of a transformer
-
-1. Primary coil is connected to an AC power source  
-2. Alternating current produces an alternating magnetic field  
-3. Iron core becomes magnitised   
-4. Magnetic field is produced in the iron core and linked to secondary coil   
-5. Secondary coil experiences an alternating magnetic field, changing Φ, induced emf, (closed circuit, induced current)   
-6. \[Faraday’s law\] emf \= −(dΦ/dt)  
-7. More turns on the secondary coil, rate of change of Φ ↑, output emf \> input voltage  
-8. Step-up transformer (Vp/Vs\=np/ns)  
-9. Diode: provides direct current, the battery is not discharged by the alternating emf/current
-
-### Capacitor 
-
-- Capacitor stores energy (X electric charge)   
-- The overall charge on the capacitor is zero  
-- Capacitor separates charge 
-
-- Capacitor discharges through resistor   
-  - Charge transferred from \-ve plate to \+ve plate through the resistor  
-  - Charge on capacitor decreases exponentially  
-  - Until the charge on the capacitor equals 0  
-- P.d. across the resistor is maintained by the capacitor 
-
-## 11. Atomic Particles
-
-### Linac 
-
-1. Set of metal drift tubes in a line   
-2. The particles are accelerated by an electric field / p.d. in the gaps
-
-3. Frequency of a.c. supply is constant  
-4. Particles must spend the same time in the tubes/gaps   
-5. By s \= vt, electrons travel further in a fixed time with a higher speed   
-6. So the length of tubes/gaps increase 
-
-7. (In the last section of the linac) the electron approaches the speed of light   
-8. Speed becomes (almost) constant so distance travelled in fixed time becomes constant
-
-9. Adjacent tubes connected to opposite terminals of a power supply  
-10. P.d. is alternating in the time period so that as an electron emerges from one tube, the next tube is positive (always accelerating the particles)   
-11. a.c. polarity changes when particles in the tubes  
-12. So the electric field is in the same direction when the particle is in the gaps 
-
-- High-energy electrons will have high momentum, short de Broglie wavelength  
-- Which is smaller than proton size (to investigate the structure of the proton)   
-- better resolution / more detailed observations 
-
-### Cyclotron
-
-1. The p.d. creates an electric field   
-2. The electric field does work on / accelerates particles between dees  
-3. Alternating p.d. between dees changes direction (every half cycle) when particle in dees  
-4. (Electric) field always in correct direction in gaps so force on particle increases speed
-
-5. Magnetic field perpendicular to the plane of dees / velocity of particles   
-6. Magnetic force on particles perpendicular to velocity (motion)  
-7. Particles experience centripetal acceleration/force (toward the centre of a circle) which maintains circular motion   
-8. Proton path curved (deflected) by magnetic field
-
-9. (Time independent of speed)   
-10. As the velocity of particles increases, the radius of path in dees increases   
-11. So the time for which a particle is in a dee remains constant   
-12. The frequency of p.d. is constant 
-
-### Types of radiation particles
-
-### 
-
-| α particle | β particle | γ ray |
-| :---- | :---- | :---- |
-| 4,2-helium | Fast-moving electron | EM radiation |
-| \- Double the charge (of beta)  \- More deflecting force (for the same separation) | \- much smaller than alpha particles \- So beta might be deflected by the electrons (surrounding the nucleus of gold) \- more penetrating  \- less likely to interact / deflect  | \- not charged  \- will not deflect at all (electrostatically)  \- Much more penetrating \- Less likely to interact  |
-
-### The nature of electrons
-
-- Diffraction/interference pattern  
-- Diffraction only occurs for waves, not for particles   
-- Electrons can behave as waves, in addition to particles
-
-### Plum Pudding Model \[J.J. Thomson Model\]
-
-- Atom contains equally distributed mass/charge  
-- Small or zero deflections because matter is too spread out
-
-### Alpha particle scattering experiment \[Rutherford Model\]
-
-1. Most alpha particles pass straight through undeflected   
-- Most of the atom is an empty space  
-- The nucleus is much smaller than the atom  
-2. A few alpha particles are scattered / slightly deflected by small angles   
-- There is a concentration of charge in the atom  
-- The nucleus is charged  
-3. Very few alpha particles are deflected by more than 90° / reflected straight back  
-- Most of the mass is concentrated in a small region of the atom (nucleus), rather than distributed throughout  
-- Very small nucleus containing almost all the mass of the atom   
-- (Only a few came close enough to be deflected so the charge must occupy a small volume)   
-- (to produce a large electrostatic force, so that the alpha particle is deflected and not the gold nucleus) 
-
-### Explain why the thickness of the gold foil had to be very small. 
-
-- a thin sheet would contain few layers of atoms   
-- so alpha particles would be less likely to undergo multiple deflections / be absorbed  
-- alpha particles are strongly ionising   
-- so alpha particles have low penetration 
-
-### Thermionic emission
-
-- Electrons are released from a filament heated by an electric current  
-- Electrons in the heated metal gain energy and leave the surface
-
-### Head-on collision of high-energy electrons vs stationary target 
-
-- Mass energy conserved, ∆E=∆mc2   
-- There will be more initial KE available with colliding beams  
-- There is no net momentum before collision so there must be no net momentum after   
-- Particles created do not have high KE  
-- (If one stationary particle is created)   
-- All of the kinetic energy of the two beams available will be converted to mass-energy   
-- (More/all energy available for the formation of massive particles)   
--  produce new particles with the largest mass
-
-- There is net momentum before collision so there must be net momentum after collision  
-- Particles created must have high KE  
-- So not all KE converted to mass   
-- little energy available for the formation of particles
-
-- There are electrostatic repulsive forces  
-- Large energy required to overcome repulsive forces  
-- To allow protons to get close to each other
-
-### Explain how the diagram shows the particle is neutral.
-
-- Leaves no track (not ionising since a track is formed by the ionised particles produced)   
-- The tracks of created particles present have opposite direction of curvatures   
-- Created particles have opposite charges and charge is conserved 
-
-### Why alpha particle used, not beta and gamma
-
-- Beta less massive  
-- Beta deflected by electrons  
-- Beta more penetrating  
-- Beta less likely to interact  
-- Beta only half the charge of alpha  
-- Beta less deflection  
-- Gamma uncharged  
-- Gamma no electrostatic deflection  
-- Gamma more penetrating  
-- Gama less likely to interact
-
-### High energy for structure
-
-- High energy so short wavelength  
-- So same as proton size
-
-### High energy for colliding protons
-
-- Mass energy conserved  
-- High energy to create particles with larger mass  
-- Because E=mc^2 and c^2 is a large multiplying factor  
-- There are electrostatic repulsive forces  
-- Large energy to overcome repulsive forces  
-- To allow protons to get close to each other
-
-### How collision shows particle properties
-
-- Radius lowers so momentum lowers  
-- Compare size of radius so difference in momentum  
-- By LH rule and by curve direction so charge  
-- Length so short/long lived  
-- Conservation of charge so charge  
-- No path so neutral
-
-### Why final mass \> initial mass
-
-- Mass energy still conserved  
-- Colliding particles have KE  
-- KE converted into mass
-
-### Standard Model
-
-1. Fundamental particles include quarks and leptons  
-2. Baryons are made of 3 quarks   
-3. Mesons are made of 1 quark and 1 antiquark  
-4. There are 6 quarks and 6 leptons   
-5. Each particle has an antiparticle   
-- (For each generation, there is a pair of quarks, e.g. top and down)  
-- (By symmetry of the standard model)
-
-Pair Production: A particle is broken down into two products, a matter and its antimatter  
-Annihilation: collision between a matter and its antimatter (e.g. electron \+ positron) 
-
-### Relativity 
-
-- If a particle is faster than the speed of light, it must be travelling with (significant) relativistic speed   
-- The higher the speed, the greater the relativistic effect, i.e. effect of time dilation, the longer the lifetime  
-- By s=vt, the greater the distance travelled than normally expected   
-- As seen by observers (but not seen by the particle itself) 
+# Pure Mathematics 4  
+## 1. Proof
+### 1.1 Proof by Contradiction
+- Process:
+- Assume the statement to be proven is false
+- Show that this assumption leads to a logical contradiction
+- Conclude that the original statement must be true
+- Classic Examples:
+- Proof that √2 is irrational:
+- Assume √2 = p/q where p and q are integers with no common factors
+- Square both sides: 2 = p²/q²
+- Rearrange: p² = 2q²
+- This means p² is even, so p must be even
+- If p is even, then p = 2k for some integer k
+- Substitute: (2k)² = 2q²
+- Simplify: 4k² = 2q²
+- Divide by 2: 2k² = q²
+- This means q² is even, so q must be even
+- But if both p and q are even, they have a common factor of 2
+- This contradicts our assumption that p and q have no common factors
+- Therefore, √2 cannot be expressed as p/q, so it is irrational
+- Proof that there are infinitely many primes:
+- Assume there are finitely many primes: p₁, p₂, ..., pₙ
+- Consider the number P = p₁ × p₂ × ... × pₙ + 1
+- P is either prime or not prime
+- If P is prime, it is a prime not in our list, contradicting our assumption
+- If P is not prime, it has a prime factor p
+- This prime factor p cannot be any of p₁, p₂, ..., pₙ, because dividing P by any of these leaves remainder 1
+- So we have found a prime p not in our list, contradicting our assumption
+- Therefore, there must be infinitely many primes
+## 2. Algebra and Functions
+### 2.1 Partial Fractions
+- Definition:
+- Decomposing a rational function into a sum of simpler fractions
+- Types of Decomposition:
+- For distinct linear factors (ax + b):
+- A/(ax + b) + B/(cx + d) + ...
+- For repeated linear factors (ax + b)ⁿ:
+- A/(ax + b) + B/(ax + b)² + ... + K/(ax + b)ⁿ
+- For irreducible quadratic factors (ax² + bx + c):
+- (Ax + B)/(ax² + bx + c)
+- Process:
+- Express the rational function with a common denominator
+- Compare coefficients or substitute specific values to find the constants
+- Example:
+- Decompose (4x - 3)/((x - 1)(x + 2)):
+- (4x - 3)/((x - 1)(x + 2)) = A/(x - 1) + B/(x + 2)
+- 4x - 3 = A(x + 2) + B(x - 1)
+- 4x - 3 = Ax + 2A + Bx - B
+- 4x - 3 = (A + B)x + (2A - B)
+- Comparing coefficients:
+- A + B = 4
+- 2A - B = -3
+- Solving: A = 1, B = 3
+- Therefore, (4x - 3)/((x - 1)(x + 2)) = 1/(x - 1) + 3/(x + 2)
+## 3. Coordinate Geometry in the (x, y) Plane
+### 3.1 Parametric Equations
+- Definition:
+- Expressing x and y coordinates in terms of a parameter t
+- Form: x = f(t), y = g(t)
+- Converting Between Forms:
+- Parametric to Cartesian:
+- Eliminate the parameter t between the equations
+- Cartesian to Parametric:
+- Many possible parameterizations for a given curve
+- Common Examples:
+- Circle: x = a + r cos t, y = b + r sin t (center (a, b), radius r)
+- Line: x = x₀ + ta, y = y₀ + tb (point (x₀, y₀), direction vector (a, b))
+- Ellipse: x = a cos t, y = b sin t (semi-major axis a, semi-minor axis b)
+- Applications:
+- Describing complex paths
+- Finding tangents and normals
+- Calculating arc lengths and areas
+## 4. Binomial Expansion
+### 4.1 Binomial Series for Rational n
+- General Form:
+- (1 + x)ⁿ = 1 + nx + n(n-1)x²/2! + n(n-1)(n-2)x³/3! + ... for |x| < 1
+- Also written as (1 + x)ⁿ = ∑(r=0 to ∞) (nr)x^r
+- Expansion of (ax + b)ⁿ:
+- (ax + b)ⁿ = bⁿ(1 + (ax/b))ⁿ
+- Expand using the binomial series with |ax/b| < 1
+- Applications:
+- Approximating complex expressions
+- Expanding rational functions (after partial fraction decomposition)
+- Finding specific terms in an expansion
+- Example:
+- Expand (1 - 2x)^(-1/2) for |2x| < 1:
+- Using (1 + x)ⁿ with n = -1/2 and x = -2x:
+- (1 - 2x)^(-1/2) = 1 + (-1/2)(-2x) + (-1/2)(-3/2)(-2x)²/2! + ...
+- = 1 + x + (3/2)x² + ...
+## 5. Differentiation
+### 5.1 Implicit Differentiation
+- Definition:
+- Finding dy/dx when the relationship between x and y is given implicitly
+- Process:
+- Differentiate both sides of the equation with respect to x
+- Remember the chain rule when differentiating terms with y
+- Solve for dy/dx
+- Example:
+- For x² + y² = 25:
+- Differentiate both sides: 2x + 2y(dy/dx) = 0
+- Solve for dy/dx: dy/dx = -x/y
+### 5.2 Parametric Differentiation
+- Finding dy/dx when x = f(t) and y = g(t):
+- dy/dx = (dy/dt)/(dx/dt) = g'(t)/f'(t)
+- Finding d²y/dx²:
+- d²y/dx² = d/dx(dy/dx) = (d/dt(dy/dx))/(dx/dt)
+- Applications:
+- Finding equations of tangents and normals to parametric curves
+- Determining points where the tangent is horizontal or vertical
+- Locating points of inflection
+### 5.3 Formation of Differential Equations
+- Process:
+- Start with a statement about the rate of change
+- Express as a differential equation in terms of the variables and their derivatives
+- Identify the order and type of the differential equation
+- Common Examples:
+- Exponential growth: dy/dt = ky
+- Cooling: dT/dt = k(T - T₀)
+- Connected rates: Using related rates to form equations
+- Example:
+- A population P grows at a rate proportional to the current population:
+- dP/dt = kP
+- where k is the growth constant
+## 6. Integration
+### 6.1 Volume of Revolution
+- About the x-axis:
+- V = π∫[a to b] y² dx
+- Where y = f(x) is the curve being rotated
+- About the y-axis:
+- V = π∫[c to d] x² dy
+- Where x = g(y) is the curve being rotated
+- For Parametric Curves:
+- About the x-axis: V = π∫[t₁ to t₂] y² (dx/dt) dt
+- About the y-axis: V = π∫[t₁ to t₂] x² (dy/dt) dt
+- Example:
+- Volume when the region under y = √x from x = 0 to x = 4 is rotated about the x-axis:
+- V = π∫[0 to 4] (√x)² dx = π∫[0 to 4] x dx = π[x²/2]₀⁴ = 8π
+### 6.2 Integration by Substitution
+- Method:
+- Set u = g(x), so that dx = (dx/du) du
+- Replace all terms in the integral with expressions in u
+- Evaluate the simpler integral in terms of u
+- Substitute back to get the result in terms of x
+- Example:
+- ∫ x√(x² - 3) dx:
+- Let u = x² - 3, so du = 2x dx
+- x dx = du/2
+- ∫ x√(x² - 3) dx = ∫ √u × (du/2) = (1/2)∫ u^(1/2) du
+- = (1/2) × (u^(3/2)/3/2) + C = (1/3)u^(3/2) + C
+- = (1/3)(x² - 3)^(3/2) + C
+### 6.3 Integration by Parts
+- Formula:
+- ∫ u(dv/dx) dx = uv - ∫ v(du/dx) dx
+- Strategy:
+- Choose u and dv/dx to make the resulting integral simpler
+- Generally, set u to the function that gets simpler when differentiated
+- Apply repeatedly for expressions like ∫ xⁿe^x dx
+- Examples:  
+∫ x ln x dx:
+- u = ln x, dv/dx = x
+- du/dx = 1/x, v = x²/2
+- ∫ x ln x dx = (x²/2) ln x - ∫ (x²/2) × (1/x) dx
+- = (x²/2) ln x - (1/2)∫ x dx
+- = (x²/2) ln x - x²/4 + C
+- ∫ e^x sin x dx:
+- u = sin x, dv/dx = e^x
+- du/dx = cos x, v = e^x  
+∫ e^x sin x dx = e^x sin x - ∫ e^x cos x dx
+- For the second integral, apply parts again:
+- u = cos x, dv/dx = e^x
+- du/dx = -sin x, v = e^x
+- ∫ e^x cos x dx = e^x cos x - ∫ -e^x sin x dx = e^x cos x + ∫ e^x sin x dx
+- Substituting: ∫ e^x sin x dx = e^x sin x - (e^x cos x + ∫ e^x sin x dx)
+- 2∫ e^x sin x dx = e^x sin x - e^x cos x
+- ∫ e^x sin x dx = (e^x sin x - e^x cos x)/2 + C
+### 6.4 Integration Using Partial Fractions
+- Process:
+- Decompose the rational function into partial fractions
+- Integrate each simpler fraction term
+- Combine the results
+- Example:
+- ∫ (3x + 5)/((x - 1)(x + 2)) dx:
+- Decompose: (3x + 5)/((x - 1)(x + 2)) = A/(x - 1) + B/(x + 2)
+- Find A and B: A = 1, B = 2
+- ∫ (3x + 5)/((x - 1)(x + 2)) dx = ∫ (1/(x - 1) + 2/(x + 2)) dx
+- = ln|x - 1| + 2ln|x + 2| + C
+- = ln|(x - 1)(x + 2)²| + C
+### 6.5 First Order Differential Equations
+- Separable Equations:
+- Form: dy/dx = f(x)g(y)  
+Solution: ∫ (1/g(y)) dy = ∫ f(x) dx + C
+- Process:
+- Separate the variables: (1/g(y)) dy = f(x) dx
+- Integrate both sides
+- Solve for y if possible
+- Use initial conditions to find the particular solution
+- Example:
+- Solve dy/dx = xy with y(0) = 2:
+- Separate variables: (1/y) dy = x dx
+- Integrate: ln|y| = x²/2 + C
+- Solve for y: y = ±e^(x²/2 + C) = ±e^C × e^(x²/2) = Ke^(x²/2)
+- Using y(0) = 2: 2 = Ke^0 = K
+- Particular solution: y = 2e^(x²/2)
+### 6.6 Area with Parametric Equations
+- Formula:
+- Area under the curve from t = a to t = b: ∫[a to b] y(dx/dt) dt
+- Process:
+- Express y and dx/dt in terms of the parameter t
+- Integrate y(dx/dt) with respect to t between appropriate limits
+- Example:
+- Area under the curve x = t², y = t³ from t = 0 to t = 1:
+- dx/dt = 2t
+- ∫[0 to 1] t³ × 2t dt = 2∫[0 to 1] t⁴ dt = 2[t⁵/5]₀¹ = 2/5
+## 7. Vectors
+### 7.1 Vectors in Two and Three Dimensions
+- Notation:
+- Component form: ai + bj + ck
+- Bold letter: a, b
+- Components:
+- In 2D: (a, b) or ai + bj
+- In 3D: (a, b, c) or ai + bj + ck
+### 7.2 Magnitude of a Vector
+- Formula:
+- |a| = √(a² + b² + c²) for a = ai + bj + ck
+- Unit Vector:
+- â = a/|a|
+- Has magnitude 1 and the same direction as a
+### 7.3 Vector Operations
+- Addition:
+- a + b = (a₁ + b₁)i + (a₂ + b₂)j + (a₃ + b₃)k
+- Scalar Multiplication:
+- λa = λa₁i + λa₂j + λa₃k
+- Geometric Interpretation:
+- Vector addition follows the parallelogram law
+- Scalar multiplication changes the magnitude and possibly direction
+### 7.4 Position Vectors
+- Definition:
+- The vector from the origin O to a point P, denoted by OP
+- For point P(x, y, z), the position vector is xi + yj + zk
+- Relative Position:
+- Vector from A to B: AB = OB - OA
+- If A has position vector a and B has position vector b, then AB = b - a
+### 7.5 Distance Between Points
+- Formula:
+- Distance between (x₁, y₁, z₁) and (x₂, y₂, z₂):
+- d = √((x₂ - x₁)² + (y₂ - y₁)² + (z₂ - z₁)²)
+- Equivalently, d = |PQ| = |q - p|
+### 7.6 Vector Equations of Lines
+- Parametric Form:
+- r = a + tb
+- Point with position vector a and direction vector b
+- Another Form:
+- r = c + t(d - c)
+- Line through points with position vectors c and d
+- Line Relationships:
+- Parallel lines have parallel direction vectors: b₁ = λb₂
+- Intersecting lines: Their direction vectors are not parallel, and there exist parameters t₁ and t₂ such that a₁ + t₁b₁ = a₂ + t₂b₂
+- Skew lines: Neither parallel nor intersecting
+### 7.7 The Scalar Product
+- Definition:
+- a · b = a₁b₁ + a₂b₂ + a₃b₃ = |a||b|cosθ
+- Where θ is the angle between the vectors
+- Properties:
+- a · b = b · a (commutative)
+- (λa) · b = λ(a · b) (scalar multiplication)
+- a · (b + c) = a · b + a · c (distributive)
+- Applications:
+- Finding the angle between vectors: cosθ = (a · b)/(|a||b|)
+- Testing for perpendicularity: a ⊥ b if and only if a · b = 0
+- Finding the scalar projection of one vector onto another
+- Example:
+- For a = 2i + 3j - k and b = i - 2j + 2k:
+- a · b = 2(1) + 3(-2) + (-1)(2) = 2 - 6 - 2 = -6
+- |a| = √(2² + 3² + (-1)²) = √14  
+|b| = √(1² + (-2)² + 2²) = √9 = 3
+- cosθ = -6/(√14 × 3) = -6/(3√14)
+- θ = cos⁻¹(-6/(3√14)) ≈ 114.1°
 
 `;

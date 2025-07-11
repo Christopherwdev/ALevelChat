@@ -1,239 +1,212 @@
 export const PURE_MATH_2_CONTENT = `
-# Unit 2: Physics at Work  
-
-## 6. Waves
-### Principle of Superposition of Two Waves
-- When two waves meet, the resultant displacement is the sum of the individual displacements
-### Standing Wave
-- A standing wave confines energy instead of transferring it
-- It has a stable, stationary wave pattern with nodes and antinodes
-### Production of a Standing Wave
-- A wave meets its reflection with identical frequency and amplitude, traveling in the opposite direction
-- Superposition occurs, creating antinodes (maximum amplitude, constructive interference) and nodes (zero amplitude, destructive interference)
-### Antiphase
-- Two waves in antiphase have a constant phase difference of 180°
-### Destructive Interference
-- Cancellation of two waves with identical frequency and amplitude but in antiphase, resulting in zero amplitude
-### Amplitude at Point A
-- The provided equation p d λ = n(+ 1/2) is incomplete and needs context to determine if the waves are in phase or antiphase at point A, and therefore whether the amplitude is high or low
-### Increased Frequency of a Standing Wave
-- Stationary waves only occur at specific frequencies
-- Increasing frequency while keeping velocity constant decreases wavelength (v = fλ)
-- Since length remains constant (L = nλ), the number of complete wave cycles increases
-- Amplitude may decrease along the standing wave
-- The number of nodes equals the number of antinodes plus one
-### Undisturbed Standing Wave Pattern at Node
-- A node has zero amplitude
-- No energy is absorbed when the node is touched
-### Polarized vs Unpolarized Light
-Similarities:
-- Direction of oscillation is perpendicular to the direction of propagation
-Differences:
-- Unpolarized light oscillates in many directions
-- Polarized light oscillates in a single direction
-### Testing for Plane Polarized Light
-- Place a polaroid sheet between the light source and the observer and rotate it
-- If all waves are blocked at a specific angle, the light is plane polarized
-- Observation of two images, with only one remaining visible when a polaroid sheet is used, indicates plane polarized light
-### Rotating Polaroid Sheet and Two Images
-- Only components of oscillations parallel to the plane of polarization are transmitted
-- Rays for each image oscillate in directions differing by 90°
-- Rotating the polaroid sheet causes one image to fade while the other becomes visible
-- At angles of (180n + 90)°, one image disappears, and the other is brightest
-- At angles of (180n)°, the original image is visible
-### Sunglasses and Underwater Visibility
-- Reflected light is partially plane polarized and can be blocked by a polarizing filter at a right angle
-- Refracted light is unpolarized and less affected
-### Double Slit Experiment with Polaroids
-- The screen is illuminated evenly, and dark fringes are absent because the oscillations from the two polaroids are perpendicular and do not interfere
-### Diffraction
-- The spreading out of a wave as it passes around an obstacle
-### Diffraction Pattern and Wave Theory
-- The diffraction pattern arises from interference
-- Slits act as coherent wave sources
-- Diffracted waves superpose, producing bright fringes (constructive interference) and dark fringes (destructive interference)
-### Determining Wavelength in Diffraction Experiment
-1.	Measure the distance (D) between the grating and the wall
-2.	Measure the distance (x) between the central and first-order fringe
-3.	Calculate the angle of diffraction (θ) using tan θ = x/D
-4.	Determine the grating separation (d) from the number of lines per meter on the grating
-5.	Calculate the wavelength (λ) using d sin θ = nλ, where n = 1
-6.	Accuracy increases with smaller grating separation and larger fringe separation
-### Changes in Diffraction Pattern
-- Longer wavelength: Fringe separation increases
-- Narrower slit separation: Fringe separation increases; light intensity decreases
-### Monochromatic and Coherent Light
-- Monochromatic light: Contains only a single wavelength
-- Coherent light: Waves have a constant phase relationship
-### Requirements for Coherent Light Sources
-- Same frequency
-- Constant phase difference
-### Disadvantage of Large-Scale Divisions
-- Reduced precision and accuracy of measurement
-### Light wave
-- Light is electromagnetic wave
-- Oscillation of electric and magnetic fields
-- Oscillation direction of particles is perpendicular to the direction of wave travel and energy transfer
-### Wavefront
-- A line in which all the points are in phase
-### Huygen’s construction
-- Each point on the wavefront acts as a source of secondary wavelets
-
-### Why diffraction experiment is accepted by the scientific community
-- Provides experimental evidence
-- Supports previous evidence
-- Result is reproducible by others
-### Pulse echo technique
-- Ultrasound emitted in pulses
-- Ultrasound reflected at the boundary of object due to change in density
-- Time of receiving reflected pulse measured
-- Calculate speed x distance
-- Speed of ultrasound used
-- Measured time divided by 2
-### Why ultrasound is worse than laser in detecting moving objects
-- Ultrasound has lower speed
-- Reflected pulse received after longer time
-- Longer reaction time
-### Why ultrasound is worse than laser in detecting distant objects
-- Ultrasound has longer wavelength
-- Less detail and resolution
-- Reflection not detected
-- Waves diffract
-- Intensity lowers over distance
-- Energy lost in atmosphere and reflection
-### Why use data logger
-- Measure two variables at the same time
-- Measure more readings at the same time
-- Measure readings continuously
-- No parallax error
-- Lower resolution so smaller %U
-- If computer, can plot graph of results
-- Can measure readings over a short period of time
-- Can measure readings over a long period of time
-- Data logger can store and process results
-### NTC thermistor
--        [1] Increase in pd increases energy transfer to ions  
--        [1] Ions release more charge carriers  
--        [2] As current rises, temperature rises  
--        [2] Electrons have more energy so more conducting electrons  
--        By I=nAVq, I increases  
--        By V=IR, R decreases
-### Photon
-- A packet of energy
-- Electromagnetic radiation
-### Emission Spectrum
-- Electron exist in discrete energy level in atom
-- Electron excited and return to original energy level and emit energy in one photon
-- Energy of photon emitted is difference in energy levels
-- E2 – E1 = hf, so frequency and wavelength of photon is proportional to difference in energy levels
-- Certain energy level jumps are possible, so only photons with certain frequency are emitted
-- Different elements have different energy levels and hence different wavelength of photon
-- Each wavelength corresponds to a specific difference in energy level
-### Absorption Spectrum
-- Electron exist in discrete energy level in atom
-- Electron excited by absorbing one photon
-- One photon absorbed by one electron
-- Energy of photon absorbed is difference in energy levels
-- E2 – E1 = hf, so frequency and wavelength of photon is proportional to difference in energy levels
-- Certain energy level jumps are possible, so only photons with certain frequency are absorbed
-- Different elements have different energy levels and hence different wavelength of photon
-- Each wavelength corresponds to a specific difference in energy level
-### Why Absorption Spectrum is possible
-- Light of the wavelength is absorbed by atom
-- Absorbed radiation is reemitted in all directions
-## 7. Circuits
-### When current rises, temperature of metals rises
-- Drift velocity rises (as electron gains KE from electric field)
-- More frequent collisions of electrons and lattice ions
-- KE transferred from electrons to lattice ions
-- Lattice ions vibrate more so temperature rises
-### When temperature rises, resistance of metals rises
-- Lattice ions vibrate more
-- More frequent collisions of electrons and lattice ions
-- Drift velocity lowers
-- By I=nAvq, as v lowers, current lowers
-- By V=IR, resistance rises
-### When temperature rises, resistance of thermistor lowers
-- Atoms gain more thermal energy and vibrate more
-- They release more conduction electrons by vibration
-- By I=nAvq, as n rises, current rises
-- By V=IR, resistance lowers
-### When light intensity rises, resistance of LDR lowers
-- Electrons gain more energy from light
-- More conduction electrons released
-- By I=nAvq, as n rises, current rises
-- By V=IR, resistance lowers
-### Explain S-shape of the I-V graph for a filament bulb
-- At low V, current rises proportionally to V, ohm’s law obeyed
-- As V rises, the current heats up wire
-- Temperature of wire rises, so resistance rises
-- Rate of increase of current lowers
-- Same from the curve in the negative quadrant
-### Explain the advantage for a battery to have a low internal resistance
-- By Vterminal = E - Ir, low internal resistance causes high terminal voltage
-- As current flows through the battery, fewer lost volts across internal resistance
-- Less energy loss within lower internal resistance, so higher energy/power output
-- Internal resistance limits the current, so lowering will produce a higher current
-### When current rises, Vterminal lowers
-- Pd across internal resistance in battery rises
-- By Vterminal = E - Ir, low internal resistance causes high terminal voltage
-- More energy loss due to internal resistance
-- Max current is when pd Across internal resistance = emf of battery
-
-### Current and voltage conservation in a circuit
-- Current is rate of flow of charge
-- Current is the same at all points in a series circuit
-- Current across a junction is the sum of current at all branches in a parallel circuit
-- Pd is energy transferred per unit charge
-- Pd is the same across components in a parallel circuit
-- Pd is shared between components in series
-## 8. Photoelectric Effect
-### Photoelectric effect
-- Photon cause electron to be emitted from surface of metal
-- Energy is needed to remove electron from the surface
-- Work function is the minimum energy for electron to escape surface
-- E=hf, one photon transfers energy to one electron
-- An electron can escape if E > work function
-- KE can’t be greater than hf – work function
-- As electron below the surface needs energy to get to the surface, KE is less than hf – work function
-### Photocell
-- Photon energy > work function, so electrons are emitted
-- For positive pd the electrons accelerate towards other end of photocell
-- For negative pd the electrons decelerate, they need KE to reach other end of photocell
-- No electrons reach other end of photocell at stopping potential
-
-### Work function
-- The minimum energy needed for an electron to escape the surface, and be released
-### Phototube principle
-- One photon transfers energy to one electron
-- E=hf
-- If energy of electron is above the work function
-- Electron is released as photoelectron and released
-- Intensity determines no of photons
-- Moving electrons produce a current
-
-### Why reversing potential difference reduces current
-- Some electrons have low KE and can’t reach the anode
-### How experiments support photon theory
-- Photoelectrons released instantaneously
-- Photon theory, one photon transfers energy to one electron instantaneously
-- Wave theory, wave is continuous and energy builds up, so have time delay
-- Increasing f increases max KE but increasing intensity doesn’t
-- Photon theory, E=hf
-- Wave theory, max KE depends on intensity not f
-- Increasing intensity increases no of photoelectrons per second
-- Photon theory, one photon releases one electron
-- Intensity determines no of photons
-- Wave theory, no of photoelectrons per second depends on f not intensity
-- No photoelectrons unless exceed threshold f
-- Photon theory, E=hf
-- If f too low then energy of photon < work function
-- Electron is emitted only when energy of photon > work function
-- Any photon energy above work function is gained as KE
-- Wave theory, wave is continuous and will release photoelectron if enough energy absorbed
-- Electrons have max KE
-- Photon theory, max KE is hf – work function
-- Wave theory, wave is continuous and electrons can gain energy gradually, so have no KE limit
-
+# Pure Mathematics 2  
+## 1. Proof
+### 1.1 Mathematical Proof Structure
+- A mathematical proof:
+- Begins with given assumptions or axioms
+- Proceeds through logical steps
+- Reaches a valid conclusion
+### 1.2 Proof by Exhaustion
+- Definition:
+- Testing all possible cases to demonstrate a statement is true
+- Process:
+- Identify the finite number of cases to be checked
+- Verify each case individually
+- Conclude the proof when all cases have been verified
+- Example:
+- To prove that x² - x + 41 is prime for 1 ≤ x ≤ 40:
+- Substitute x = 1, 2, 3, ..., 40 into the formula
+- Check that each resulting number is prime
+### 1.3 Disproof by Counter-example
+- Definition:
+- Finding a single case where a statement is false to disprove it
+- Process:
+- Find one example that contradicts the claim
+- The example must satisfy the conditions of the original statement
+- This single case is sufficient to disprove the general statement
+- Example:
+- To disprove "n² - n + 41 is prime for all values of n":
+- Try n = 41
+- 41² - 41 + 41 = 1681 = 41 × 41
+- Since 1681 is not prime, the statement is false
+## 2. Algebra and Functions
+### 2.1 Algebraic Division and Factor Theorem
+- Polynomial Division:
+- Dividing a polynomial f(x) by (ax + b) gives:
+- f(x) = (ax + b) × q(x) + r
+- Where q(x) is the quotient and r is the remainder
+- Factor Theorem:
+- If f(c) = 0, then (x - c) is a factor of f(x)
+- Equivalently, if (ax + b) is a factor of f(x), then f(-b/a) = 0
+- Remainder Theorem:
+- When f(x) is divided by (x - a), the remainder equals f(a)
+- Applications:
+- Factorizing cubic polynomials like x³ + 3x² - 4 or 6x³ + 11x² - x - 6
+- Finding the remainder when dividing by (ax + b)
+## 3. Coordinate Geometry in the (x, y) Plane
+### 3.1 Coordinate Geometry of the Circle
+- Standard Form of Circle Equation:
+- (x - a)² + (y - b)² = r²
+- Center at (a, b) with radius r
+- Circle Properties:
+- The angle in a semicircle is a right angle
+- If points A, B, and C lie on a circle and angle ABC = 90°, then AC is a diameter
+- The perpendicular from the center to a chord bisects the chord
+- If O is the center and OM ⊥ chord AB, then AM = MB
+- A radius and a tangent at the point of contact are perpendicular
+- If O is the center and P is a point on the circle, then OP ⊥ tangent at P
+- Finding the Equation:
+- Given the center (a, b) and radius r, the equation is (x - a)² + (y - b)² = r²
+- Given the center (a, b) and a point (p, q) on the circle:
+- r² = (p - a)² + (q - b)²
+- Substitute into (x - a)² + (y - b)² = r²
+## 4. Sequences and Series
+### 4.1 Sequences
+- Definition:
+- A sequence is an ordered list of numbers that follow a pattern
+- Types:
+- Given by a formula for the nth term (e.g., aₙ = 2n + 3)
+- Generated by a recurrence relation (e.g., xₙ₊₁ = 2xₙ + 1, x₁ = 3)
+- Classifications:
+- Increasing: Each term is greater than the previous
+- Decreasing: Each term is less than the previous
+- Periodic: The sequence repeats after a fixed number of terms
+### 4.2 Arithmetic Sequences and Series
+- Arithmetic Sequence:
+- Consecutive terms differ by a constant value d (the common difference)
+- nth term formula: aₙ = a₁ + (n - 1)d
+- Where a₁ is the first term and d is the common difference
+- Arithmetic Series:
+- The sum of an arithmetic sequence
+- Sum of n terms: Sₙ = n/2[2a₁ + (n - 1)d] = n/2(a₁ + aₙ)
+- The sum of the first n natural numbers: Sₙ = n(n + 1)/2
+- Proof of Sum Formula:
+- For an arithmetic series with first term a and common difference d:
+- Sₙ = a + (a + d) + (a + 2d) + ... + [a + (n-1)d]
+- Sₙ = [a + (n-1)d] + [a + (n-2)d] + ... + a (writing in reverse)
+- 2Sₙ = n[2a + (n-1)d]
+- Sₙ = n/2[2a + (n-1)d]
+### 4.3 Geometric Sequences and Series
+- Geometric Sequence:
+- Consecutive terms form a constant ratio r (the common ratio)
+- nth term formula: aₙ = a₁ × r^(n-1)
+- Where a₁ is the first term and r is the common ratio
+- Geometric Series:
+- The sum of a geometric sequence
+- Sum of n terms: Sₙ = a₁(1 - r^n)/(1 - r), for r ≠ 1
+- Sum to infinity (for |r| < 1): S∞ = a₁/(1 - r)
+- Proof of Sum Formula:
+- For a geometric series with first term a and common ratio r:
+- Sₙ = a + ar + ar² + ... + ar^(n-1)
+- rSₙ = ar + ar² + ... + ar^(n-1) + ar^n
+- Sₙ - rSₙ = a - ar^n
+- Sₙ(1 - r) = a(1 - r^n)
+- Sₙ = a(1 - r^n)/(1 - r)
+### 4.4 Binomial Expansion
+- Expansion for Positive Integer n:
+- (a + bx)ⁿ = aⁿ + (n₁)aⁿ⁻¹bx + (n₂)aⁿ⁻²b²x² + ... + bⁿxⁿ
+- Where (nᵣ) = n!/(r!(n-r)!) is the binomial coefficient
+- Also written as nCr or (nr)
+- Notation:
+- n! = n × (n-1) × (n-2) × ... × 3 × 2 × 1
+- 0! = 1
+## 5. Exponentials and Logarithms
+### 5.1 Exponential Functions
+- Function y = aˣ:
+- a > 0, a ≠ 1
+- Domain: All real numbers
+- Range: All positive real numbers
+- If a > 1: Strictly increasing function
+- If 0 < a < 1: Strictly decreasing function
+- Graph Characteristics:
+- Passes through (0, 1)
+- Asymptotic to the x-axis as x → -∞
+- Grows without bound as x → ∞ (for a > 1)
+### 5.2 Logarithms
+- Definition:
+- y = log_a(x) means aʸ = x, where a > 0, a ≠ 1, x > 0
+- Laws of Logarithms:
+- log_a(xy) = log_a(x) + log_a(y)
+- log_a(x/y) = log_a(x) - log_a(y)
+- log_a(xᵏ) = k log_a(x)
+- log_a(1/x) = -log_a(x)
+- log_a(a) = 1
+- Natural Logarithm:
+- log_e(x) is written as ln(x)
+- Base e ≈ 2.71828...
+### 5.3 Logarithmic Equations
+- Solving aˣ = b:
+- Take logarithms of both sides: x log(a) = log(b)
+- Rearrange to find x: x = log(b)/log(a)
+- Example:
+- Solve 2ˣ = 5:
+- Take log base 10 of both sides: log(2ˣ) = log(5)
+- Use logarithm laws: x log(2) = log(5)
+- Solve for x: x = log(5)/log(2) ≈ 2.32
+## 6. Trigonometry
+### 6.1 Trigonometric Relations
+- Fundamental Identities:
+- sin²θ + cos²θ = 1
+- tanθ = sinθ/cosθ
+- Applications:
+- Used to simplify trigonometric expressions
+- Useful in solving trigonometric equations
+### 6.2 Trigonometric Equations
+- Methods of Solution:
+- Use of identities to simplify equations
+- Factorization when possible
+- Use of the quadratic formula for quadratic trigonometric equations
+- Finding principal solutions and general solutions
+- Examples:
+- sin(x + π/3) = 1/2 for 0 < x < 2π
+- cos(x + 30°) = 1/2 for -180° < x < 180°
+- tan(2x) = 1 for 90° < x < 270°
+- 6cos²x + sinx - 5 = 0 for 0 ≤ x < 360°
+## 7. Differentiation
+### 7.1 Applications of Differentiation
+- Stationary Points:
+- Points where the derivative equals zero: f'(x) = 0
+- Types:
+- Maximum: f'(x) = 0 and f''(x) < 0
+- Minimum: f'(x) = 0 and f''(x) > 0
+- Point of inflection: f'(x) = 0 and f''(x) = 0 (with sign change in f''(x))
+- Increasing and Decreasing Functions:
+- Increasing when f'(x) > 0
+- Decreasing when f'(x) < 0
+- Curve Sketching:
+- Determine domain and range
+- Find intercepts with axes
+- Find stationary points
+- Determine regions where function is increasing/decreasing
+- Consider behavior as x → ±∞
+## 8. Integration
+### 8.1 Definite Integrals
+- Definition:
+- ∫_a^b f(x)dx represents the signed area between the curve y = f(x) and the x-axis from x = a to x = b
+- Properties:
+- ∫_a^b f(x)dx = F(b) - F(a), where F'(x) = f(x)
+- ∫_a^b f(x)dx = -∫_b^a f(x)dx
+- ∫_a^b [f(x) + g(x)]dx = ∫_a^b f(x)dx + ∫_a^b g(x)dx
+### 8.2 Area Under a Curve
+- Finding Areas:
+- Area under curve y = f(x) from x = a to x = b: ∫_a^b f(x)dx
+- Area between curve y = f(x) and line y = g(x): ∫_a^b [f(x) - g(x)]dx
+- Area between two curves y = f(x) and y = g(x): ∫_a^b |f(x) - g(x)|dx
+- Example:
+- Area bounded by y = 6x - x² and y = 2x:
+- Find intersection points by solving 6x - x² = 2x
+- Simplify to x² - 4x = 0, giving x = 0 or x = 4
+- Compute area: ∫_0^4 [(6x - x²) - 2x]dx = ∫_0^4 [4x - x²]dx
+### 8.3 Trapezium Rule
+- Formula:
+- ∫_a^b f(x)dx ≈ (b-a)/2n [f(a) + 2f(x₁) + 2f(x₂) + ... + 2f(xₙ₋₁) + f(b)]
+- Where x₁, x₂, ..., xₙ₋₁ are n-1 equally spaced points between a and b
+- Process:
+- Divide interval [a, b] into n equal strips of width h = (b-a)/n
+- Calculate function values at all points
+- Apply the formula to approximate the integral
+- Accuracy:
+- Generally improves as n increases
+- Error estimation possible using calculus techniques
 
 `;

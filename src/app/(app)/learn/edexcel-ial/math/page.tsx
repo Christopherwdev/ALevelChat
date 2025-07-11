@@ -18,12 +18,20 @@ interface UnitContent {
 }
 
 const UNIT_NOTES_CONTENT: UnitContent = {
-    "Pure Math 1": PURE_MATH_1_CONTENT,
-    "Pure Math 2": PURE_MATH_2_CONTENT,
-    "Pure Math 3": PURE_MATH_3_CONTENT,
-    "Pure Math 4": PURE_MATH_4_CONTENT,
-    "Statistics 1": STATISTICS_1_CONTENT,
+    'PureMath1': PURE_MATH_1_CONTENT,
+    'PureMath2': PURE_MATH_2_CONTENT,
+    'PureMath3': PURE_MATH_3_CONTENT,
+    'PureMath4': PURE_MATH_4_CONTENT,
+    'Statistics1': STATISTICS_1_CONTENT,
 };
+
+const UNIT_LIST = [
+    { key: 'PureMath1', label: 'Pure Math 1' },
+    { key: 'PureMath2', label: 'Pure Math 2' },
+    { key: 'PureMath3', label: 'Pure Math 3' },
+    { key: 'PureMath4', label: 'Pure Math 4' },
+    { key: 'Statistics1', label: 'Statistics 1' },
+];
 
 
 const revisionTools = [
@@ -57,18 +65,17 @@ function isTextToken(token: any): token is { text: string } {
 }
 
 const App: React.FC = () => {
-    const [activeUnitIndex, setActiveUnitIndex] = useState<string | null>(null); // null for home page
+    const [activeUnitIndex, setActiveUnitIndex] = useState<number | null>(null); // null for home page
     const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
     const [notesContent, setNotesContent] = useState<string>('');
     const [currentNotesTitle, setCurrentNotesTitle] = useState<string>('');
     const [currentNotesDuration, setCurrentNotesDuration] = useState<string>('');
     const [sectionCompletionStatus, setSectionCompletionStatus] = useState<{ [key: string]: boolean }>({});
-    const [lastViewedLesson, setLastViewedLesson] = useState<{ unitIndex: string; sectionId: string } | null>(null);
+    const [lastViewedLesson, setLastViewedLesson] = useState<{ unitIndex: number; sectionId: string } | null>(null);
     const [activeTab, setActiveTab] = useState('details'); // 'details', 'timetable', 'find-tutor'
 
     const markdownDisplayRef = useRef<HTMLDivElement>(null);
 
-  
 
     // Function to handle navigation (for breadcrumbs and other links)
     const navigate = (path: string) => {
@@ -157,49 +164,49 @@ const App: React.FC = () => {
     }, []);
 
     // --- Local Storage Functions ---
-    const getLocalStorageKey = useCallback((unitName: string, sectionId: string): string => {
-        return `${LOCAL_STORAGE_KEY_PREFIX}${CURRENT_SUBJECT}_${unitName}_${sectionId}`;
+    const getLocalStorageKey = useCallback((unitKey: string, sectionId: string): string => {
+        return `${LOCAL_STORAGE_KEY_PREFIX}${CURRENT_SUBJECT}_${unitKey}_${sectionId}`;
     }, []);
 
-    const loadCompletionStatus = useCallback((unitName: string, sectionId: string): boolean => {
-        const key = getLocalStorageKey(unitName, sectionId);
+    const loadCompletionStatus = useCallback((unitKey: string, sectionId: string): boolean => {
+        const key = getLocalStorageKey(unitKey, sectionId);
         return localStorage.getItem(key) === 'true';
     }, [getLocalStorageKey]);
 
-    const saveCompletionStatus = useCallback((unitName: string, sectionId: string, status: boolean) => {
-        const key = getLocalStorageKey(unitName, sectionId);
+    const saveCompletionStatus = useCallback((unitKey: string, sectionId: string, status: boolean) => {
+        const key = getLocalStorageKey(unitKey, sectionId);
         localStorage.setItem(key, status ? 'true' : 'false');
         setSectionCompletionStatus(prev => ({ ...prev, [key]: status }));
     }, [getLocalStorageKey]);
 
-    const saveLastViewedLessonToLocalStorage = useCallback((unitName: string, sectionId: string) => {
-        const lesson = { unitIndex: unitName, sectionId };
+    const saveLastViewedLessonToLocalStorage = useCallback((unitKey: string, sectionId: string) => {
+        const lesson = { unitIndex: UNIT_LIST.findIndex(u => u.key === unitKey), sectionId: sectionId };
         localStorage.setItem(LAST_VIEWED_LESSON_KEY, JSON.stringify(lesson));
         setLastViewedLesson(lesson);
     }, []);
 
-    const loadLastViewedLessonFromLocalStorage = useCallback((): { unitIndex: string; sectionId: string } | null => {
+    const loadLastViewedLessonFromLocalStorage = useCallback((): { unitIndex: number; sectionId: string } | null => {
         const data = localStorage.getItem(LAST_VIEWED_LESSON_KEY);
         return data ? JSON.parse(data) : null;
     }, []);
 
     // --- Progress Calculation ---
-    const calculateUnitProgress = useCallback((unitName: string) => {
-        const markdown = UNIT_NOTES_CONTENT[unitName];
+    const calculateUnitProgress = useCallback((unitKey: string) => {
+        const markdown = UNIT_NOTES_CONTENT[unitKey];
         if (!markdown) {
-            return { completedSections: 0, totalSections: 0, percentage: 0, unitTitle: unitName };
+            return { completedSections: 0, totalSections: 0, percentage: 0, unitTitle: unitKey };
         }
 
         const tokens = marked.lexer(markdown);
         let totalSections = 0;
         let completedSections = 0;
-        let unitTitle = unitName;
+        let unitTitle = unitKey;
 
         const h1Token = tokens.find(token => token.type === 'heading' && token.depth === 1 && isTextToken(token));
         if (h1Token && isTextToken(h1Token)) {
             unitTitle = h1Token.text;
-            if (unitTitle.startsWith(`${unitName}:`)) {
-                unitTitle = unitTitle.substring(`${unitName}:`.length).trim();
+            if (unitTitle.startsWith(`${unitKey}:`)) {
+                unitTitle = unitTitle.substring(`${unitKey}:`.length).trim();
             }
         }
 
@@ -207,8 +214,8 @@ const App: React.FC = () => {
         tokens.forEach(token => {
             if (token.type === 'heading' && token.depth === 2) {
                 totalSections++;
-                const sectionId = `unit-${unitName}-section-${++sectionCounter}`;
-                if (loadCompletionStatus(unitName, sectionId)) {
+                const sectionId = `unit-${unitKey}-section-${++sectionCounter}`;
+                if (loadCompletionStatus(unitKey, sectionId)) {
                     completedSections++;
                 }
             }
@@ -219,12 +226,14 @@ const App: React.FC = () => {
     }, [loadCompletionStatus]);
 
     // --- Display Functions ---
-    const fetchAndDisplayNote = useCallback((unitName: string, sectionIdToScrollTo: string | null = null) => {
-        setActiveUnitIndex(unitName);
+    const fetchAndDisplayNote = useCallback((unitKey: string, sectionIdToScrollTo: string | null = null) => {
+        setActiveUnitIndex(UNIT_LIST.findIndex(u => u.key === unitKey));
         setActiveSectionId(sectionIdToScrollTo);
 
+        // Always extract and set the heading from the markdown
+        const unitName = unitKey;
         let headingTitle = '';
-        const markdownText = UNIT_NOTES_CONTENT[unitName];
+        const markdownText = UNIT_NOTES_CONTENT[unitKey];
         if (markdownText) {
             const tokens = marked.lexer(markdownText);
             const h1Token = tokens.find(token => token.type === 'heading' && token.depth === 1 && isTextToken(token));
@@ -266,10 +275,10 @@ const App: React.FC = () => {
             tokens.forEach(token => {
                 if (token.type === 'heading' && token.depth === 2) {
                     sectionCounter++;
-                    const sectionId = `unit-${unitName}-section-${sectionCounter}`;
+                    const sectionId = `unit-${unitKey}-section-${sectionCounter}`;
                     sectionsInUnit.push({ id: sectionId, text: token.text });
 
-                    const isCompleted = loadCompletionStatus(unitName, sectionId);
+                    const isCompleted = loadCompletionStatus(unitKey, sectionId);
                     const completionClass = isCompleted ? 'completed' : 'incomplete';
                     const completionText = isCompleted ? 'Completed' : 'Mark as Complete';
                     const completionIcon = isCompleted ? 'fas fa-check-circle' : 'far fa-circle';
@@ -278,7 +287,7 @@ const App: React.FC = () => {
                         <div class="section-header-container">
                             <h2 id="${sectionId}">${token.text}</h2>
                             <button class="section-completion-button ${completionClass}"
-                                    data-unit-index="${unitName}"
+                                    data-unit-index="${UNIT_LIST.findIndex(u => u.key === unitKey)}"
                                     data-section-id="${sectionId}"
                                     contentEditable="false">
                                 <i class="${completionIcon} mr-1"></i> ${completionText}
@@ -301,18 +310,18 @@ const App: React.FC = () => {
             // This means `sectionsInUnit` needs to be part of the component's state.
             const newSectionsData = sectionsInUnit.map(sec => ({
                 ...sec,
-                unitIndex: unitName,
-                isCompleted: loadCompletionStatus(unitName, sec.id)
+                unitIndex: UNIT_LIST.findIndex(u => u.key === unitKey),
+                isCompleted: loadCompletionStatus(unitKey, sec.id)
             }));
             // This will be handled by the `sectionsForSidebar` state.
             // setSectionsForSidebar(newSectionsData); // This state will be used to render sidebar sections
 
             // Save last viewed lesson
             if (sectionIdToScrollTo) {
-                saveLastViewedLessonToLocalStorage(unitName, sectionIdToScrollTo);
+                saveLastViewedLessonToLocalStorage(unitKey, sectionIdToScrollTo);
             } else if (sectionsInUnit.length > 0) {
                 // If no specific section, default to the first one
-                saveLastViewedLessonToLocalStorage(unitName, sectionsInUnit[0].id);
+                saveLastViewedLessonToLocalStorage(unitKey, sectionsInUnit[0].id);
             }
 
 
@@ -341,21 +350,21 @@ const App: React.FC = () => {
     useEffect(() => {
         // Initial load of completion status and last viewed lesson
         const initialCompletionStatus: { [key: string]: boolean } = {};
-        for (const unitName of Object.keys(UNIT_NOTES_CONTENT)) {
-            const markdown = UNIT_NOTES_CONTENT[unitName];
+        UNIT_LIST.forEach(({ key: unitKey }) => {
+            const markdown = UNIT_NOTES_CONTENT[unitKey];
             if (markdown) {
                 const tokens = marked.lexer(markdown);
                 let sectionCounter = 0;
                 tokens.forEach(token => {
                     if (token.type === 'heading' && token.depth === 2) {
                         sectionCounter++;
-                        const sectionId = `unit-${unitName}-section-${sectionCounter}`;
-                        const key = getLocalStorageKey(unitName, sectionId);
-                        initialCompletionStatus[key] = localStorage.getItem(key) === 'true';
+                        const sectionId = `unit-${unitKey}-section-${sectionCounter}`;
+                        const storageKey = getLocalStorageKey(unitKey, sectionId);
+                        initialCompletionStatus[storageKey] = localStorage.getItem(storageKey) === 'true';
                     }
                 });
             }
-        }
+        });
         setSectionCompletionStatus(initialCompletionStatus);
         setLastViewedLesson(loadLastViewedLessonFromLocalStorage());
 
@@ -379,12 +388,12 @@ const App: React.FC = () => {
             const button = target.closest('.section-completion-button') as HTMLButtonElement;
 
             if (button) {
-                const unitName = button.dataset.unitIndex || '';
+                const unitKey = UNIT_LIST[parseInt(button.dataset.unitIndex || '0')].key;
                 const sectionId = button.dataset.sectionId || '';
 
-                if (unitName && sectionId) {
-                    const isCompleted = loadCompletionStatus(unitName, sectionId);
-                    saveCompletionStatus(unitName, sectionId, !isCompleted);
+                if (unitKey && sectionId) {
+                    const isCompleted = loadCompletionStatus(unitKey, sectionId);
+                    saveCompletionStatus(unitKey, sectionId, !isCompleted);
                 }
             }
         };
@@ -419,13 +428,13 @@ const App: React.FC = () => {
         );
     };
 
-    const UnitCard: React.FC<{ unitIndex: string }> = ({ unitIndex }) => {
-        const { percentage, unitTitle } = calculateUnitProgress(unitIndex);
+    const UnitCard: React.FC<{ unitIndex: number }> = ({ unitIndex }) => {
+        const { percentage, unitTitle } = calculateUnitProgress(UNIT_LIST[unitIndex].key);
 
         return (
-            <div className="unit-card p-4 flex flex-col justify-between" onClick={() => fetchAndDisplayNote(unitIndex)}>
+            <div className="unit-card p-4 flex flex-col justify-between" onClick={() => fetchAndDisplayNote(UNIT_LIST[unitIndex].key)}>
                 <div className="flex flex-col items-left mb-2 justify-flex-start grow">
-                    <span className="text-black" style={{ fontSize: '20px', fontWeight: 'bold' }}>{unitIndex}</span>
+                    <span className="text-black" style={{ fontSize: '20px', fontWeight: 'bold' }}>{UNIT_LIST[unitIndex].label}</span>
 
                 </div>
                 <div className="flex items-center mt-2 justify-center">
@@ -1070,7 +1079,7 @@ const App: React.FC = () => {
                 {/* Main Content Area */}
                 <div className="flex flex-1 overflow-hidden">
                     {/* Left Sidebar - Navigation */}
-                    <div id="left-sidebar" className="w-70 pt-6 bg-white flex flex-col dark:bg-white dark:border-gray-700 overflow-y-auto p-4">
+                    <div id="left-sidebar" className="w-72 pt-6 bg-white flex flex-col dark:bg-white dark:border-gray-700 overflow-y-auto p-4">
                         {/* Subject Home Button */}
                         <button
                             id="home-subject-button"
@@ -1086,17 +1095,19 @@ const App: React.FC = () => {
                         <div className="mb-4">
                             {/* <h3 className="text-md font-semibold text-gray-700 mb-2 dark:text-gray-300">Learning Notes</h3> */}
                             <div id="unit-buttons-container" className="space-y-4">
-                                {Object.keys(UNIT_NOTES_CONTENT).map(unitName => {
-                                    const markdownContent = UNIT_NOTES_CONTENT[unitName];
-                                    let unitTitleWithoutPrefix = unitName;
+                                {UNIT_LIST.map((unit, unitIdx) => {
+                                    const key = unit.key;
+                                    const label = unit.label;
+                                    const markdownContent = UNIT_NOTES_CONTENT[key];
+                                    let unitTitleWithoutPrefix = label;
 
                                     if (markdownContent) {
                                         const tokens = marked.lexer(markdownContent);
                                         const h1Token = tokens.find(token => token.type === 'heading' && token.depth === 1 && isTextToken(token));
                                         if (h1Token && isTextToken(h1Token)) {
                                             unitTitleWithoutPrefix = h1Token.text;
-                                            if (unitTitleWithoutPrefix.startsWith(`${unitName}:`)) {
-                                                unitTitleWithoutPrefix = unitTitleWithoutPrefix.substring(`${unitName}:`.length).trim();
+                                            if (unitTitleWithoutPrefix.startsWith(`${label}:`)) {
+                                                unitTitleWithoutPrefix = unitTitleWithoutPrefix.substring(`${label}:`.length).trim();
                                             }
                                         }
                                     }
@@ -1107,23 +1118,23 @@ const App: React.FC = () => {
                                         marked.lexer(markdownContent).forEach(token => {
                                             if (token.type === 'heading' && token.depth === 2) {
                                                 sectionCounter++;
-                                                sectionsInUnit.push({ id: `unit-${unitName}-section-${sectionCounter}`, text: token.text });
+                                                sectionsInUnit.push({ id: `unit-${key}-section-${sectionCounter}`, text: token.text });
                                             }
                                         });
                                     }
 
                                     return (
-                                        <div key={unitName}>
+                                        <div key={key}>
                                             <button
-                                                className={`unit-button w-full text-left px-3 py-2 rounded-[15px] text-sm font-medium flex items-center justify-between ${activeUnitIndex === unitName ? 'active' : ''}`}
-                                                onClick={() => fetchAndDisplayNote(unitName)}
+                                                className={`unit-button w-full text-left px-3 py-2 rounded-[15px] text-sm font-medium flex items-center justify-between ${activeUnitIndex === unitIdx ? 'active' : ''}`}
+                                                onClick={() => fetchAndDisplayNote(key)}
                                             >
-                                                <span><span style={{ fontWeight: 'bold' }}>{unitName}:</span> {unitTitleWithoutPrefix}</span>
+                                                <span><span style={{ fontWeight: 'bold' }}></span>{unitTitleWithoutPrefix}</span>
                                             </button>
-                                            {activeUnitIndex === unitName && sectionsInUnit.length > 0 && (
+                                            {activeUnitIndex === unitIdx && sectionsInUnit.length > 0 && (
                                                 <div className="unit-sections-container space-y-1 mt-2 mb-2 ml-4 border-l border-l-[2px] border-gray-200 dark:border-gray-600">
                                                     {sectionsInUnit.map(section => {
-                                                        const sectionKey = getLocalStorageKey(unitName, section.id);
+                                                        const sectionKey = getLocalStorageKey(key, section.id);
                                                         const isCompleted = sectionCompletionStatus[sectionKey] || false;
                                                         return (
                                                             <a
@@ -1133,8 +1144,7 @@ const App: React.FC = () => {
                                                                 onClick={(e) => {
                                                                     e.preventDefault();
                                                                     setActiveSectionId(section.id);
-                                                                    saveLastViewedLessonToLocalStorage(unitName, section.id);
-                                                                    // Scroll handled by useEffect based on activeSectionId
+                                                                    saveLastViewedLessonToLocalStorage(key, section.id);
                                                                 }}
                                                             >
                                                                 <span className="section-link-text">{section.text}</span>
@@ -1187,15 +1197,16 @@ const App: React.FC = () => {
                                                 key={tool.id}
                                                 className="bg-white p-4 mt-0 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[5px] transition duration-200"
                                                 style={{
-                                                    borderColor: '#00000010',
+                                                    borderColor: "#00000010",
+                                                    // Optionally, you can add a boxShadow or borderColor on hover using a custom CSS class or inline event
                                                 }}
                                                 onMouseEnter={e => {
                                                     e.currentTarget.style.borderColor = SUBJECT_COLOR;
                                                     e.currentTarget.style.boxShadow = `0 0 0 10px ${SUBJECT_COLOR}20`;
                                                 }}
                                                 onMouseLeave={e => {
-                                                    e.currentTarget.style.borderColor = '#00000010';
-                                                    e.currentTarget.style.boxShadow = 'none';
+                                                    e.currentTarget.style.borderColor = "#00000010";
+                                                    e.currentTarget.style.boxShadow = "none";
                                                 }}
                                             >
                                                 <div className="border-2 p-3 rounded-full" style={{ borderColor: SUBJECT_COLOR }}>
