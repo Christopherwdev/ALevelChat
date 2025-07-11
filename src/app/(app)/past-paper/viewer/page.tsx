@@ -93,7 +93,7 @@ const App: React.FC = () => {
      * @param {string} paper - The paper identifier (e.g., 'Unit 4', 'P1', 'M1').
      * @returns {string} The formatted paper code, or an empty string if no match.
      */
-    const getSpecificPaperCode = useCallback((subject: string, paper: string): string => {
+    const getSpecificPaperCode = useCallback((subject: string, paper: string, year?: string, series?: string): string => {
         if (subject === 'Math') {
             const paperPrefixMatch = paper.match(/^(P|M|FP|S|D)/i);
             const paperNumberMatch = paper.match(/\d+$/);
@@ -115,7 +115,20 @@ const App: React.FC = () => {
             const prefix = IAL_SUBJECT_PREFIXES[subject as string];
             const unitNumberMatch = paper.match(/Unit\s*(\d+)/i);
             if (prefix && unitNumberMatch && unitNumberMatch[1]) {
-                return `${prefix}1${unitNumberMatch[1]}`;
+                // Only apply 0X/1X logic for IAL (not IGCSE)
+                let codeDigit = '1';
+                if (year && series) {
+                    // Jan 2019 or before: 0X, Jun 2019 or after: 1X
+                    // Compare year and series
+                    const y = parseInt(year, 10);
+                    const s = series.toLowerCase();
+                    if (y < 2019 || (y === 2019 && s === 'jan')) {
+                        codeDigit = '0';
+                    } else {
+                        codeDigit = '1';
+                    }
+                }
+                return `${prefix}${codeDigit}${unitNumberMatch[1]}`;
             }
         }
         return '';
@@ -164,7 +177,7 @@ const App: React.FC = () => {
             }
         }
 
-        const specificPaperCode = getSpecificPaperCode(subject, paper);
+        const specificPaperCode = getSpecificPaperCode(subject, paper, year, abbreviatedMonth);
         let filenameBase = `${filenamePrefix}-${filenameIdentifier}`;
         const codePart = specificPaperCode ? `(${specificPaperCode})` : '';
 

@@ -1094,7 +1094,7 @@ const App: React.FC = () => {
                         {/* Subject Home Button */}
                         <button
                             id="home-subject-button"
-                            className={`home-subject-button w-full text-left px-4 py-3 rounded-[15px] text-lg font-semibold mb-4 flex items-center justify-center transition duration-200`}
+                            className={`home-subject-button active w-full text-left px-4 py-3 rounded-[15px] text-lg font-semibold mb-4 flex items-center justify-center transition duration-200`}
                             onClick={() => router.push('/learn/edexcel-igcse/chinese')}
                         >
                             <i id="sidebar-subject-icon" className={`fas fa-home mr-3 text-md`}></i>

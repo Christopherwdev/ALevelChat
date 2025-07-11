@@ -54,7 +54,7 @@ export default function AppNavigation({ collapsedWidth = 70 }: AppNavigationProp
         <Home size={24} />
       </Link>
       {/* Navigation Items Container */}
-      <div className="flex lg:flex-col flex-row gap-x-4 gap-y-0 lg:gap-x-0 lg:gap-y-2 lg:mt-10 w-full flex-1 px-2 lg:px-3 justify-center lg:justify-start overflow-x-auto lg:overflow-y-auto overflow-y-hidden lg:overflow-x-hidden scrollbar-hide">
+      <div className="flex lg:flex-col flex-row gap-x-4 gap-y-0 lg:gap-x-0 lg:gap-y-2 lg:mt-10 w-full flex-1 px-2 lg:px-3 justify-around lg:justify-start overflow-x-auto lg:overflow-y-auto overflow-y-hidden lg:overflow-x-hidden scrollbar-hide">
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon; // Dynamic icon component

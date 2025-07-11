@@ -78,7 +78,7 @@ const App = () => {
    
     <div className="min-h-screen bg-white p-0 font-inter">
        
-      <div className="max-w-4xl mx-auto mt-10">
+      <div className="max-w-4xl mx-auto mt-10 p-4">
         <h1 className="text-4xl font-bold text-gray-800 mb-12 text-center">Choose Your Exam</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {exams.map((exam) => {
@@ -105,7 +105,7 @@ const App = () => {
                     (e.currentTarget as HTMLButtonElement).style.boxShadow = `0px 0px 0px 7.5px rgba(${rgbColor}, 0.3)`;
                   }}
                   onMouseLeave={e => {
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '';none
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
                   }}
                 >
                   {exam.buttonText}
@@ -138,7 +138,7 @@ const App = () => {
             <div key={`${exam.id}-subjects-column`} className="flex flex-col items-center gap-4">
               {exam.subjects.map((subject) => {
                 // Use the exam's baseColor for shadow/border
-                const shadowColor = `0px 5px 20px 0px ${exam.baseColor}33`; // 33 = ~20% opacity
+                const shadowColor = `0px 0px 0px 5px ${exam.baseColor}33`; // 33 = ~20% opacity
                 const borderColor = exam.baseColor;
 
                 return (

@@ -80,7 +80,38 @@ const disabledPapersConfig: DisabledPaperConfig[] = [
     { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Math A", series: "Nov", year: 2018, paper: null },
     { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Math A", series: "Nov", year: 2019, paper: null },
     { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Math A", series: "Jun", year: 2020, paper: null },
-    { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Math A", series: "Nov", year: 2022, paper: null }
+    { examBoard: "Edexcel", examLevel: "IGCSE", subject: "Math A", series: "Nov", year: 2022, paper: null },
+    // Edexcel IAL disables for all units 1-6 and all math papers for specific series/years
+    // Jun 2020
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Physics', paper: null, series: 'Jun', year: 2020 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Chemistry', paper: null, series: 'Jun', year: 2020 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Biology', paper: null, series: 'Jun', year: 2020 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Math', paper: null, series: 'Jun', year: 2020 },
+    // Jan 2019
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Physics', paper: null, series: 'Jan', year: 2019 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Chemistry', paper: null, series: 'Jan', year: 2019 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Biology', paper: null, series: 'Jan', year: 2019 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Math', paper: null, series: 'Jan', year: 2019 },
+    // Oct 2018
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Physics', paper: null, series: 'Oct', year: 2018 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Chemistry', paper: null, series: 'Oct', year: 2018 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Biology', paper: null, series: 'Oct', year: 2018 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Math', paper: null, series: 'Oct', year: 2018 },
+    // Oct 2015
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Physics', paper: null, series: 'Oct', year: 2015 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Chemistry', paper: null, series: 'Oct', year: 2015 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Biology', paper: null, series: 'Oct', year: 2015 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Math', paper: null, series: 'Oct', year: 2015 },
+    // Jun 2014
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Physics', paper: null, series: 'Jun', year: 2014 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Chemistry', paper: null, series: 'Jun', year: 2014 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Biology', paper: null, series: 'Jun', year: 2014 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Math', paper: null, series: 'Jun', year: 2014 },
+    // Oct 2014
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Physics', paper: null, series: 'Oct', year: 2014 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Chemistry', paper: null, series: 'Oct', year: 2014 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Biology', paper: null, series: 'Oct', year: 2014 },
+    { examBoard: 'Edexcel', examLevel: 'IAL', subject: 'Math', paper: null, series: 'Oct', year: 2014 },
 ];
 
 // Helper function to map abbreviated month to full month
@@ -800,9 +831,10 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Right Content Area - Papers List */}
-                    <div className="flex-1 overflow-auto p-6 bg-gray-50 dark:bg-gray-900 flex justify-center">
+                    <div className="flex-1 overflow-auto p-6 pb-12 bg-gray-50 dark:bg-gray-900 flex justify-center">
                         <div id="papers-container" className="space-y-6 max-w-[600px] mx-auto w-full">
                             {renderPapers(filteredPapers)}
+                            <div style={{ height: '3rem' }} />
                         </div>
                     </div>
                 </div>
