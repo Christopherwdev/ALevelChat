@@ -1,5 +1,3 @@
-// The nav bar for the old version landing page
-
 "use client";
 
 import Link from 'next/link';
@@ -74,7 +72,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
         zIndex: 50,
       }}
     >
-      <nav className="bg-[rgba(255,255,255,0.9)] backdrop-blur-[15px] shadow-xl shadow-[rgba(0,0,0,0.02)] border-b border-gray-100">
+      <nav className="bg-white border-b border-gray-200 shadow-sm">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16 justify-between w-full">
             {/* Logo left */}
@@ -91,7 +89,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
               </Link>
             </div>
             {/* Exams center */}
-            <div className="hidden lg:flex justify-center items-center space-x-0 py-2 px-3 bg-[rgba(0,0,0,0.04)] rounded-full">
+            <div className="hidden lg:flex justify-center items-center space-x-0 py-2 px-3 bg-gray-100 rounded-full">
               {exams.map((exam) => (
                 <div
                   key={exam.name}
@@ -103,20 +101,20 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                     href={exam.path}
                     className={`px-4 py-2 text-md font-medium transition-colors rounded-md ${
                       pathname.startsWith(exam.path)
-                        ? 'text-red-500 bg-red-50'
-                        : 'text-gray-700 hover:text-red-500 hover:bg-gray-50'
+                        ? 'text-[#ff3b30] bg-white shadow-sm'
+                        : 'text-gray-700 hover:text-[#ff3b30] hover:bg-white'
                     }`}
                   >
                     {exam.name}
                   </Link>
                   {/* Dropdown for subjects */}
                   {hoveredExam === exam.name && (
-                    <div className="absolute left-0 mt-1 w-48 bg-white rounded-xl shadow-lg py-2 z-20 border border-[#00000020] flex flex-col">
+                    <div className="absolute left-0 mt-1 w-48 bg-white rounded-xl shadow-lg py-2 z-20 border border-gray-200 flex flex-col">
                       {exam.subjects.map((subject) => (
                         <Link
                           key={subject.name}
                           href={subject.path}
-                          className="px-4 py-2 text-sm text-black font-semibold hover:bg-gray-100 hover:text-red-500 rounded transition-colors"
+                          className="px-4 py-2 text-sm text-gray-700 font-semibold hover:bg-gray-50 hover:text-[#ff3b30] rounded transition-colors"
                         >
                           {subject.name}
                         </Link>
@@ -132,7 +130,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
                   >
                     <span>Account</span>
                     <svg className={`ml-1 h-4 w-4 transform transition-transform ${showUserMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +138,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                     </svg>
                   </button>
                   {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10 border border-gray-100">
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10 border border-gray-200">
                       <Link
                         href="/profile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
@@ -162,13 +160,13 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                 <div className="flex space-x-3">
                   <Link
                     href="/login"
-                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
                   >
                     Log in
                   </Link>
                   <Link
                     href="/signup"
-                    className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors"
+                    className="px-6 py-2 bg-[#ff3b30] hover:bg-[#ff1a1a] text-white text-sm font-medium rounded-lg transition-colors"
                   >
                     Sign up
                   </Link>
@@ -192,12 +190,12 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
         </div>
       </nav>
       {mobileMenuOpen && (
-        <div className="lg:hidden absolute left-0 right-0 bg-white shadow-lg rounded-b-xl z-40 mt-0 px-4 py-2">
+        <div className="lg:hidden absolute left-0 right-0 bg-white shadow-lg rounded-b-xl z-40 mt-0 px-4 py-2 border-b border-gray-200">
           {exams.map((exam) => (
             <div key={exam.name} className="mb-2">
               <button
                 onClick={() => setExpandedExam(expandedExam === exam.name ? null : exam.name)}
-                className="w-full text-left px-2 py-2 font-semibold text-gray-800 hover:text-red-500 flex justify-between items-center"
+                className="w-full text-left px-2 py-2 font-semibold text-gray-700 hover:text-[#ff3b30] flex justify-between items-center"
               >
                 {exam.name}
                 <svg className={`h-4 w-4 ml-2 transition-transform ${expandedExam === exam.name ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,7 +208,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
                     <Link
                       key={subject.name}
                       href={subject.path}
-                      className="block px-2 py-1 text-gray-700 hover:text-red-500"
+                      className="block px-2 py-1 text-gray-600 hover:text-[#ff3b30]"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {subject.name}

@@ -219,14 +219,29 @@ const tailwindConfig = `
 `;
 
 const App: React.FC = () => {
-    // State variables
+    // Initialize state with default values first
     const [examLevel, setExamLevel] = useState<string>('IGCSE');
     const [examBoard, setExamBoard] = useState<string>('Edexcel');
     const [subject, setSubject] = useState<string>('');
     const [unit, setUnit] = useState<string>('');
+
+    // Effect to load URL parameters after component mounts (client-side only)
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const examBoardParam = urlParams.get('examBoard');
+        const examLevelParam = urlParams.get('examLevel');
+        const subjectParam = urlParams.get('subject');
+        const paperParam = urlParams.get('paper');
+        
+        if (examBoardParam) setExamBoard(examBoardParam);
+        if (examLevelParam) setExamLevel(examLevelParam);
+        if (subjectParam) setSubject(subjectParam);
+        if (paperParam) setUnit(paperParam);
+    }, []);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [isKeywordSearchActive, setIsKeywordSearchActive] = useState<boolean>(false);
     const [filteredPapers, setFilteredPapers] = useState<Paper[]>([]);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState<boolean>(false);
 
     // Helper to get subject color class
     const getSubjectColor = useCallback((subj: string): string => {
@@ -284,9 +299,13 @@ const App: React.FC = () => {
         if (subjectsForCurrentSelection && Object.keys(subjectsForCurrentSelection).length > 0) {
             defaultSubject = Object.keys(subjectsForCurrentSelection)[0];
         }
-        setSubject(defaultSubject);
+        
+        // Only set default subject if no subject is currently selected or if the current subject is not available for the new exam level/board
+        if (!subject || !subjectsForCurrentSelection?.[subject]) {
+            setSubject(defaultSubject);
+        }
         // This will trigger the effect for `subject` which then updates units and filters
-    }, [examLevel, examBoard]);
+    }, [examLevel, examBoard, subject]);
 
     // Effect to update units when subject changes
     useEffect(() => {
@@ -295,14 +314,88 @@ const App: React.FC = () => {
         if (unitsForSubject && unitsForSubject.length > 0) {
             defaultUnit = unitsForSubject[0];
         }
-        setUnit(defaultUnit);
+        
+        // Only set default unit if no unit is currently selected or if the current unit is not available for the new subject
+        if (!unit || !unitsForSubject?.includes(unit)) {
+            setUnit(defaultUnit);
+        }
         // This will trigger the effect for `unit` which then updates filters
-    }, [subject, examBoard, examLevel]);
+    }, [subject, examBoard, examLevel, unit]);
 
     // Effect to apply filters whenever relevant state changes
     useEffect(() => {
         applyFiltersAndSearch(searchTerm);
     }, [searchTerm, examLevel, examBoard, subject, unit, applyFiltersAndSearch]);
+
+    // Effect to update URL when filters change
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        
+        const params = new URLSearchParams();
+        if (examBoard) params.set('examBoard', examBoard);
+        if (examLevel) params.set('examLevel', examLevel);
+        if (subject) params.set('subject', subject);
+        if (unit) params.set('paper', unit);
+        
+        const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+        window.history.replaceState({}, '', newUrl);
+    }, [examBoard, examLevel, subject, unit]);
+
+    // Effect to handle URL parameter changes (for browser back/forward)
+    useEffect(() => {
+        const handleUrlChange = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const newExamBoard = urlParams.get('examBoard');
+            const newExamLevel = urlParams.get('examLevel');
+            const newSubject = urlParams.get('subject');
+            const newPaper = urlParams.get('paper');
+            
+            if (newExamBoard && newExamBoard !== examBoard) {
+                setExamBoard(newExamBoard);
+            }
+            if (newExamLevel && newExamLevel !== examLevel) {
+                setExamLevel(newExamLevel);
+            }
+            if (newSubject && newSubject !== subject) {
+                setSubject(newSubject);
+            }
+            if (newPaper && newPaper !== unit) {
+                setUnit(newPaper);
+            }
+        };
+
+        window.addEventListener('popstate', handleUrlChange);
+        return () => window.removeEventListener('popstate', handleUrlChange);
+    }, [examBoard, examLevel, subject, unit]);
+
+    // Effect to handle direct navigation to a specific paper
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const series = urlParams.get('series');
+        const year = urlParams.get('year');
+        const subjectParam = urlParams.get('subject');
+        const paperParam = urlParams.get('paper');
+        
+        if (series && year) {
+            // If we have series and year parameters, create a search term to find the specific paper
+            const searchQuery = `${subjectParam || ''} ${paperParam || ''} ${series} ${year}`.trim();
+            if (searchQuery) {
+                setSearchTerm(searchQuery);
+            }
+        }
+    }, []); // Only run once on mount
+
+    // Effect to close mobile sidebar when screen size changes to desktop
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 1024) { // lg breakpoint
+                setMobileSidebarOpen(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
@@ -310,6 +403,10 @@ const App: React.FC = () => {
 
     const handleClearSearch = () => {
         setSearchTerm('');
+    };
+
+    const toggleMobileSidebar = () => {
+        setMobileSidebarOpen(!mobileSidebarOpen);
     };
 
     const handleQuickFilterClick = (year: number) => {
@@ -340,18 +437,29 @@ const App: React.FC = () => {
             }).toString();
             window.open(`past-paper/viewer?${params}&type=${type}`, '_blank');
         } else if (type === 'share') {
+            // Create a shareable URL for the specific paper
+            const shareParams = new URLSearchParams({
+                examBoard: paper.examBoard,
+                examLevel: paper.examLevel,
+                subject: paper.subject,
+                paper: paper.paper,
+                series: paper.series,
+                year: paper.year.toString()
+            }).toString();
+            const shareableUrl = `${window.location.origin}${window.location.pathname}?${shareParams}`;
+            
             const shareText = `${paper.examBoard} ${paper.examLevel} ${paper.subject} ${paper.paper} ${getFullMonthName(paper.series)} ${paper.year}`;
             if (navigator.share) {
                 navigator.share({
                     title: 'Past Paper',
                     text: shareText,
-                    url: window.location.href
+                    url: shareableUrl
                 }).catch(error => console.error('Error sharing:', error));
             } else {
-                navigator.clipboard.writeText(shareText).then(() => {
+                navigator.clipboard.writeText(shareableUrl).then(() => {
                     // Simple toast message (can be replaced with a proper UI component)
                     const toast = document.createElement('div');
-                    toast.textContent = 'Paper details copied to clipboard!';
+                    toast.textContent = 'Paper URL copied to clipboard!';
                     toast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-md shadow-lg transition-opacity duration-300 opacity-0';
                     document.body.appendChild(toast);
                     setTimeout(() => { toast.style.opacity = '1'; }, 10);
@@ -393,7 +501,7 @@ const App: React.FC = () => {
             })
             .map(([year, yearPapers]) => (
                 <div key={year} className="">
-                    <h3 className="text-xl font-bold text-gray-800 mb-3 ml-2 border-b pb-1 dark:text-gray-200 dark:border-gray-700">
+                    <h3 className="text-xl font-bold text-gray-800 mb-3 ml-2 border-b border-b-[#00000020] pb-1 dark:text-gray-200 dark:border-gray-700">
                         {year}
                     </h3>
                     <div className="space-y-1">
@@ -488,7 +596,7 @@ const App: React.FC = () => {
                 }
                 select {
                     border-radius: 20px;
-                }
+                }inset
                 .filter-disabled {
                     pointer-events: none;
                     opacity: 0.5;
@@ -503,9 +611,21 @@ const App: React.FC = () => {
             <div className="w-full h-screen flex flex-col antialiased bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200">
                 {/* Header */}
                 <header className="flex justify-between items-center p-4 bg-white border-b border-b-[#00000020] dark:bg-gray-800 dark:border-gray-700 h-[80px]">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Past Papers</h1>
-                        <p className="text-xs text-gray-500 mt-1">Search and access past papers</p>
+                    <div className="flex items-center space-x-4">
+                        {/* Mobile menu button */}
+                        <button
+                            onClick={toggleMobileSidebar}
+                            className="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
+                            aria-label="Toggle sidebar"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Past Papers</h1>
+                            <p className="text-xs text-gray-500 mt-1">Search and access past papers</p>
+                        </div>
                     </div>
                     <div className="flex items-center space-x-4">
                         {/* Exam Level Selector */}
@@ -524,9 +644,38 @@ const App: React.FC = () => {
                 </header>
 
                 {/* Main Content */}
-                <div className="flex flex-1 overflow-hidden">
+                <div className="flex flex-1 overflow-hidden relative">
+                    {/* Mobile overlay backdrop */}
+                    {mobileSidebarOpen && (
+                        <div 
+                            className="lg:hidden fixed inset-0 bg-[#00000050] backdrop-blur bg-opacity-50 z-40"
+                            onClick={toggleMobileSidebar}
+                        />
+                    )}
+                    
                     {/* Left Sidebar - Search and Filters */}
-                    <div id="left-sidebar" className="w-80 bg-white border-r border-r-[#00000020] flex flex-col dark:bg-gray-800 dark:border-gray-700 overflow-auto no-scrollbar">
+                    <div 
+                        id="left-sidebar" 
+                        className={`${
+                            mobileSidebarOpen 
+                                ? 'fixed left-0 top-0 h-full w-80 z-50 transform translate-x-0 lg:relative lg:translate-x-0' 
+                                : 'fixed left-0 top-0 h-full w-80 z-50 transform -translate-x-full lg:relative lg:translate-x-0'
+                        } w-80 bg-white border-r border-r-[#00000020] flex flex-col dark:bg-gray-800 dark:border-gray-700 overflow-auto no-scrollbar transition-transform duration-300 ease-in-out`}
+                    >
+                        {/* Mobile sidebar header */}
+                        <div className="flex items-center justify-between p-4 border-b border-b-[#00000020] dark:border-gray-700 lg:hidden">
+                            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Filters</h2>
+                            <button
+                                onClick={toggleMobileSidebar}
+                                className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
+                                aria-label="Close sidebar"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        
                         <div className="p-4 border-b border-b-[#00000020] dark:border-gray-700">
                             <div className="relative">
                                 <input
@@ -640,7 +789,7 @@ const App: React.FC = () => {
 
                     {/* Right Content Area - Papers List */}
                     <div className="flex-1 overflow-auto p-6 bg-gray-50 dark:bg-gray-900 flex justify-center">
-                        <div id="papers-container" className="space-y-6 max-w-[1200px] mx-auto">
+                        <div id="papers-container" className="space-y-6 max-w-[1200px] mx-auto w-full">
                             {renderPapers(filteredPapers)}
                         </div>
                     </div>
@@ -665,7 +814,7 @@ const PaperCard: React.FC<PaperCardProps> = ({ paper, getSubjectColor, getFullMo
     const paperPartDisplay = paper.paper === 'N/A' ? '' : paper.paper;
 
     return (
-        <div className="paper-card gap-[80px] bg-white dark:bg-gray-800 rounded-lg p-2 shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center text-sm">
+        <div className="paper-card gap-[80px] bg-white dark:bg-gray-800 rounded-lg p-2 shadow-2xl border border-gray-200 dark:border-gray-700 flex justify-between items-center text-sm">
             {paper.isComingSoon ? (
                 <div className="flex items-center space-x-2">
                     <span className={`font-semibold text-${subjectColor}`}>{paper.subject}</span>

@@ -1,55 +1,49 @@
 "use client"
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 
 import AppHeader from '@/components/app/header';
 import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle } from 'lucide-react';
 import { marked } from 'marked'; // Import marked library
-
-// Import content from separate JS files
-import { PURE_MATH_1_CONTENT } from './PureMath1.js';
-import { PURE_MATH_2_CONTENT } from './PureMath2.js';
-import { PURE_MATH_3_CONTENT } from './PureMath3.js';
-import { PURE_MATH_4_CONTENT } from './PureMath4.js';
-import { STATISTICS_1_CONTENT } from './Statistics1.js';
+import { useRouter } from 'next/navigation';
 
 
 interface UnitContent {
-    [key: string]: string;
+    [key: number]: string;
 }
 
 const UNIT_NOTES_CONTENT: UnitContent = {
-    'PureMath1': PURE_MATH_1_CONTENT,
-    'PureMath2': PURE_MATH_2_CONTENT,
-    'PureMath3': PURE_MATH_3_CONTENT,
-    'PureMath4': PURE_MATH_4_CONTENT,
-    'Statistics1': STATISTICS_1_CONTENT,
+    1: '', // No longer needed
+    2: '', // No longer needed
+    3: '', // No longer needed
+    4: '', // No longer needed
+    5: '', // No longer needed
+    6: '', // No longer needed
 };
-
-const UNIT_LIST = [
-    { key: 'PureMath1', label: 'Pure Math 1' },
-    { key: 'PureMath2', label: 'Pure Math 2' },
-    { key: 'PureMath3', label: 'Pure Math 3' },
-    { key: 'PureMath4', label: 'Pure Math 4' },
-    { key: 'Statistics1', label: 'Statistics 1' },
-];
 
 
 const revisionTools = [
-    { id: 'past-papers', titleTop: 'Math', titleBottom: 'Past Papers', icon: FileText },
+    { id: 'past-papers', titleTop: 'Chinese', titleBottom: 'Past Papers', icon: FileText },
     { id: 'ai-teacher', titleTop: 'AI Teacher', titleBottom: '& Grading', icon: Lightbulb },
     { id: 'ask-help', titleTop: 'Ask for', titleBottom: 'Our Help', icon: HelpCircle },
 ];
 
 
 // --- CONFIGURATION FOR EASY ADAPTATION ---
-const CURRENT_SUBJECT = 'Math';
-const SUBJECT_COLOR = '#ffab1a'; // Corresponds to primary color in Tailwind config
-const SUBJECT_ICON_CLASS = 'fas fa-flask'; // Font Awesome icon for Math
+const CURRENT_SUBJECT = 'Chinese';
+const SUBJECT_COLOR = '#ff3b30'; // Corresponds to primary color in Tailwind config
+const SUBJECT_ICON_CLASS = 'fas fa-flask'; // Font Awesome icon for Chinese
 const UNIT_PREFIX = 'Unit'; // For units like "Unit 1", "Unit 2"
 const TOTAL_UNITS = 6; // Number of units for the subject
 // Key prefix for local storage. Now includes unit and section.
 const LOCAL_STORAGE_KEY_PREFIX = 'completed_notes_section_';
 const LAST_VIEWED_LESSON_KEY = 'last_viewed_lesson';
+
+const PRACTICE_TESTS = [
+    { key: 'listening', label: 'AI Practice Test: Listening' },
+    { key: 'reading', label: 'AI Practice Test: Reading' },
+    { key: 'writing', label: 'AI Practice Test: Writing' },
+    { key: 'translating', label: 'AI Practice Test: Translating' },
+];
 
 // Helper to convert hex to RGB for CSS variables
 const hexToRgb = (hex: string): string => {
@@ -65,7 +59,7 @@ function isTextToken(token: any): token is { text: string } {
 }
 
 const App: React.FC = () => {
-    const [activeUnitIndex, setActiveUnitIndex] = useState<number | null>(null); // null for home page
+    const router = useRouter();
     const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
     const [notesContent, setNotesContent] = useState<string>('');
     const [currentNotesTitle, setCurrentNotesTitle] = useState<string>('');
@@ -85,12 +79,12 @@ const App: React.FC = () => {
     // Content for the "Details" tab
     const DetailsContent = () => (
         <div className="p-6 bg-white rounded-xl shadow-sm">
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Math IAL Details</h3>
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Chinese IAL Details</h3>
             <p className="text-gray-700 leading-relaxed mb-4">
-                The Edexcel International Advanced Level (IAL) Math is a globally recognized qualification, equivalent to A-levels in the UK. It's designed for students who wish to progress to higher education. For Math, there are comprehensive revision notes, factsheets, questions from past exam papers separated by topic, and other worksheets to aid your learning.
+                The Edexcel International Advanced Level (IAL) Chinese is a globally recognized qualification, equivalent to A-levels in the UK. It's designed for students who wish to progress to higher education. For Chinese, there are comprehensive revision notes, factsheets, questions from past exam papers separated by topic, and other worksheets to aid your learning.
             </p>
             <p className="text-gray-700 leading-relaxed">
-                Our platform provides a structured approach to your Math IAL revision, offering AI-powered mock tests, detailed solutions, and access to AI teachers and private tutors for personalized support. Prepare effectively and achieve your best results!
+                Our platform provides a structured approach to your Chinese IAL revision, offering AI-powered mock tests, detailed solutions, and access to AI teachers and private tutors for personalized support. Prepare effectively and achieve your best results!
             </p>
         </div>
     );
@@ -100,7 +94,7 @@ const App: React.FC = () => {
         <div className="p-6 bg-white rounded-xl shadow-sm">
             <h3 className="text-2xl font-semibold text-gray-800 mb-4">Exam Timetable</h3>
             <p className="text-gray-700 mb-4">
-                Here you can find the provisional and final timetables for upcoming Edexcel IAL Math examinations. Please check regularly for updates.
+                Here you can find the provisional and final timetables for upcoming Edexcel IAL Chinese examinations. Please check regularly for updates.
             </p>
             <ul className="list-disc list-inside text-gray-700 space-y-2">
                 <li>Summer 2025 Exam Series: Provisional Timetable (Available Now)</li>
@@ -118,13 +112,13 @@ const App: React.FC = () => {
         <div className="p-6 bg-white rounded-xl shadow-sm">
             <h3 className="text-2xl font-semibold text-gray-800 mb-4">Find a Private Tutor</h3>
             <p className="text-gray-700 mb-4">
-                Need personalized help? Our platform connects you with experienced private tutors specializing in Edexcel IAL Math.
+                Need personalized help? Our platform connects you with experienced private tutors specializing in Edexcel IAL Chinese.
             </p>
             <form className="space-y-4">
                 <div>
                     <label htmlFor="subject" className="block text-gray-700 text-sm font-semibold mb-2">Subject:</label>
                     <select id="subject" name="subject" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="math">Math</option>
+                        <option value="chinese">Chinese</option>
                     </select>
                 </div>
                 <div>
@@ -164,23 +158,23 @@ const App: React.FC = () => {
     }, []);
 
     // --- Local Storage Functions ---
-    const getLocalStorageKey = useCallback((unitKey: string, sectionId: string): string => {
-        return `${LOCAL_STORAGE_KEY_PREFIX}${CURRENT_SUBJECT}_${unitKey}_${sectionId}`;
+    const getLocalStorageKey = useCallback((unitIndex: number, sectionId: string): string => {
+        return `${LOCAL_STORAGE_KEY_PREFIX}${CURRENT_SUBJECT}_${unitIndex}_${sectionId}`;
     }, []);
 
-    const loadCompletionStatus = useCallback((unitKey: string, sectionId: string): boolean => {
-        const key = getLocalStorageKey(unitKey, sectionId);
+    const loadCompletionStatus = useCallback((unitIndex: number, sectionId: string): boolean => {
+        const key = getLocalStorageKey(unitIndex, sectionId);
         return localStorage.getItem(key) === 'true';
     }, [getLocalStorageKey]);
 
-    const saveCompletionStatus = useCallback((unitKey: string, sectionId: string, status: boolean) => {
-        const key = getLocalStorageKey(unitKey, sectionId);
+    const saveCompletionStatus = useCallback((unitIndex: number, sectionId: string, status: boolean) => {
+        const key = getLocalStorageKey(unitIndex, sectionId);
         localStorage.setItem(key, status ? 'true' : 'false');
         setSectionCompletionStatus(prev => ({ ...prev, [key]: status }));
     }, [getLocalStorageKey]);
 
-    const saveLastViewedLessonToLocalStorage = useCallback((unitKey: string, sectionId: string) => {
-        const lesson = { unitIndex: UNIT_LIST.findIndex(u => u.key === unitKey), sectionId: sectionId };
+    const saveLastViewedLessonToLocalStorage = useCallback((unitIndex: number, sectionId: string) => {
+        const lesson = { unitIndex, sectionId };
         localStorage.setItem(LAST_VIEWED_LESSON_KEY, JSON.stringify(lesson));
         setLastViewedLesson(lesson);
     }, []);
@@ -191,22 +185,22 @@ const App: React.FC = () => {
     }, []);
 
     // --- Progress Calculation ---
-    const calculateUnitProgress = useCallback((unitKey: string) => {
-        const markdown = UNIT_NOTES_CONTENT[unitKey];
+    const calculateUnitProgress = useCallback((unitIndex: number) => {
+        const markdown = UNIT_NOTES_CONTENT[unitIndex];
         if (!markdown) {
-            return { completedSections: 0, totalSections: 0, percentage: 0, unitTitle: unitKey };
+            return { completedSections: 0, totalSections: 0, percentage: 0, unitTitle: `${UNIT_PREFIX} ${unitIndex}` };
         }
 
         const tokens = marked.lexer(markdown);
         let totalSections = 0;
         let completedSections = 0;
-        let unitTitle = unitKey;
+        let unitTitle = `${UNIT_PREFIX} ${unitIndex}`;
 
         const h1Token = tokens.find(token => token.type === 'heading' && token.depth === 1 && isTextToken(token));
         if (h1Token && isTextToken(h1Token)) {
             unitTitle = h1Token.text;
-            if (unitTitle.startsWith(`${unitKey}:`)) {
-                unitTitle = unitTitle.substring(`${unitKey}:`.length).trim();
+            if (unitTitle.startsWith(`${UNIT_PREFIX} ${unitIndex}:`)) {
+                unitTitle = unitTitle.substring(`${UNIT_PREFIX} ${unitIndex}:`.length).trim();
             }
         }
 
@@ -214,8 +208,8 @@ const App: React.FC = () => {
         tokens.forEach(token => {
             if (token.type === 'heading' && token.depth === 2) {
                 totalSections++;
-                const sectionId = `unit-${unitKey}-section-${++sectionCounter}`;
-                if (loadCompletionStatus(unitKey, sectionId)) {
+                const sectionId = `unit-${unitIndex}-section-${++sectionCounter}`;
+                if (loadCompletionStatus(unitIndex, sectionId)) {
                     completedSections++;
                 }
             }
@@ -226,24 +220,25 @@ const App: React.FC = () => {
     }, [loadCompletionStatus]);
 
     // --- Display Functions ---
-    const fetchAndDisplayNote = useCallback((unitKey: string, sectionIdToScrollTo: string | null = null) => {
-        setActiveUnitIndex(UNIT_LIST.findIndex(u => u.key === unitKey));
-        setActiveSectionId(sectionIdToScrollTo);
+    const fetchAndDisplayNote = useCallback((unitIndex: number, sectionIdToScrollTo: string | null = null) => {
+        // This function is no longer used for practice tests, but kept for consistency
+        // setActiveUnitIndex(unitIndex);
+        // setActiveSectionId(sectionIdToScrollTo);
 
         // Always extract and set the heading from the markdown
-        const unitName = unitKey;
+        const unitName = `${UNIT_PREFIX} ${unitIndex}`;
         let headingTitle = '';
-        const markdownText = UNIT_NOTES_CONTENT[unitKey];
+        const markdownText = UNIT_NOTES_CONTENT[unitIndex];
         if (markdownText) {
             const tokens = marked.lexer(markdownText);
             const h1Token = tokens.find(token => token.type === 'heading' && token.depth === 1 && isTextToken(token));
             if (h1Token && isTextToken(h1Token)) {
                 headingTitle = h1Token.text;
             } else {
-                headingTitle = `${unitName}: Math Notes`;
+                headingTitle = `${unitName}: Chinese Notes`;
             }
         } else {
-            headingTitle = `${unitName}: Math Notes`;
+            headingTitle = `${unitName}: Chinese Notes`;
         }
         setCurrentNotesTitle(headingTitle);
         setCurrentNotesDuration('');
@@ -275,10 +270,10 @@ const App: React.FC = () => {
             tokens.forEach(token => {
                 if (token.type === 'heading' && token.depth === 2) {
                     sectionCounter++;
-                    const sectionId = `unit-${unitKey}-section-${sectionCounter}`;
+                    const sectionId = `unit-${unitIndex}-section-${sectionCounter}`;
                     sectionsInUnit.push({ id: sectionId, text: token.text });
 
-                    const isCompleted = loadCompletionStatus(unitKey, sectionId);
+                    const isCompleted = loadCompletionStatus(unitIndex, sectionId);
                     const completionClass = isCompleted ? 'completed' : 'incomplete';
                     const completionText = isCompleted ? 'Completed' : 'Mark as Complete';
                     const completionIcon = isCompleted ? 'fas fa-check-circle' : 'far fa-circle';
@@ -287,7 +282,7 @@ const App: React.FC = () => {
                         <div class="section-header-container">
                             <h2 id="${sectionId}">${token.text}</h2>
                             <button class="section-completion-button ${completionClass}"
-                                    data-unit-index="${UNIT_LIST.findIndex(u => u.key === unitKey)}"
+                                    data-unit-index="${unitIndex}"
                                     data-section-id="${sectionId}"
                                     contentEditable="false">
                                 <i class="${completionIcon} mr-1"></i> ${completionText}
@@ -310,18 +305,18 @@ const App: React.FC = () => {
             // This means `sectionsInUnit` needs to be part of the component's state.
             const newSectionsData = sectionsInUnit.map(sec => ({
                 ...sec,
-                unitIndex: UNIT_LIST.findIndex(u => u.key === unitKey),
-                isCompleted: loadCompletionStatus(unitKey, sec.id)
+                unitIndex: unitIndex,
+                isCompleted: loadCompletionStatus(unitIndex, sec.id)
             }));
             // This will be handled by the `sectionsForSidebar` state.
             // setSectionsForSidebar(newSectionsData); // This state will be used to render sidebar sections
 
             // Save last viewed lesson
             if (sectionIdToScrollTo) {
-                saveLastViewedLessonToLocalStorage(unitKey, sectionIdToScrollTo);
+                saveLastViewedLessonToLocalStorage(unitIndex, sectionIdToScrollTo);
             } else if (sectionsInUnit.length > 0) {
                 // If no specific section, default to the first one
-                saveLastViewedLessonToLocalStorage(unitKey, sectionsInUnit[0].id);
+                saveLastViewedLessonToLocalStorage(unitIndex, sectionsInUnit[0].id);
             }
 
 
@@ -339,7 +334,7 @@ const App: React.FC = () => {
     }, [currentNotesTitle, loadCompletionStatus, saveLastViewedLessonToLocalStorage]);
 
     const displayHomePage = useCallback(() => {
-        setActiveUnitIndex(null);
+        // setActiveTestKey(null); // Removed as per new_code
         setActiveSectionId(null);
         setCurrentNotesTitle('');
         setCurrentNotesDuration('');
@@ -350,21 +345,21 @@ const App: React.FC = () => {
     useEffect(() => {
         // Initial load of completion status and last viewed lesson
         const initialCompletionStatus: { [key: string]: boolean } = {};
-        UNIT_LIST.forEach(({ key: unitKey }) => {
-            const markdown = UNIT_NOTES_CONTENT[unitKey];
+        for (let i = 1; i <= TOTAL_UNITS; i++) {
+            const markdown = UNIT_NOTES_CONTENT[i];
             if (markdown) {
                 const tokens = marked.lexer(markdown);
                 let sectionCounter = 0;
                 tokens.forEach(token => {
                     if (token.type === 'heading' && token.depth === 2) {
                         sectionCounter++;
-                        const sectionId = `unit-${unitKey}-section-${sectionCounter}`;
-                        const storageKey = getLocalStorageKey(unitKey, sectionId);
-                        initialCompletionStatus[storageKey] = localStorage.getItem(storageKey) === 'true';
+                        const sectionId = `unit-${i}-section-${sectionCounter}`;
+                        const key = getLocalStorageKey(i, sectionId);
+                        initialCompletionStatus[key] = localStorage.getItem(key) === 'true';
                     }
                 });
             }
-        });
+        }
         setSectionCompletionStatus(initialCompletionStatus);
         setLastViewedLesson(loadLastViewedLessonFromLocalStorage());
 
@@ -388,12 +383,12 @@ const App: React.FC = () => {
             const button = target.closest('.section-completion-button') as HTMLButtonElement;
 
             if (button) {
-                const unitKey = UNIT_LIST[parseInt(button.dataset.unitIndex || '0')].key;
+                const unitIndex = parseInt(button.dataset.unitIndex || '0');
                 const sectionId = button.dataset.sectionId || '';
 
-                if (unitKey && sectionId) {
-                    const isCompleted = loadCompletionStatus(unitKey, sectionId);
-                    saveCompletionStatus(unitKey, sectionId, !isCompleted);
+                if (unitIndex && sectionId) {
+                    const isCompleted = loadCompletionStatus(unitIndex, sectionId);
+                    saveCompletionStatus(unitIndex, sectionId, !isCompleted);
                 }
             }
         };
@@ -423,18 +418,18 @@ const App: React.FC = () => {
     const ContinueLessonButton: React.FC = () => {
         return (
             <div id="continue-lesson-button" className="continue-lesson-card flex items-center justify-center" style={{ width: 150, height: 150 }}>
-                <i className="fas fa-calculator text-6xl text-[#ffab1a]" />
+                <i className="fas fa-language text-6xl text-[#ff3b30]" />
             </div>
         );
     };
 
     const UnitCard: React.FC<{ unitIndex: number }> = ({ unitIndex }) => {
-        const { percentage, unitTitle } = calculateUnitProgress(UNIT_LIST[unitIndex].key);
+        const { percentage, unitTitle } = calculateUnitProgress(unitIndex);
 
         return (
-            <div className="unit-card p-4 flex flex-col justify-between" onClick={() => fetchAndDisplayNote(UNIT_LIST[unitIndex].key)}>
+            <div className="unit-card p-4 flex flex-col justify-between" onClick={() => fetchAndDisplayNote(unitIndex)}>
                 <div className="flex flex-col items-left mb-2 justify-flex-start grow">
-                    <span className="text-black" style={{ fontSize: '20px', fontWeight: 'bold' }}>{UNIT_LIST[unitIndex].label}</span>
+                    <span className="text-black" style={{ fontSize: '20px', fontWeight: 'bold' }}>{UNIT_PREFIX} {unitIndex}</span>
 
                 </div>
                 <div className="flex items-center mt-2 justify-center">
@@ -466,6 +461,11 @@ const App: React.FC = () => {
         </div>
     );
 
+    // const ListeningTest = React.lazy(() => import('./listening/page'));
+    // const ReadingTest = React.lazy(() => import('./reading/page'));
+    // const WritingTest = React.lazy(() => import('./writing/page'));
+    // const TranslatingTest = React.lazy(() => import('./translating/page'));
+
     // --- Main Render ---
     return (
         <React.Fragment>
@@ -482,8 +482,8 @@ const App: React.FC = () => {
                     theme: {
                         extend: {
                             colors: {
-                                primary: '#ffab1a', /* Custom primary color for Math, matches #ffab1a */
-                                subjectColor: '#ffab1a', /* Dynamic subject color */
+                                primary: '#ff3b30', /* Custom primary color for Chinese, matches #ff3b30 */
+                                subjectColor: '#ff3b30', /* Dynamic subject color */
                             },
                         },
                     },
@@ -492,9 +492,9 @@ const App: React.FC = () => {
                 /* Custom styles for the app */
                 :root {
                     /* This variable will be dynamically updated by JavaScript based on the subject */
-                    --subject-primary-color: #ffab1a;
-                    --subject-primary-color-trans: #ffab1a70;
-                    /* Default for Math */
+                    --subject-primary-color: #ff3b30;
+                    --subject-primary-color-trans: #ff3b3070;
+                    /* Default for Chinese */
                     --subject-primary-color-rgb: 255, 107, 107;
                     /* RGB equivalent for rgba usage */
                 }
@@ -1083,160 +1083,81 @@ const App: React.FC = () => {
                         {/* Subject Home Button */}
                         <button
                             id="home-subject-button"
-                            className={`home-subject-button w-full text-left px-4 py-3 rounded-[15px] text-lg font-semibold mb-4 flex items-center justify-center transition duration-200 ${activeUnitIndex === null ? 'active' : ''}`}
-                            onClick={displayHomePage}
+                            className={`home-subject-button w-full text-left px-4 py-3 rounded-[15px] text-lg font-semibold mb-4 flex items-center justify-center transition duration-200`}
+                            onClick={() => router.push('/learn/edexcel-igcse/chinese')}
                         >
                             <i id="sidebar-subject-icon" className={`fas fa-home mr-3 text-md`}></i>
                             <span id="sidebar-subject-name" style={{ fontWeight: 'bold' }}>Home</span>
                             <i className="fas fa-chevron-right ml-auto text-sm"></i>
                         </button>
-
-                        {/* Learning Notes Section */}
+                        {/* AI Practice Tests Section */}
                         <div className="mb-4">
-                            {/* <h3 className="text-md font-semibold text-gray-700 mb-2 dark:text-gray-300">Learning Notes</h3> */}
-                            <div id="unit-buttons-container" className="space-y-4">
-                                {UNIT_LIST.map((unit, unitIdx) => {
-                                    const key = unit.key;
-                                    const label = unit.label;
-                                    const markdownContent = UNIT_NOTES_CONTENT[key];
-                                    let unitTitleWithoutPrefix = label;
-
-                                    if (markdownContent) {
-                                        const tokens = marked.lexer(markdownContent);
-                                        const h1Token = tokens.find(token => token.type === 'heading' && token.depth === 1 && isTextToken(token));
-                                        if (h1Token && isTextToken(h1Token)) {
-                                            unitTitleWithoutPrefix = h1Token.text;
-                                            if (unitTitleWithoutPrefix.startsWith(`${label}:`)) {
-                                                unitTitleWithoutPrefix = unitTitleWithoutPrefix.substring(`${label}:`.length).trim();
-                                            }
-                                        }
-                                    }
-
-                                    const sectionsInUnit: { id: string; text: string }[] = [];
-                                    if (markdownContent) {
-                                        let sectionCounter = 0;
-                                        marked.lexer(markdownContent).forEach(token => {
-                                            if (token.type === 'heading' && token.depth === 2) {
-                                                sectionCounter++;
-                                                sectionsInUnit.push({ id: `unit-${key}-section-${sectionCounter}`, text: token.text });
-                                            }
-                                        });
-                                    }
-
-                                    return (
-                                        <div key={key}>
-                                            <button
-                                                className={`unit-button w-full text-left px-3 py-2 rounded-[15px] text-sm font-medium flex items-center justify-between ${activeUnitIndex === unitIdx ? 'active' : ''}`}
-                                                onClick={() => fetchAndDisplayNote(key)}
-                                            >
-                                                <span><span style={{ fontWeight: 'bold' }}></span>{unitTitleWithoutPrefix}</span>
-                                            </button>
-                                            {activeUnitIndex === unitIdx && sectionsInUnit.length > 0 && (
-                                                <div className="unit-sections-container space-y-1 mt-2 mb-2 ml-4 border-l border-l-[2px] border-gray-200 dark:border-gray-600">
-                                                    {sectionsInUnit.map(section => {
-                                                        const sectionKey = getLocalStorageKey(key, section.id);
-                                                        const isCompleted = sectionCompletionStatus[sectionKey] || false;
-                                                        return (
-                                                            <a
-                                                                key={section.id}
-                                                                href={`#${section.id}`}
-                                                                className={`section-link ${activeSectionId === section.id ? 'active-section' : ''}`}
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    setActiveSectionId(section.id);
-                                                                    saveLastViewedLessonToLocalStorage(key, section.id);
-                                                                }}
-                                                            >
-                                                                <span className="section-link-text">{section.text}</span>
-                                                                {isCompleted && (
-                                                                    <i className="section-completion-icon fas fa-check-circle text-green-500 text-xs inline-block"></i>
-                                                                )}
-                                                            </a>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                            <div id="practice-tests-container" className="space-y-4">
+                                {PRACTICE_TESTS.map((test) => (
+                                    <button
+                                        key={test.key}
+                                        className="unit-button w-full text-left px-3 py-2 rounded-[15px] text-sm font-medium flex items-center justify-between"
+                                        onClick={() => router.push(`/learn/edexcel-igcse/chinese/${test.key}`)}
+                                    >
+                                        <span>{test.label}</span>
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     </div>
-
-                    {/* Right Content Area - Notes Display */}
+                    {/* Right Content Area - Test Display */}
                     <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900 max-4xl">
                         <div
                             className="max-w-4xl mx-auto markdown-content"
-                            contentEditable={activeUnitIndex !== null} // Only editable when a unit is displayed
                             style={{ fontSize: '14px', outline: 'none' }}
-                            ref={markdownDisplayRef}
                         >
-                            {activeUnitIndex === null ? (
-                                // Home Page Content
-                                <div className="rounded-2xl p-2">
-                                    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-6 mb-6">
-                                        <ContinueLessonButton />
-                                        <div className="flex flex-col flex-grow title-buttons-container">
-                                            <nav className="inline-block self-start text-gray-500 text-sm mb-6 font-light border-[1px] bg-[#00000005] border-[#00000010] px-3 py-1 rounded-lg">
-                                                <a href="#" onClick={() => navigate('/learn')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
-                                                <span className="mx-2">/</span>
-                                                <a href="#" onClick={() => navigate('/learn/edexcel-ial')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Edexcel IAL</a>
-                                                <span className="mx-2">/</span>
-                                                <span className='font-semibold'>Math</span>
-                                            </nav>
-                                            {/* Page Title */}
-                                            <div className="text-5xl font-bold text-black mb-8">
-                                                Edexcel IAL <span className="font-medium" style={{ color: 'var(--subject-primary-color)'}}>{CURRENT_SUBJECT}</span>
-                                            </div>
-                                            <p  className="text-gray-700 text-lg mb-10 max-w-3xl">Welcome to the Math Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
+                            {/* Only render the home page content here, remove AI practice inline rendering */}
+                            <div className="rounded-2xl p-2">
+                                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-6 mb-6">
+                                    <ContinueLessonButton />
+                                    <div className="flex flex-col flex-grow title-buttons-container">
+                                        <nav className="inline-block self-start text-gray-500 text-sm mb-6 font-light border-[1px] bg-[#00000005] border-[#00000010] px-3 py-1 rounded-lg">
+                                            <a href="#" onClick={() => navigate('/learn')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
+                                            <span className="mx-2">/</span>
+                                            <a href="#" onClick={() => navigate('/learn/edexcel-ial')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Edexcel IAL</a>
+                                            <span className="mx-2">/</span>
+                                            <span className='font-semibold'>Chinese</span>
+                                        </nav>
+                                        {/* Page Title */}
+                                        <div className="text-5xl font-bold text-black mb-8">
+                                            Edexcel IAL <span className="font-medium" style={{ color: 'var(--subject-primary-color)'}}>{CURRENT_SUBJECT}</span>
                                         </div>
+                                        <p  className="text-gray-700 text-lg mb-10 max-w-3xl">Welcome to the Chinese Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {revisionTools.map((tool) => (
-                                            <div
-                                                key={tool.id}
-                                                className="bg-white p-4 mt-0 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[5px] transition duration-200"
-                                                style={{
-                                                    borderColor: "#00000010",
-                                                    // Optionally, you can add a boxShadow or borderColor on hover using a custom CSS class or inline event
-                                                }}
-                                                onMouseEnter={e => {
-                                                    e.currentTarget.style.borderColor = SUBJECT_COLOR;
-                                                    e.currentTarget.style.boxShadow = `0 0 0 10px ${SUBJECT_COLOR}20`;
-                                                }}
-                                                onMouseLeave={e => {
-                                                    e.currentTarget.style.borderColor = "#00000010";
-                                                    e.currentTarget.style.boxShadow = "none";
-                                                }}
-                                            >
-                                                <div className="border-2 p-3 rounded-full" style={{ borderColor: SUBJECT_COLOR }}>
-                                                    <tool.icon className="w-6 h-6" style={{ color: SUBJECT_COLOR }} />
-                                                </div>
-                                                <div className="flex flex-col leading-tight">
-                                                    <span className="text-xl font-bold" style={{ color: SUBJECT_COLOR }}>{tool.titleTop}</span>
-                                                    <span className="text-lg font-semibold text-gray-900">{tool.titleBottom}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                 
-                                    
-                                    
-                                 
                                 </div>
-                            ) : (
-                                // Notes Display Content
-                                <>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h1 id="notes-title" className="text-4xl font-bold text-black">{currentNotesTitle}</h1>
-                                    </div>
-                                    <p id="notes-info-text" className="text-gray-600 dark:text-gray-400 mb-6">
-                                        Learning Notes | <span id="notes-duration">{currentNotesDuration}</span> | AI powered
-                                    </p>
-                                    <hr id="notes-divider" className="border-t border-gray-300 dark:border-gray-700 my-6" />
-                                    <div id="markdown-display" className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: notesContent }}></div>
-                                </>
-                            )}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {revisionTools.map((tool) => (
+                                        <div
+                                            key={tool.id}
+                                            className="bg-white p-4 mt-0 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[5px] transition duration-200"
+                                            style={{
+                                                borderColor: "#00000010",
+                                            }}
+                                            onMouseEnter={e => {
+                                                e.currentTarget.style.borderColor = SUBJECT_COLOR;
+                                                e.currentTarget.style.boxShadow = `0 0 0 10px ${SUBJECT_COLOR}20`;
+                                            }}
+                                            onMouseLeave={e => {
+                                                e.currentTarget.style.borderColor = "#00000010";
+                                                e.currentTarget.style.boxShadow = "none";
+                                            }}
+                                        >
+                                            <div className="border-2 p-3 rounded-full" style={{ borderColor: SUBJECT_COLOR }}>
+                                                <tool.icon className="w-6 h-6" style={{ color: SUBJECT_COLOR }} />
+                                            </div>
+                                            <div className="flex flex-col leading-tight">
+                                                <span className="text-xl font-bold" style={{ color: SUBJECT_COLOR }}>{tool.titleTop}</span>
+                                                <span className="text-lg font-semibold text-gray-900">{tool.titleBottom}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
