@@ -6,9 +6,9 @@ import { useTransition } from 'react';
 import { signOut } from '@/app/auth/actions';
 import { type UserProfile } from '@/lib/types/auth';
 
-export default function ProfilePage({ 
-  profile 
-}: { 
+export default function ProfilePage({
+  profile
+}: {
   profile: UserProfile | null;
 }) {
   const [isSigningOut, startSignOutTransition] = useTransition();
@@ -20,27 +20,36 @@ export default function ProfilePage({
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      {/* Profile Header */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        {/* Cover Image - You can add this feature later */}
-        <div className="h-32 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
-        
-        <div className="relative px-4 sm:px-6 lg:px-8 pb-8">
-          {/* Profile Picture */}
-          <div className="relative -mt-16 mb-4">
-            <div className="w-32 h-32 mx-auto relative">
+    // Main container with a subtle background and padding
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 flex items-start justify-center">
+      {/* Profile Card Container */}
+      <div className="max-w-4xl w-full bg-white rounded-xl shadow-2xl shadow-[#00000010] overflow-hidden transform transition-all duration-300">
+        {/* Cover Image - Using the specified blue color in a gradient */}
+        <div
+          className="h-48 relative"
+          style={{
+            background: 'linear-gradient(to right, #007aff, #4a90e2)', // Gradient from #007aff to a slightly lighter blue
+          }}
+        >
+          {/* Profile Actions - Positioned absolutely for flexibility */}
+         
+        </div>
+
+        <div className="relative px-8 sm:px-10 lg:px-12 pb-10 -mt-24"> {/* Adjusted margin-top */}
+          {/* Profile Picture Section */}
+          <div className="mb-6 flex justify-start"> {/* Align profile picture to the left */}
+            <div className="w-36 h-36 relative border-4 border-white rounded-full"> {/* Larger, more prominent profile picture */}
               {profile?.profile_picture_url ? (
                 <Image
                   src={profile.profile_picture_url}
                   alt="Profile"
-                  width={128}
-                  height={128}
-                  className="rounded-full border-4 border-white shadow-lg object-cover"
+                  layout="fill" // Use layout="fill" for responsive images
+                  objectFit="cover"
+                  className="rounded-full"
                 />
               ) : (
-                <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center">
-                  <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
+                  <svg className="w-20 h-20" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                   </svg>
                 </div>
@@ -48,21 +57,44 @@ export default function ProfilePage({
             </div>
           </div>
 
-          {/* Profile Actions */}
-          <div className="absolute top-4 right-4 flex space-x-3">
-            <Link 
+          {/* Profile Info Section */}
+          <div className="text-left mt-4">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              {profile?.full_name || 'Anonymous User'}
+            </h1>
+            {profile?.username && (
+              <p className="text-xl text-gray-600 font-normal">
+                @{profile.username}
+              </p>
+            )}
+            {profile?.school?.name && (
+              <div className="mt-3 flex items-center text-gray-500 text-lg">
+                <svg className="h-6 w-6 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+                <span className="font-semibold">{profile.school.name}</span>
+              </div>
+            )}
+
+
+<div className="w-full flex space-x-4 mt-5">
+            {/* Edit Profile Button - Styled with the specified blue color */}
+            <Link
               href="/profile/edit"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-full text-white transition-all duration-200 ease-in-out transform"
+              style={{ backgroundColor: 'black' }}
             >
               <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
               Edit Profile
             </Link>
+            {/* Sign Out Button - Styled with the specified red color */}
             <button
               onClick={handleSignOut}
               disabled={isSigningOut}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-400 disabled:cursor-not-allowed"
+              className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-full text-white transition-all duration-200 ease-in-out disabled:opacity-70 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#ff3b30' }}
             >
               {isSigningOut ? (
                 <div className="flex items-center">
@@ -79,46 +111,38 @@ export default function ProfilePage({
               )}
             </button>
           </div>
-
-          {/* Profile Info */}
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">
-              {profile?.full_name || 'Anonymous User'}
-            </h1>
-            {profile?.username && (
-              <p className="text-lg text-gray-500 mt-1">
-                @{profile.username}
-              </p>
-            )}
-            {profile?.school?.name && (
-              <div className="mt-2 flex items-center justify-center text-gray-500">
-                <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                </svg>
-                {profile.school.name}
-              </div>
-            )}
           </div>
 
-          {/* Bio */}
+          {/* Bio Section */}
           {profile?.bio && (
-            <div className="mt-6 text-center">
-              <p className="text-gray-600 max-w-2xl mx-auto whitespace-pre-line">
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-800 mb-3">About Me</h2>
+              <p className="text-gray-700 leading-relaxed max-w-2xl whitespace-pre-line text-lg">
                 {profile.bio}
               </p>
             </div>
           )}
 
-          {/* Additional Info */}
-          <div className="mt-6 border-t border-gray-200 pt-6">
-            <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-              <div className="sm:col-span-1">
-                <dt className="text-sm font-medium text-gray-500">Email</dt>
-                <dd className="mt-1 text-sm text-gray-900">{profile?.email}</dd>
+          {/* Additional Info Section */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-800 mb-3">Contact Information</h2>
+            <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <div className="flex flex-col">
+                <dt className="text-sm font-medium text-gray-500">Email Address</dt>
+                <dd className="mt-1 text-lg text-gray-900 font-semibold">{profile?.email}</dd>
               </div>
-              <div className="sm:col-span-1">
-                <dt className="text-sm font-medium text-gray-500">Role</dt>
-                <dd className="mt-1 text-sm text-gray-900 capitalize">{profile?.role || 'Student'}</dd>
+              <div className="flex flex-col">
+                <dt className="text-sm font-medium text-gray-500">User Role</dt>
+                <dd className="mt-1 text-lg text-gray-900 font-semibold capitalize">{profile?.role || 'Student'}</dd>
+              </div>
+              {/* You can add more fields here, e.g., location, website, etc. */}
+              <div className="flex flex-col">
+                <dt className="text-sm font-medium text-gray-500">Member Since</dt>
+                <dd className="mt-1 text-lg text-gray-900 font-semibold">January 2023</dd> {/* Placeholder data */}
+              </div>
+              <div className="flex flex-col">
+                <dt className="text-sm font-medium text-gray-500">Last Active</dt>
+                <dd className="mt-1 text-lg text-gray-900 font-semibold">Today</dd> {/* Placeholder data */}
               </div>
             </dl>
           </div>
