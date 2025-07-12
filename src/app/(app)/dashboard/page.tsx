@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 // ApexCharts is loaded via CDN in the HTML, so we assume it's globally available.
 // If using a module bundler, you'd typically import it: import ApexCharts from 'apexcharts';
 
+import { usePathname } from 'next/navigation';
+
 // --- CONFIGURATION ---
 // Using a new appId to avoid conflicts with previous localStorage data structure
 const appId = 'past-paper-tracker-app-v5-react'; // Changed app ID for new structure
@@ -464,6 +466,12 @@ const App: React.FC = () => {
             window.removeEventListener('resize', setPosition); // Cleanup
         };
     }, []); // Run once on mount
+
+    const pathname = usePathname();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
 
 
     // useEffect for ApexCharts initialization and updates

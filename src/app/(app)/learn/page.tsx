@@ -89,7 +89,7 @@ const App = () => {
             return (
               <div
                 key={exam.id}
-                className="p-4 rounded-2xl  flex flex-col items-start border-2 border[#00000020] shadow-2xl shadow-[#00000010]"
+                className="p-4 rounded-2xl  flex flex-col items-start border-2 border-[#00000020] shadow-2xl shadow-[#00000010]"
                 // Apply linear gradient from white to a semi-transparent version of exam color
                 // style={{ background: `linear-gradient(to bottom, #FFFFFF, rgba(${rgbColor}, 0.2))` }}
               >
