@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 
 import AppHeader from '@/components/app/header';
-import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle } from 'lucide-react';
+import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle, Languages } from 'lucide-react';
 import { marked } from 'marked'; // Import marked library
 import { useRouter } from 'next/navigation';
 
@@ -429,7 +429,7 @@ const App: React.FC = () => {
     const ContinueLessonButton: React.FC = () => {
         return (
             <div id="continue-lesson-button" className="continue-lesson-card flex items-center justify-center" style={{ width: 150, height: 150 }}>
-                <i className="fas fa-language text-6xl text-[#ff3b30]" />
+                <Languages size={90} color="#fff" />
             </div>
         );
     };

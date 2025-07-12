@@ -7,6 +7,8 @@ import Link from "next/link";
 import { Home, BookOpen, Files, LayoutDashboard, Library, Users, BotMessageSquare, User } from "lucide-react";
 
 const navItems = [
+
+  { name: "Home", href: "/home", icon: Home },
   { name: "Learn", href: "/learn", icon: BookOpen },
   { name: "Past Papers", href: "/past-paper", icon: Files },
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },

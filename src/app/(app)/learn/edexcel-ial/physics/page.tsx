@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import AppHeader from '@/components/app/header';
-import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle } from 'lucide-react';
+import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle, Atom } from 'lucide-react';
 import { marked } from 'marked'; // Import marked library
 
 // Import content from separate JS files
@@ -417,7 +417,7 @@ const App: React.FC = () => {
     const ContinueLessonButton: React.FC = () => {
         return (
             <div id="continue-lesson-button" className="continue-lesson-card flex items-center justify-center" style={{ width: 150, height: 150 }}>
-                <i className="fas fa-atom text-6xl text-[#4081ff]" />
+                <Atom size={90} color="#fff" />
             </div>
         );
     };

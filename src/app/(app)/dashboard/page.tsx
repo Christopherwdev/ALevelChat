@@ -898,7 +898,7 @@ const App: React.FC = () => {
                 }
                 .table-container {
                     width: 100%;
-                    height: calc(100vh - 100px); /* Adjust based on header height */
+                    height: calc(100vh - 150px); /* Adjust based on header height */
                     overflow: auto;
                     border: 1px solid #e2e8f0;
                    
