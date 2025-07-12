@@ -224,15 +224,16 @@ const App = () => {
 
       <div className="max-w-5xl mx-auto px-4 py-8 rounded-sm">
         {/* Breadcrumbs */}
-        <nav className="text-gray-500 text-sm mb-6 font-semibold">
-          <a href="#" onClick={() => navigate('/')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
-          <span className="mx-2">/</span>
-          <span>Edexcel IGCSE</span>
-        </nav>
+        <nav className="inline-block text-gray-500 text-sm mb-6 font-light border-[1px] bg-[#00000010] border-[#00000020] px-3 py-1 rounded-lg">
+        
+        <a href="#" onClick={() => navigate('/')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
+        <span className="mx-2">/</span>
+        <span>Edexcel IGCSE</span>
+      </nav>
 
         {/* Page Title */}
-        <h1 className="text-6xl font-bold text-black mb-8">
-        <span className="">Edexcel</span> IGCSE <span className="font-medium text-[#ff3b30]">Revision</span>
+        <h1 className="text-5xl font-bold text-black mb-8">
+       Edexcel IGCSE <span className="font-medium text-[black]">Revision</span>
         </h1>
         <p className="text-gray-700 text-lg mb-10 max-w-3xl">
           For each of the subjects below, there are revision notes, factsheets, questions from past exam papers separated by topic and other worksheets.

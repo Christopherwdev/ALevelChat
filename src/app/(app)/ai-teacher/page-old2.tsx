@@ -21,6 +21,7 @@ const App = () => {
     const [isStatusError, setIsStatusError] = useState(false);
     const [isSending, setIsSending] = useState(false); // To disable input while AI is typing
     const [currentChatId, setCurrentChatId] = useState(null); // Server-side LLM session ID
+    const [showLoadingScreen, setShowLoadingScreen] = useState(true);
     const [showConfirmClearModal, setShowConfirmClearModal] = useState(false);
     const [speechRecognitionSupported, setSpeechRecognitionSupported] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -46,10 +47,18 @@ const App = () => {
                 }
             }
         }
-        // Immediately set up the chat, no loading screen
-        const defaultSubject = 'biology';
-        changeSubject(defaultSubject);
-        startNewChat();
+
+        // Hide loading screen after a delay
+        const timer = setTimeout(() => {
+            setShowLoadingScreen(false);
+            // Set default subject and load its history or welcome message
+            const defaultSubject = 'biology';
+            changeSubject(defaultSubject);
+            // Start new chat session with the backend LLM (conceptual)
+            startNewChat();
+        }, 2000);
+
+        return () => clearTimeout(timer); // Cleanup timer
     }, []);
 
     // Save chat history to localStorage whenever it changes
@@ -1001,6 +1010,20 @@ const App = () => {
                 `}
             </style>
             <div id="eduai-container" className="w-full h-[90vh] rounded-xl overflow-hidden border m-0 border-gray-200 relative transition-all duration-300 ease-in-out flex flex-col md:flex-row">
+                {/* Loading Screen */}
+                {showLoadingScreen && (
+                    <div id="loading-screen" className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-400 to-blue-600 z-50 animate-fade-in">
+                        <div className="w-24 h-24 mb-8 relative">
+                            <div className="absolute inset-0 rounded-full border-4 border-blue-200 border-t-transparent animate-spin"></div>
+                            <div className="absolute inset-2 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
+                                <i className="fas fa-graduation-cap text-white text-3xl"></i>
+                            </div>
+                        </div>
+                        <h1 className="text-white text-3xl font-bold mb-2 animate-pulse-slow">AI Teacher Pro</h1>
+                        <p className="text-blue-100">Loading your educational experience...</p>
+                    </div>
+                )}
+
                 {/* Sidebar Menu */}
                 <div ref={sidebarMenuRef} id="sidebar-menu" className="absolute left-0 top-0 h-full w-64 bg-[#ffffff95] blur-container transform -translate-x-full z-40 border-r border-gray-200 overflow-y-auto transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:bg-white md:z-auto md:flex-shrink-0 md:flex-grow-0 md:rounded-l-xl">
                     <div className="p-4 h-[60px] border-b border-b-[#00000020]">
@@ -1010,7 +1033,7 @@ const App = () => {
                         {/* General subject on top */}
                         <button
                             onClick={() => changeSubject('General')}
-                            className={`sidebar-subject-btn w-full text-left px-4 py-2 mb-2 flex items-center ${currentSubject === 'General' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 hover:text-black'}`}
+                            className={`sidebar-subject-btn w-full text-left px-4 py-2 mb-2 flex items-center ${currentSubject === 'General' ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-gray-100 hover:text-black'}`}
                             style={{ borderRadius: '0px' }}
                         >
                             <i className="fas fa-comments mr-2 text-blue-500"></i> General
@@ -1020,7 +1043,7 @@ const App = () => {
                             <button
                                 key={subject}
                                 onClick={() => changeSubject(subject)}
-                                className={`sidebar-subject-btn w-full text-left px-4 py-2 flex items-center ${currentSubject === subject ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 hover:text-black'}`}
+                                className={`sidebar-subject-btn w-full text-left px-4 py-2 flex items-center ${currentSubject === subject ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-gray-100 hover:text-black'}`}
                                 style={{ borderRadius: '0px' }}
                             >
                                 <i className={`fas ${subject === 'biology' ? 'fa-dna text-emerald-500' : subject === 'chemistry' ? 'fa-flask text-red-400' : subject === 'physics' ? 'fa-atom text-blue-500' : 'fa-calculator text-amber-500'} mr-2`}></i> {getSubjectDisplayName(subject).split(' ')[0]}
@@ -1029,7 +1052,7 @@ const App = () => {
                         <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4  h-[25px]">Edexcel IGCSE</h3>
                         <button
                             onClick={() => changeSubject('chinese')}
-                            className={`sidebar-subject-btn w-full text-left px-4 py-2 flex items-center ${currentSubject === 'chinese' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 hover:text-black'}`}
+                            className={`sidebar-subject-btn w-full text-left px-4 py-2 flex items-center ${currentSubject === 'chinese' ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-gray-100 hover:text-black'}`}
                             style={{ borderRadius: '0px' }}
                         >
                             <i className="fas fa-language mr-2 text-purple-500"></i> Chinese
@@ -1040,7 +1063,7 @@ const App = () => {
                             <button
                                 key={subject}
                                 onClick={() => changeSubject(subject)}
-                                className={`sidebar-subject-btn w-full text-left px-4 py-2 flex items-center ${currentSubject === subject ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 hover:text-black'}`}
+                                className={`sidebar-subject-btn w-full text-left px-4 py-2 flex items-center ${currentSubject === subject ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-gray-100 hover:text-black'}`}
                                 style={{ borderRadius: '0px' }}
                             >
                                 <i className={`fas ${subject === 'ielts-speaking' ? 'fa-microphone' : subject === 'ielts-writing' ? 'fa-pen-fancy' : subject === 'ielts-reading' ? 'fa-book-open' : 'fa-headphones'} mr-2 text-red-500`}></i> {getSubjectDisplayName(subject).split(' ')[1]}
@@ -1055,7 +1078,7 @@ const App = () => {
                 </div>
 
                 {/* Main App Interface */}
-                <div id="app-interface" className="h-full flex flex-col bg-gray-50 relative flex flex-grow md:rounded-r-xl md:overflow-hidden">
+                <div id="app-interface" className={`h-full flex flex-col bg-gray-50 relative ${showLoadingScreen ? 'hidden' : 'flex'} flex-grow md:rounded-r-xl md:overflow-hidden`}>
                     {/* Header */}
                     <header className="flex justify-between items-center p-4 bg-white border-b border-b-[#00000020] h-[60px]">
                         <div className="flex items-center">

@@ -78,20 +78,17 @@ const App = () => {
    
     <div className="min-h-screen bg-white p-0 font-inter">
        
-      <div className="max-w-4xl mx-auto mt-5 p-4">
-        <h1 className="text-5xl font-medium text-gray-800 text-center mb-5 font-bold">Learning</h1>
-        <p className="text-lg text-gray-600 mb-8 text-center  ">
-  Explore AI-powered revision tools, past papers, and expert resources for Edexcel IGCSE, IAL, and IELTS. Start your journey to top grades with instant feedback and 24/7 support.
-</p>
+      <div className="max-w-4xl mx-auto mt-10 p-4">
+        <h1 className="text-4xl font-bold text-gray-800 mb-12 text-center">Learning</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {exams.map((exam) => {
             const rgbColor = hexToRgb(exam.baseColor);
             return (
               <div
                 key={exam.id}
-                className="p-4 rounded-2xl  flex flex-col items-start border-2 border[#00000020] shadow-2xl shadow-[#00000010]"
+                className="p-4 rounded-2xl  flex flex-col items-start"
                 // Apply linear gradient from white to a semi-transparent version of exam color
-                // style={{ background: `linear-gradient(to bottom, #FFFFFF, rgba(${rgbColor}, 0.2))` }}
+                style={{ background: `linear-gradient(to bottom, #FFFFFF, rgba(${rgbColor}, 0.2))` }}
               >
               
                   <div className={"bg-gray-200 p-3 rounded-full mb-4"}>
@@ -102,7 +99,7 @@ const App = () => {
                 <p className="text-[#00000080] mb-6 flex-grow">{exam.description}</p>
                 <button
                   onClick={() => navigate(`learn/${exam.id}`)}
-                  className={`flex items-center justify-between cursor-pointer px-6 py-3 rounded-full text-white  mb-2 font-semibold text-xl transition-all duration-200 ${exam.buttonColor} w-full`}
+                  className={`flex items-center justify-between cursor-pointer px-6 py-3 rounded-full text-white border-black border-[3px] mb-2 font-semibold text-xl transition-all duration-200 ${exam.buttonColor} w-full`}
                   style={{ boxShadow: '0px 5px 20px #00000010' }}
                   onMouseEnter={e => {
                     (e.currentTarget as HTMLButtonElement).style.boxShadow = `0px 0px 0px 7.5px rgba(${rgbColor}, 0.3)`;
@@ -136,7 +133,7 @@ const App = () => {
         </div>
 
         {/* Subject buttons section - outside exam cards and structured in 3 columns */}
-        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-20">
           {exams.map((exam) => (
             <div key={`${exam.id}-subjects-column`} className="flex flex-col items-center gap-4">
               {exam.subjects.map((subject) => {
@@ -168,7 +165,7 @@ const App = () => {
               })}
             </div>
           ))}
-        </div> */}
+        </div>
       </div>
     </div>
   );

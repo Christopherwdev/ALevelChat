@@ -57,7 +57,7 @@ const App = () => {
   // Handler for revision tool buttons
   const handleRevisionToolClick = (toolId: string) => {
     if (toolId === 'past-papers') {
-      window.open('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Biology&paper=Unit+1');
+      window.open('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Physics&paper=Unit+1');
     } else if (toolId === 'ai-teacher') {
       window.open('/ai-teacher');
     } else if (toolId === 'ask-help') {
@@ -244,7 +244,7 @@ const App = () => {
 
         {/* Page Title */}
         <h1 className="text-5xl font-bold text-black mb-8">
-       Edexcel IAL <span className="font-medium text-[#ff3b30]">Revision</span>
+       Edexcel IAL <span className="font-medium text-[black]">Revision</span>
         </h1>
         <p className="text-gray-700 text-lg mb-10 max-w-3xl">
           For each of the subjects below, there are revision notes, factsheets, questions from past exam papers separated by topic and other worksheets.
