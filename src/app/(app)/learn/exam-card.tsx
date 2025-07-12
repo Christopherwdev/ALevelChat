@@ -22,7 +22,7 @@ const ExamCard = ({exam}: {exam: ExamCardProps}) => {
   return (
     <div className="flex flex-col items-center justify-between">
       <div
-        key={exam.name}
+        key={exam.id}
         className={cn("p-4 rounded-2xl  flex flex-col items-start border-2 border-[#00000020] shadow-2xl shadow-[#00000010]", exam.cardClassNames)}
       >
         <div className="bg-gray-200 p-3 rounded-full mb-4">
