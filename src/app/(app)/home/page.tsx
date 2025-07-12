@@ -9,15 +9,15 @@ import { Dna, FlaskConical, Atom, Calculator, Languages, Headphones, Book, Penci
 export default function App() {
     // Sample data for subjects
     const subjects = [
-        { name: 'Biology', color: '#0fBD8C', url: '/learn/edexcel-ial/biology', score: 85, pastPapers: 12, Icon: Dna },
-        { name: 'Chemistry', color: '#FF6B6B', url: '/learn/edexcel-ial/chemistry', score: 78, pastPapers: 9, Icon: FlaskConical },
-        { name: 'Physics', color: '#4081FF', url: '/learn/edexcel-ial/physics', score: 92, pastPapers: 15, Icon: Atom },
-        { name: 'Math', color: '#ffab1a', url: '/learn/edexcel-ial/math', score: 88, pastPapers: 10, Icon: Calculator },
-        { name: 'Chinese', color: '#ff3b30', url: '/learn/edexcel-igcse/chinese', score: 95, pastPapers: 20, Icon: Languages },
-        { name: 'Reading', color: '#007aff', url: '/learn/ielts/reading', score: 80, pastPapers: 7, Icon: Book },
-        { name: 'Speaking', color: '#007aff', url: '/learn/ielts/speaking', score: 82, pastPapers: 8, Icon: Speech },
-        { name: 'Writing', color: '#007aff', url: '/learn/ielts/writing', score: 75, pastPapers: 5, Icon: Pencil },
-        { name: 'Listening', color: '#007aff', url: '/learn/ielts/listening', score: 90, pastPapers: 13, Icon: Headphones },
+        { name: 'Edexcel IAL Biology', color: '#0fBD8C', url: '/learn/edexcel-ial/biology', score: 85, pastPapers: 12, Icon: Dna },
+        { name: 'Edexcel IAL Chemistry', color: '#FF6B6B', url: '/learn/edexcel-ial/chemistry', score: 78, pastPapers: 9, Icon: FlaskConical },
+        { name: 'Edexcel IAL Physics', color: '#4081FF', url: '/learn/edexcel-ial/physics', score: 92, pastPapers: 15, Icon: Atom },
+        { name: 'Edexcel IAL Math', color: '#ffab1a', url: '/learn/edexcel-ial/math', score: 88, pastPapers: 10, Icon: Calculator },
+        { name: 'Edexcel IGCSE Chinese', color: '#ff3b30', url: '/learn/edexcel-igcse/chinese', score: 95, pastPapers: 20, Icon: Languages },
+        { name: 'IELTS Reading', color: '#007aff', url: '/learn/ielts/reading', score: 80, pastPapers: 7, Icon: Book },
+        { name: 'IELTS Speaking', color: '#007aff', url: '/learn/ielts/speaking', score: 82, pastPapers: 8, Icon: Speech },
+        { name: 'IELTS Writing', color: '#007aff', url: '/learn/ielts/writing', score: 75, pastPapers: 5, Icon: Pencil },
+        { name: 'IELTS Listening', color: '#007aff', url: '/learn/ielts/listening', score: 90, pastPapers: 13, Icon: Headphones },
     ];
 
     return (
@@ -29,13 +29,13 @@ export default function App() {
             <div className="min-h-screen bg-white font-sans p-4 md:p-8 flex flex-col items-center">
                 {/* Header */}
                 <header className="w-full max-w-6xl flex justify-center my-10">
-                    <h1 className="text-4xl font-bold text-gray-800 relative mb-10">
-                        Home
+                    <h1 className="text-6xl font-bold text-gray-800 relative mb-10">
+                        AIToLearn
                     </h1>
                 </header>
 
                 {/* Main content area */}
-                <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-20">
                     {/* Left pane: Welcome, Buttons Pane, Horizontal Scroll, My Subjects */}
                     <div className="lg:col-span-2 flex flex-col space-y-6">
                         {/* Welcome and Buttons Pane */}
@@ -52,22 +52,26 @@ export default function App() {
 
                         {/* Horizontal Scroll list of widgets */}
                         <div className="flex overflow-x-auto space-x-4 p-0 bg-white rounded-xl scrollbar-hide">
-                            <div className="flex-shrink-0 w-64 h-40 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500 text-center">
-                            </div>
+                          
                             <div className="flex-shrink-0 w-64 h-40 bg-gray-200 rounded-xl"></div>
                             <div className="flex-shrink-0 w-64 h-40 bg-gray-200 rounded-xl"></div>
                             <div className="flex-shrink-0 w-64 h-40 bg-gray-200 rounded-xl"></div>
                         </div>
 
                         {/* My Subjects section */}
-                        <div className="bg-[#00000010] rounded-xl border-box shadow-xl p-0 pb-2  border-1 border-[#00000020]">
-                            <h3 className="text-xl font-semibold text-gray-700 p-3">My subjects</h3>
+                        <div className="bg-[#00000010] rounded-xl border-box shadow-xl p-0 pb-2  border-2 border-[#00000020]">
+                            <div className='p-3 border-b-2 border-b-[#00000020] flex justify-between gap-2 items-center align-center'>
+                                
+                                <h3 className="text-xl font-semibold text-gray-700">My subjects</h3>
+                                <button className='bg-black hover:shadow-[0_0_0_7.5px_#00000040] transition rounded-full text-white p-1 px-5'>Edit</button>
+                                </div>
+                            
                             <div className="space-y-0">
                                 {subjects.map((subject, index) => (
                                     <Link
                                         key={index}
                                         href={subject.url}
-                                        className="flex items-center bg-gray-50 p-4 border-1 border-[#00000020] hover:bg-gray-100 transition-colors cursor-pointer group"
+                                        className="flex items-center bg-gray-50 p-4 border-b-[2px] border-b-[#00000020] hover:bg-gray-100 transition-colors cursor-pointer group"
                                         style={{ textDecoration: 'none' }}
                                     >
                                         <div
@@ -77,15 +81,16 @@ export default function App() {
                                             <subject.Icon size={22} color="#fff" />
                                         </div>
                                         <div className="flex-1 justify-between flex-row">
-                                            <div className="flex flex-col items-start justify-start">
+                                            <div className="flex flex-col items-start justify-start w-full">
                                                 <div className="text-lg font-medium text-gray-800">{subject.name}</div>
+                                               
                                                 <div className="text-xs text-gray-500">Past papers completed: {subject.pastPapers}</div>
-
                                             </div>
                                             
 
                                         </div>
-                                        <span className="text-sm text-gray-500 font-semibold ml-2 align-self-end">Score: {subject.score}</span>
+                                       
+                                        <span className="text-lg text-gray-500 font-semibold ml-2 align-self-end">{subject.score}%</span>
 
                                         <svg className="w-5 h-5 text-gray-400 ml-4 group-hover:text-gray-700 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
                                     </Link>
@@ -95,8 +100,8 @@ export default function App() {
                     </div>
 
                     {/* Right pane of widgets */}
-                    <div className="lg:col-span-1 bg-white rounded-xl shadow-xl p-6 flex items-center justify-center text-gray-500 text-center">
-                        Right pane of widgets (analytics, schedule, etc)
+                    <div className="lg:col-span-1 border-2 border-[#00000020] bg-white rounded-xl shadow-xl p-6 flex items-center justify-center text-gray-500 text-center">
+                       
                     </div>
                 </main>
             </div>

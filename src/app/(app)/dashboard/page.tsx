@@ -1,5 +1,7 @@
 "use client"; // This directive is placed at the very top as requested
 
+import { Menu } from 'lucide-react';
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 // ApexCharts is loaded via CDN in the HTML, so we assume it's globally available.
 // If using a module bundler, you'd typically import it: import ApexCharts from 'apexcharts';
@@ -396,7 +398,7 @@ const App: React.FC = () => {
     const getFlatPaperList = useCallback(() => {
         const list: { subject: string; paper: string }[] = [];
         const currentSubjectsData = getCurrentSubjectsData();
-        const currentSelectedPapers = appState.modes[currentMode].selectedPapers;
+        const currentSelectedPapers = appState.modes[currentMode as 'IAL' | 'IGCSE'].selectedPapers;
 
         Object.keys(currentSubjectsData).forEach(subject => {
             if (currentSelectedPapers[subject] && Array.isArray(currentSelectedPapers[subject])) {
@@ -412,8 +414,8 @@ const App: React.FC = () => {
     const calculateMeanScore = useCallback((subject: string, paper: string): number | null => {
         let totalScore = 0;
         let count = 0;
-        const currentScores = appState.modes[currentMode].scores;
-        const currentYears = appState.modes[currentMode].years;
+        const currentScores = appState.modes[currentMode as 'IAL' | 'IGCSE'].scores;
+        const currentYears = appState.modes[currentMode as 'IAL' | 'IGCSE'].years;
 
         currentYears.forEach(({ year, series: serie }) => {
             const cellId = `${appState.currentMode}_${year}_${serie}_${subject}_${paper}`.replace(/\s/g, '_');
@@ -545,8 +547,8 @@ const App: React.FC = () => {
     const handleScoreChange = useCallback((id: string, newScore: string, subject: string, paper: string) => {
         setAppState(prevState => {
             const newState = { ...prevState };
-            newState.modes[prevState.currentMode].scores = {
-                ...newState.modes[prevState.currentMode].scores,
+            newState.modes[prevState.currentMode as 'IAL' | 'IGCSE'].scores = {
+                ...newState.modes[prevState.currentMode as 'IAL' | 'IGCSE'].scores,
                 [id]: newScore
             };
             return newState;
@@ -720,11 +722,58 @@ const App: React.FC = () => {
         };
     }, [drag, endDrag]);
 
+    // Add touch event handlers for mobile drag support
+    const startTouchDrag = useCallback((e: React.TouchEvent) => {
+        if (!bottomActionsRef.current) return;
+        const touch = e.touches[0];
+        setIsDragging(true);
+        bottomActionsRef.current.classList.add('cursor-grabbing');
+        bottomActionsRef.current.classList.remove('cursor-grab');
+        const rect = bottomActionsRef.current.getBoundingClientRect();
+        dragOffset.current = {
+            x: touch.clientX - rect.left,
+            y: touch.clientY - rect.top
+        };
+    }, []);
+
+    const touchDrag = useCallback((e: TouchEvent) => {
+        if (!isDragging || !bottomActionsRef.current) return;
+        const touch = e.touches[0];
+        let newX = touch.clientX - dragOffset.current.x;
+        let newY = touch.clientY - dragOffset.current.y;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const rect = bottomActionsRef.current.getBoundingClientRect();
+        const elementWidth = rect.width;
+        const elementHeight = rect.height;
+        newX = Math.max(0, Math.min(viewportWidth - elementWidth, newX));
+        newY = Math.max(0, Math.min(viewportHeight - elementHeight, newY));
+        bottomActionsRef.current.style.left = `${newX}px`;
+        bottomActionsRef.current.style.top = `${newY}px`;
+    }, [isDragging]);
+
+    const endTouchDrag = useCallback(() => {
+        setIsDragging(false);
+        if (bottomActionsRef.current) {
+            bottomActionsRef.current.classList.remove('cursor-grabbing');
+            bottomActionsRef.current.classList.add('cursor-grab');
+        }
+    }, []);
+
+    useEffect(() => {
+        document.addEventListener('touchmove', touchDrag);
+        document.addEventListener('touchend', endTouchDrag);
+        return () => {
+            document.removeEventListener('touchmove', touchDrag);
+            document.removeEventListener('touchend', endTouchDrag);
+        };
+    }, [touchDrag, endTouchDrag]);
+
     // --- Render Functions for Sub-components (Modal, Table) ---
 
     const renderSubjectSelection = useCallback(() => {
         const currentSubjectsData = getCurrentSubjectsData();
-        const currentSelectedPapers = appState.modes[currentMode].selectedPapers;
+        const currentSelectedPapers = appState.modes[currentMode as 'IAL' | 'IGCSE'].selectedPapers;
 
         return Object.entries(currentSubjectsData).map(([subject, data]) => {
             const allPapersSelected = data.papers.every(paper => currentSelectedPapers[subject]?.includes(paper));
@@ -769,7 +818,7 @@ const App: React.FC = () => {
     const renderYearRangeSelectors = useCallback(() => {
         const currentSeriesArr = getCurrentSeries();
         const currentMaxYear = getCurrentMaxYearSelect();
-        const currentYearsList = appState.modes[currentMode].years;
+        const currentYearsList = appState.modes[currentMode as 'IAL' | 'IGCSE'].years;
 
         let initialStartYear = 2019;
         let initialStartSeries = 'Jan';
@@ -870,7 +919,7 @@ const App: React.FC = () => {
 
 
     const flatPaperList = getFlatPaperList();
-    const currentYears = appState.modes[currentMode].years;
+    const currentYears = appState.modes[currentMode as 'IAL' | 'IGCSE'].years;
     const currentPaperMaxMarks = getCurrentPaperMaxMarks();
 
     const noPapersSelected = flatPaperList.length === 0;
@@ -1105,7 +1154,7 @@ const App: React.FC = () => {
                 #exam-level-select {
                     padding: 0.5rem 1rem;
                     border-radius: 0.375rem;
-                    font-weight: 500;
+                    
                     color: #4a5568;
                     background-color: #e2e8f0;
                     transition: all 0.2s ease-in-out;
@@ -1121,39 +1170,40 @@ const App: React.FC = () => {
             <header className="flex justify-between items-center p-4 h-[80px]">
                 <div id="left-header-content">
                     <h1 className="text-2xl font-bold text-gray-800" id="header-date"></h1>
-                    <p className="text-xs text-gray-500 mt-1">Data saved locally in your browser</p>
+                    <p className="text-xs text-gray-500 mt-1">Dashboard</p>
                 </div>
-                <div className="flex rounded-full overflow-hidden border border-[#00000020] bg-white shadow" style={{boxShadow:'0 2px 8px #0001'}}>
+                <div className="flex rounded-full overflow-hidden border border-[#00000020] bg-white shadow gap-1" style={{boxShadow:'0 2px 8px #0001'}}>
                     <button
-                        className={`px-6 py-2 font-semibold transition-all rounded-full m-1 ${dashboardMode==='score' ? 'bg-[#ff3b30] text-white' : 'text-black bg-white hover:bg-[#00000010]'}`}
+                        className={`px-6 py-2 font-semibold transition-all rounded-full m-1 mr-0 ${dashboardMode==='score' ? 'bg-[#ff3b30] text-white' : 'text-black bg-white hover:bg-[#00000010]'}`}
                         style={{outline:'none'}}
                         onClick={()=>setDashboardMode('score')}
                     >Score</button>
                     <button
-                        className={`px-6 py-2 font-semibold transition-all rounded-full m-1 ${dashboardMode==='calendar' ? 'bg-[#ff3b30] text-white' : 'text-black bg-white hover:bg-[#00000010]'}`}
+                        className={`px-6 py-2 font-semibold transition-all rounded-full m-1 ml-0 ${dashboardMode==='calendar' ? 'bg-[#ff3b30] text-white' : 'text-black bg-white hover:bg-[#00000010]'}`}
                         style={{outline:'none'}}
                         onClick={()=>setDashboardMode('calendar')}
                     >Calendar</button>
                 </div>
                 <div className="flex items-center space-x-2">
                     {dashboardMode === 'score' ? (
-                        <select
-                            id="exam-level-select"
-                            className="w-[150px] p-2 text-base bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                            value={appState.currentMode}
-                            onChange={(e) => switchMode(e.target.value as 'IAL' | 'IGCSE')}
+                        <button
+                            id="open-select-papers-modal-btn-in-header"
+                            className=" flex items-center justify-center w-[50px] rounded-md font-semibold"
+                            onClick={() => setIsModalOpen(true)}
                         >
-                            <option value="IAL">IAL</option>
-                            <option value="IGCSE">IGCSE</option>
-                        </select>
+                            <Menu size={30} className='m-0' />
+                        </button>
                     ) : (
                         <button
-                            className="btn-primary px-4 py-2 text-white bg-[#ff3b30] rounded-md font-semibold"
+                            className=" flex items-center justify-center w-[50px] rounded-md font-semibold"
                             onClick={() => {
                                 setCalendarRangeDraft(calendarRange);
                                 setIsCalendarRangeModalOpen(true);
                             }}
-                        >Set Date Range</button>
+                        > <Menu size={30} className='m-0' /></button>
+
+
+                     
                     )}
                 </div>
             </header>
@@ -1167,14 +1217,15 @@ const App: React.FC = () => {
                             <thead id="table-head">
                                 <tr>
                                     <th>
-                                        <button
-                                            id="open-select-papers-modal-btn-in-table"
-                                            className="btn-primary flex items-center justify-center"
-                                            onClick={() => setIsModalOpen(true)}
+                                        <select
+                                            id="exam-level-select-table"
+                                            className="w-full p-2 bg-white hover:bg-gray-200 text-center text-blue-500 font-bold text-xl outline-none"
+                                            value={appState.currentMode}
+                                            onChange={(e) => switchMode(e.target.value as 'IAL' | 'IGCSE')}
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                                            <span className="ml-0">Select Papers</span>
-                                        </button>
+                                            <option value="IAL">IAL</option>
+                                            <option value="IGCSE">IGCSE</option>
+                                        </select>
                                     </th>
                                     {flatPaperList.map(({ subject, paper }) => (
                                         <th key={`${subject}-${paper}`}>
@@ -1190,7 +1241,7 @@ const App: React.FC = () => {
                                         <td>{`${year} ${serie}`}</td>
                                         {flatPaperList.map(({ subject, paper }) => {
                                             const cellId = `${appState.currentMode}_${year}_${serie}_${subject}_${paper}`.replace(/\s/g, '_');
-                                            const score = appState.modes[currentMode].scores[cellId] || '';
+                                            const score = appState.modes[currentMode as 'IAL' | 'IGCSE'].scores[cellId] || '';
 
                                             const isDisabled = disabledPapersList.some(item =>
                                                 item.examLevel === appState.currentMode &&
@@ -1274,6 +1325,7 @@ const App: React.FC = () => {
                         ref={bottomActionsRef}
                         className={`fixed p-4 bg-white rounded-xl border-2 border-[#00000015] shadow-2xl shadow-[#00000020] z-20 flex flex-col items-center w-[290px] h-[155px] max-w-sm cursor-grab pt-6 transition-transform duration-300 ${isBottomActionsVisible ? 'translate-y-0 opacity-100 visible' : 'translate-y-20 opacity-0 invisible'}`}
                         onMouseDown={startDrag}
+                        onTouchStart={startTouchDrag}
                         style={{ position: 'fixed' }} // Ensure position is fixed for dragging
                     >
                         <button id="close-bottom-actions-btn" className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 rounded-full p-1 hover:bg-gray-100 transition-colors" onClick={hideBottomActions}>
@@ -1346,7 +1398,7 @@ const App: React.FC = () => {
                                         <div key={monthKey} className="mb-8 w-full">
                                             <div className="text-xl font-bold mb-2 text-center">{monthName} {year}</div>
                                             <div className="overflow-auto w-full">
-                                                <table className="w-full border-collapse bg-white shadow rounded-lg overflow-hidden" style={{tableLayout:'fixed'}}>
+                                                <table className="w-full border-collapse border-2 border-[#00000020] bg-white shadow rounded-lg overflow-hidden" style={{tableLayout:'fixed'}}>
                                                     <thead>
                                                         <tr className="bg-[#ff3b30] text-white">
                                                             {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>(<th key={d} className="py-2 font-semibold">{d}</th>))}
@@ -1379,11 +1431,12 @@ const App: React.FC = () => {
                                     );
                                 });
                             })()}
+                        <div className='h-[20px]'></div>
                         </div>
                     </div>
                     {/* Calendar Date Range Modal */}
                     {isCalendarRangeModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" onClick={e => { if (e.target === e.currentTarget) setIsCalendarRangeModalOpen(false); }}>
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#00000050] bg-opacity-40" onClick={e => { if (e.target === e.currentTarget) setIsCalendarRangeModalOpen(false); }}>
                             <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-sm" onClick={e => e.stopPropagation()}>
                                 <h3 className="text-lg font-semibold mb-4 text-gray-800">Set Calendar Date Range</h3>
                                 <div className="mb-4">
@@ -1406,17 +1459,24 @@ const App: React.FC = () => {
 
             {/* Main Modal for Subject Selection and Year Range */}
             {isModalOpen && (
-                <div id="modal-container" className="fixed inset-0 modal-overlay z-50" onClick={(e) => {
-                    if (e.target === e.currentTarget) {
-                        handleSetYearRangeAndCloseModal();
-                    }
-                }}>
+                <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onClick={() => setIsModalOpen(false)}>
                     <div className="modal-content w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2 className="text-2xl font-bold text-gray-800">Select Subjects and Papers</h2>
                             <p className="text-gray-600">Choose the papers you want to track. Changes are saved automatically.</p>
                         </div>
-                        <div id="modal-content-main" className="modal-body no-scrollbar">
+                        <div className="modal-body no-scrollbar">
+                            <div className="mb-4 flex justify-center">
+                                <select
+                                    id="exam-level-select"
+                                    className="w-[200px] p-2 text-base bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                                    value={appState.currentMode}
+                                    onChange={(e) => switchMode(e.target.value as 'IAL' | 'IGCSE')}
+                                >
+                                    <option value="IAL">IAL</option>
+                                    <option value="IGCSE">IGCSE</option>
+                                </select>
+                            </div>
                             <div id="modal-content-subjects">
                                 {renderSubjectSelection()}
                             </div>

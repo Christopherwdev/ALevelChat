@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronsRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 export interface ExamCardProps {
@@ -33,10 +33,10 @@ const ExamCard = ({exam}: {exam: ExamCardProps}) => {
         <p className="text-[#00000080] mb-6 flex-grow">{exam.description}</p>
         <button
           onClick={() => router.push(`/learn/${exam.id}`)}
-          className={cn("flex items-center justify-between cursor-pointer px-6 py-3 rounded-full text-white mb-2 font-semibold text-xl transition-all duration-200 w-full", exam.buttonClassNames)}
+          className={cn("flex items-center justify-between cursor-pointer px-6 py-3 rounded-full text-white mb-2 font-semibold text-xl transition-all duration-200 w-auto", exam.buttonClassNames)}
         >
           {exam.buttonText}
-          <ChevronsRight className="w-5 h-5 ml-2" />
+          <ChevronRight className="w-5 h-5 ml-2" />
         </button>
       </div>
       
