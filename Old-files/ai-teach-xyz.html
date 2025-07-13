@@ -1,0 +1,1340 @@
+<head>
+    <meta charset="UTF-8">
+
+   
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#1E90FF', // Main blue
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 3s infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'slide-in': 'slideIn 0.5s ease-out',
+                        'expand': 'expand 0.3s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        slideIn: {
+                            '0%': { transform: 'translateX(-20px)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' },
+                        },
+                        expand: {
+                            '0%': { transform: 'scale(0.8)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                    },
+                    backdropBlur: {
+                        'xs': '2px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-color: #1E90FF;
+            --primary-light: #60a5fa;
+            --primary-dark: #0369a1;
+            --bg-blur: rgba(255, 255, 255, 0.8);
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(255, 255, 255, 0.4);
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+        }
+
+        .dark {
+            --bg-blur: rgba(15, 23, 42, 0.8);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(51, 65, 85, 0.4);
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .blur-container {
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 6px var(--shadow-color);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px var(--shadow-color);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
+        /* Message animations */
+        .user-message {
+            animation: slideIn 0.3s ease-out;
+            align-self: flex-end;
+            background-color: #1E90FF;
+            color: white;
+            max-width: 80%;
+            margin-left: auto;
+            width: fit-content;
+        }
+
+        .ai-message {
+            animation: slideIn 0.3s ease-out;
+            align-self: flex-start;
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            max-width: 80%;
+            margin-right: auto;
+            width: fit-content;
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            align-self: flex-start;
+            margin-right: auto;
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 3px;
+            opacity: 0.7;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation: pulse 1s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation: pulse 1s infinite 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation: pulse 1s infinite 0.4s;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+        
+        /* Markdown styles for chat messages */
+        .message-content {
+            width: 100%;
+            overflow-wrap: break-word;
+        }
+        
+        .message-content p {
+            margin-bottom: 0.5rem;
+        }
+        
+        .message-content ul, .message-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .message-content ul {
+            list-style-type: disc;
+        }
+        
+        .message-content ol {
+            list-style-type: decimal;
+        }
+        
+        .message-content code {
+            font-family: monospace;
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 0.1rem 0.2rem;
+            border-radius: 3px;
+        }
+        
+        .message-content pre {
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            overflow-x: auto;
+        }
+        
+        .message-content a {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+        
+        .user-message .message-content a,
+        .user-message .message-content code,
+        .user-message .message-content pre {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        h1,h2,h3,h4,h5,h6 {
+            margin-bottom: 0px; padding-bottom: 0px;
+        }
+
+        textarea, select {
+            border: none;
+        }
+
+        textarea:focus {
+            border-color: #1E90ff;
+        }
+        button:hover {
+            color: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="eduai-container" class="w-full h-[90vh] rounded-xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700 relative transition-all duration-300 ease-in-out">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-400 to-blue-600 z-50 animate-fade-in">
+            <div class="w-24 h-24 mb-8 relative">
+                <div class="absolute inset-0 rounded-full border-4 border-blue-200 border-t-transparent animate-spin"></div>
+                <div class="absolute inset-2 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-white text-3xl"></i>
+                </div>
+            </div>
+            <h1 class="text-white text-3xl font-bold mb-2 animate-pulse-slow" style="color: white">AI Teacher Pro</h2>
+            <p class="text-blue-100">Loading your educational experience...</p>
+        </div>
+
+        <!-- Main App Interface -->
+        <div id="app-interface" class="h-full flex flex-col bg-gray-50 dark:bg-gray-900 hidden">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-4 border-b dark:border-gray-700 blur-container bg-white/80 dark:bg-gray-800/80">
+                <div class="flex items-center">
+                    <button id="menu-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition mr-2" style="width:40px;height:40px">
+                        <i class="fas fa-bars text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <div>
+                        <h3 id="current-subject" class="font-semibold text-gray-800 dark:text-white" style="margin-bottom: 5px; padding-bottom: 0px">Subject</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">AI Teacher Pro</p>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button id="quiz-btn" class="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm bg-blue-100 text-primary-500 hover:bg-blue-200 hover:text-primary-500 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-800/50 transition">
+                        <i class="fas fa-question-circle text-xs"></i>
+                        <span>Quiz</span>
+                    </button>
+                    <button id="revision-btn" class="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm bg-purple-100 text-purple-500 hover:text-purple-500 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-800/50 transition">
+                        <i class="fas fa-book text-xs"></i>
+                        <span>Plan</span>
+                    </button>
+                    <button id="chat-history-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition" style="width:40px;height:40px">
+                        <i class="fas fa-history text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sidebar Menu -->
+            <div id="sidebar-menu" class="absolute left-0 top-0 h-full w-64 bg-white/50 dark:bg-gray-800/90 blur-container transform -translate-x-full transition-transform duration-300 ease-in-out z-40 border-r border-gray-200 dark:border-gray-700">
+                <div class="p-4 border-b dark:border-gray-700">
+                    <h3 class="font-bold text-xl text-primary-500" style="margin-bottom: 0px; padding-bottom: 0px">AI Teacher Pro</h3>
+                </div>
+                <div class="py-4">
+                    <h4 class="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Edexcel IAL</h4>
+                    <button data-sidebar-subject="biology" class="sidebar-subject-btn w-full text-left px-4 py-2 hover:bg-gray-100 hover:text-black dark:hover:bg-gray-700">
+                        <i class="fas fa-dna mr-2 text-emerald-500"></i> Biology
+                    </button>
+                    <button data-sidebar-subject="chemistry" class="sidebar-subject-btn w-full text-left px-4 py-2 hover:bg-gray-100 hover:text-black dark:hover:bg-gray-700">
+                        <i class="fas fa-flask mr-2 text-red-400"></i> Chemistry
+                    </button>
+                    <button data-sidebar-subject="physics" class="sidebar-subject-btn w-full text-left px-4 py-2 hover:bg-gray-100 hover:text-black dark:hover:bg-gray-700">
+                        <i class="fas fa-atom mr-2 text-blue-500"></i> Physics
+                    </button>
+                    <button data-sidebar-subject="math" class="sidebar-subject-btn w-full text-left px-4 py-2 hover:bg-gray-100 hover:text-black dark:hover:bg-gray-700">
+                        <i class="fas fa-calculator mr-2 text-amber-500"></i> Mathematics
+                    </button>
+
+                    <h3 class="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-4 mb-2">IELTS</h3>
+                    <button data-sidebar-subject="ielts-speaking" class="sidebar-subject-btn w-full text-left px-4 py-2 hover:bg-gray-100 hover:text-black dark:hover:bg-gray-700">
+                        <i class="fas fa-microphone mr-2 text-red-500"></i> Speaking
+                    </button>
+                    <button data-sidebar-subject="ielts-writing" class="sidebar-subject-btn w-full text-left px-4 py-2 hover:bg-gray-100 hover:text-black dark:hover:bg-gray-700">
+                        <i class="fas fa-pen-fancy mr-2 text-red-500"></i> Writing
+                    </button>
+                    <button data-sidebar-subject="ielts-reading" class="sidebar-subject-btn w-full text-left px-4 py-2 hover:bg-gray-100 hover:text-black dark:hover:bg-gray-700">
+                        <i class="fas fa-book-open mr-2 text-red-500"></i> Reading
+                    </button>
+                    <button data-sidebar-subject="ielts-listening" class="sidebar-subject-btn w-full text-left px-4 py-2 hover:bg-gray-100 hover:text-black dark:hover:bg-gray-700">
+                        <i class="fas fa-headphones mr-2 text-red-500"></i> Listening
+                    </button>
+
+                    <div class="border-t dark:border-gray-700 mt-4 pt-4">
+                        <button id="clear-history-btn" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-trash-alt mr-2 text-gray-500"></i> Clear History
+                        </button>
+                        <button id="toggle-theme-btn" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300" >
+                            <i id="theme-icon" class="fas fa-moon mr-2 text-gray-500"></i> <span id="theme-text">Dark Mode</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Container -->
+            <div id="chat-container" class="flex-grow overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900 flex flex-col">
+                <!-- Messages will be appended here -->
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 border-t dark:border-gray-700 blur-container bg-white/80 dark:bg-gray-800/80">
+                <div class="flex gap-2">
+                    <button id="voice-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition text-gray-500 dark:text-gray-400" title="Use voice input" style="width: 40px; height: 40px">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <div class="flex-grow relative">
+                        <textarea id="message-input" rows="1" placeholder="Ask anything about your subject..." style="background-color: #f5f5f5; border: none; border-radius: 100px" class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-800 dark:text-gray-200 resize-none"></textarea>
+                        <div id="status" class="absolute text-xs bottom-20 hidden right-1" style="background-color: black; padding: 5px; border-radius: 10px; color: white"></div>
+                    </div>
+                    <button id="send-button" class="p-2 bg-primary-500 rounded-full hover:bg-primary-600 transition text-white" style="width: 40px; height: 40px; background-color: #2563eb;">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Modal -->
+        <div id="quiz-modal" class="absolute inset-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm z-50 hidden flex flex-col animate-fade-in">
+            <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+                <h2 class="font-semibold text-xl text-gray-800 dark:text-white">Quiz Mode</h2>
+                <button id="close-quiz-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                    <i class="fas fa-times text-gray-600 dark:text-gray-300"></i>
+                </button>
+            </div>
+            <div id="quiz-content" class="flex-grow p-6 overflow-y-auto">
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-question-circle text-2xl text-primary-500"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Start a Quiz</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">Test your knowledge with a subject-specific quiz</p>
+                    
+                    <div class="max-w-md mx-auto">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-left">Number of questions</label>
+                            <select id="quiz-num-questions" class="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                                <option value="5">5 questions</option>
+                                <option value="10" selected>10 questions</option>
+                                <option value="15">15 questions</option>
+                                <option value="20">20 questions</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-left">Difficulty</label>
+                            <select id="quiz-difficulty" class="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                                <option value="easy">Easy</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="hard">Hard</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-left">Topic (optional)</label>
+                            <input type="text" id="quiz-topic" placeholder="Leave blank for mixed topics" class="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                        </div>
+                        
+                        <button id="start-quiz-btn" class="w-full py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition">
+                            Start Quiz
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revision Plan Modal -->
+        <div id="revision-modal" class="absolute inset-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm z-50 hidden flex flex-col animate-fade-in">
+            <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+                <h2 class="font-semibold text-xl text-gray-800 dark:text-white">Revision Plan</h2>
+                <button id="close-revision-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                    <i class="fas fa-times text-gray-600 dark:text-gray-300"></i>
+                </button>
+            </div>
+            <div id="revision-content" class="flex-grow p-6 overflow-y-auto">
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-calendar-alt text-2xl text-purple-500"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Create a Revision Plan</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">Let AI create a personalized study schedule</p>
+                    
+                    <div class="max-w-md mx-auto">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-left">Exam Date</label>
+                            <input type="date" id="revision-exam-date" class="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-left">Study hours per week</label>
+                            <select id="revision-hours" class="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                                <option value="5">~5 hours</option>
+                                <option value="10" selected>~10 hours</option>
+                                <option value="15">~15 hours</option>
+                                <option value="20">~20 hours</option>
+                                <option value="30">~30 hours</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-left">Focus areas (optional)</label>
+                            <textarea id="revision-focus" rows="3" placeholder="Any specific topics you want to focus on?" class="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 resize-none"></textarea>
+                        </div>
+                        
+                        <button id="create-plan-btn" class="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
+                            Create Plan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat History Modal -->
+        <div id="history-modal" class="absolute inset-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm z-50 hidden flex flex-col animate-fade-in">
+            <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+                <h2 class="font-semibold text-xl text-gray-800 dark:text-white">Chat History</h2>
+                <button id="close-history-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                    <i class="fas fa-times text-gray-600 dark:text-gray-300"></i>
+                </button>
+            </div>
+            <div id="history-content" class="flex-grow p-4 overflow-y-auto">
+                <div id="no-history" class="hidden text-center py-8 text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-history text-4xl mb-2"></i>
+                    <p>No chat history yet</p>
+                </div>
+                <div id="history-list" class="space-y-3">
+                    <!-- Chat history items will be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // App State
+        const state = {
+            currentSubject: null,
+            chatHistory: {},
+            activeChat: null,
+            quizState: null,
+            revisionPlan: null,
+            isDarkMode: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
+            isRecording: false,
+            recognition: null
+        };
+
+        // API Integration
+        let currentChatId = null;
+        
+        // DOM Elements
+        const loadingScreen = document.getElementById('loading-screen');
+        const appInterface = document.getElementById('app-interface');
+        const chatContainer = document.getElementById('chat-container');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const statusDiv = document.getElementById('status');
+        const currentSubjectEl = document.getElementById('current-subject');
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        const menuToggleBtn = document.getElementById('menu-toggle');
+        const quizModal = document.getElementById('quiz-modal');
+        const revisionModal = document.getElementById('revision-modal');
+        const historyModal = document.getElementById('history-modal');
+        const voiceButton = document.getElementById('voice-btn');
+        
+        // Load chat history from localStorage
+        function loadChatHistory() {
+            const savedHistory = localStorage.getItem('eduai-chat-history');
+            if (savedHistory) {
+                try {
+                    state.chatHistory = JSON.parse(savedHistory);
+                } catch (e) {
+                    console.error('Error parsing chat history:', e);
+                    state.chatHistory = {};
+                }
+            }
+        }
+        
+        // Save chat history to localStorage
+        function saveChatHistory() {
+            localStorage.setItem('eduai-chat-history', JSON.stringify(state.chatHistory));
+            updateHistoryModal();
+        }
+        
+        // Initialize theme
+        function initTheme() {
+            if (state.isDarkMode) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-text').textContent = 'Light Mode';
+                document.getElementById('theme-icon').classList.remove('fa-moon');
+                document.getElementById('theme-icon').classList.add('fa-sun');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('theme-text').textContent = 'Dark Mode';
+                document.getElementById('theme-icon').classList.remove('fa-sun');
+                document.getElementById('theme-icon').classList.add('fa-moon');
+            }
+        }
+        
+        // Toggle theme
+        function toggleTheme() {
+            state.isDarkMode = !state.isDarkMode;
+            initTheme();
+        }
+        
+        // Initialize Speech Recognition
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                state.recognition = new webkitSpeechRecognition();
+                state.recognition.continuous = false;
+                state.recognition.interimResults = true;
+                
+                state.recognition.onstart = function() {
+                    state.isRecording = true;
+                    voiceButton.classList.add('text-primary-500');
+                    voiceButton.classList.remove('text-gray-500', 'dark:text-gray-400');
+                    voiceButton.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                    messageInput.placeholder = "Listening...";
+                };
+                
+                state.recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    messageInput.value = transcript;
+                };
+                
+                state.recognition.onerror = function(event) {
+                    console.error('Speech recognition error', event.error);
+                    stopRecording();
+                };
+                
+                state.recognition.onend = function() {
+                    stopRecording();
+                };
+            } else {
+                voiceButton.disabled = true;
+                voiceButton.title = "Speech recognition not supported in this browser";
+            }
+        }
+        
+        // Toggle recording
+        function toggleRecording() {
+            if (state.isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        }
+        
+        // Start recording
+        function startRecording() {
+            if (state.recognition) {
+                state.recognition.start();
+            }
+        }
+        
+        // Stop recording
+        function stopRecording() {
+            if (state.recognition) {
+                state.recognition.stop();
+                state.isRecording = false;
+                voiceButton.classList.remove('text-primary-500');
+                voiceButton.classList.add('text-gray-500', 'dark:text-gray-400');
+                voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
+                messageInput.placeholder = "Ask anything about your subject...";
+            }
+        }
+        
+        // Start a new chat session
+        async function startNewChat() {
+            try {
+                const response = await fetch('https://server-ef04.onrender.com/api/chat/new', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentChatId = data.chatId;
+                    updateStatus('Connected to chat session');
+                } else {
+                    throw new Error(data.error || 'Failed to start chat session');
+                }
+            } catch (error) {
+                updateStatus('Error: ' + error.message, true);
+            }
+        }
+        
+        // Send a message to the AI
+        async function sendMessage(message) {
+            if (!currentChatId) {
+                updateStatus('No active chat session', true);
+                return;
+            }
+        
+            try {
+                appendMessage(message, 'user');
+                
+                // Save to history
+                if (!state.chatHistory[state.currentSubject]) {
+                    state.chatHistory[state.currentSubject] = [];
+                }
+                
+                if (!state.activeChat) {
+                    state.activeChat = {
+                        id: Date.now(),
+                        subject: state.currentSubject,
+                        messages: []
+                    };
+                    state.chatHistory[state.currentSubject].unshift(state.activeChat);
+                }
+                
+                state.activeChat.messages.push({
+                    sender: 'user',
+                    text: message,
+                    timestamp: Date.now()
+                });
+                
+                saveChatHistory();
+                
+                // Show typing indicator
+                const typingIndicator = document.createElement('div');
+                typingIndicator.classList.add('typing-indicator', 'ai-message', 'p-3', 'rounded-lg');
+                typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+                chatContainer.appendChild(typingIndicator);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                disableInput(true);
+                
+                const response = await fetch('https://server-ef04.onrender.com/api/chat/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        chatId: currentChatId,
+                        message: message
+                    })
+                });
+        
+                const data = await response.json();
+                
+                // Remove typing indicator
+                chatContainer.removeChild(typingIndicator);
+                
+                if (data.success) {
+                    appendMessage(data.response, 'ai');
+                    
+                    // Save AI response to history
+                    state.activeChat.messages.push({
+                        sender: 'ai',
+                        text: data.response,
+                        timestamp: Date.now()
+                    });
+                    
+                    saveChatHistory();
+                } else {
+                    throw new Error(data.error || 'Failed to get response');
+                }
+            } catch (error) {
+                updateStatus('Error: ' + error.message, true);
+            } finally {
+                disableInput(false);
+            }
+        }
+        
+        // UI Helper Functions
+        function appendMessage(message, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `${sender}-message`, 'p-3', 'rounded-lg', 'break-words', 'mb-2', 'w-full');
+            
+            // Create a container for the content
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('message-content');
+            
+            // Format message text with markdown support
+            if (sender === 'ai') {
+                contentDiv.innerHTML = marked.parse(message);
+            } else {
+                // For user messages, keep as plain text
+                contentDiv.textContent = message;
+            }
+            
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function updateStatus(message, isError = false) {
+            statusDiv.textContent = message;
+            statusDiv.style.color = isError ? '#dc3545' : 'white';
+            statusDiv.classList.remove('hidden');
+            
+            // Hide status after a few seconds
+            setTimeout(() => {
+                statusDiv.classList.add('hidden');
+            }, 3000);
+        }
+        
+        function disableInput(disabled) {
+            messageInput.disabled = disabled;
+            sendButton.disabled = disabled;
+            if (disabled) {
+                sendButton.classList.add('opacity-50');
+            } else {
+                sendButton.classList.remove('opacity-50');
+            }
+        }
+        
+        // Change subject
+        function changeSubject(subject) {
+            state.currentSubject = subject;
+            state.activeChat = null;
+            currentSubjectEl.textContent = getSubjectDisplayName(subject);
+            
+            // Clear chat container
+            chatContainer.innerHTML = '';
+            
+            // Add welcome message
+            const welcomeMessage = getWelcomeMessage(subject);
+            appendMessage(welcomeMessage, 'ai');
+            
+            // Close sidebar if open
+            toggleSidebar(false);
+        }
+        
+        // Get subject display name
+        function getSubjectDisplayName(subject) {
+            const subjectMap = {
+                'biology': 'Biology (Edexcel IAL)',
+                'chemistry': 'Chemistry (Edexcel IAL)',
+                'physics': 'Physics (Edexcel IAL)',
+                'math': 'Mathematics (Edexcel IAL)',
+                'ielts-speaking': 'IELTS Speaking',
+                'ielts-writing': 'IELTS Writing',
+                'ielts-reading': 'IELTS Reading',
+                'ielts-listening': 'IELTS Listening'
+            };
+            return subjectMap[subject] || subject;
+        }
+        
+        // Get welcome message for subject
+        function getWelcomeMessage(subject) {
+            const welcomeMessages = {
+                'biology': "👋 Welcome to Biology! I'm your Edexcel IAL Biology tutor. I can help with topics like biological molecules, cells, genetics, ecology, and more. What would you like to learn about today?",
+                'chemistry': "👋 Welcome to Chemistry! I'm your Edexcel IAL Chemistry tutor. I can help with topics like atomic structure, bonding, energetics, organic chemistry, and more. What would you like to learn about today?",
+                'physics': "👋 Welcome to Physics! I'm your Edexcel IAL Physics tutor. I can help with topics like mechanics, electricity, waves, fields, nuclear physics, and more. What would you like to learn about today?",
+                'math': "👋 Welcome to Mathematics! I'm your Edexcel IAL Mathematics tutor. I can help with topics like pure mathematics, statistics, mechanics, and more. What would you like to learn about today?",
+                'ielts-speaking': "👋 Welcome to IELTS Speaking! I can help you prepare for your speaking test with practice questions, vocabulary, strategies, and feedback. How would you like to practice today?",
+                'ielts-writing': "👋 Welcome to IELTS Writing! I can help you improve your writing skills for both Task 1 and Task 2, including essay structure, vocabulary, grammar, and more. What aspect of IELTS writing would you like help with?",
+                'ielts-reading': "👋 Welcome to IELTS Reading! I can help you with reading strategies, practice questions, vocabulary building, and more to improve your reading skills. What aspect of IELTS reading would you like to work on?",
+                'ielts-listening': "👋 Welcome to IELTS Listening! I can help you with listening strategies, practice questions, note-taking skills, and more. How would you like to improve your listening skills today?"
+            };
+            return welcomeMessages[subject] || "👋 Welcome! How can I help you today?";
+        }
+        
+        // Toggle sidebar
+        function toggleSidebar(forceState = null) {
+            const isOpen = sidebarMenu.classList.contains('-translate-x-0');
+            const newState = forceState !== null ? forceState : !isOpen;
+            
+            if (newState) {
+                sidebarMenu.classList.remove('-translate-x-full');
+                sidebarMenu.classList.add('translate-x-0');
+            } else {
+                sidebarMenu.classList.remove('translate-x-0');
+                sidebarMenu.classList.add('-translate-x-full');
+            }
+        }
+        
+        // Update history modal
+        function updateHistoryModal() {
+            const historyList = document.getElementById('history-list');
+            const noHistory = document.getElementById('no-history');
+            
+            historyList.innerHTML = '';
+            
+            let hasHistory = false;
+            
+            for (const subject in state.chatHistory) {
+                if (state.chatHistory[subject].length > 0) {
+                    hasHistory = true;
+                    
+                    // Add subject header
+                    const subjectHeader = document.createElement('h3');
+                    subjectHeader.classList.add('text-sm', 'font-semibold', 'text-gray-500', 'dark:text-gray-400', 'uppercase', 'tracking-wider', 'mb-2', 'mt-4');
+                    subjectHeader.textContent = getSubjectDisplayName(subject);
+                    historyList.appendChild(subjectHeader);
+                    
+                    // Add chats for this subject
+                    state.chatHistory[subject].forEach(chat => {
+                        const chatItem = document.createElement('div');
+                        chatItem.classList.add('glass-card', 'p-3', 'rounded-lg', 'cursor-pointer', 'hover:bg-gray-100', 'dark:hover:bg-gray-800');
+                        
+                        // Get first messages for preview
+                        let preview = 'Empty chat';
+                        if (chat.messages && chat.messages.length > 0) {
+                            const firstUserMsg = chat.messages.find(m => m.sender === 'user');
+                            preview = firstUserMsg ? firstUserMsg.text : chat.messages[0].text;
+                            if (preview.length > 40) {
+                                preview = preview.substring(0, 40) + '...';
+                            }
+                        }
+                        
+                        // Format date
+                        const date = new Date(chat.id);
+                        const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        
+                        chatItem.innerHTML = `
+                            <div class="flex justify-between items-start">
+                                <div class="text-sm font-medium text-gray-800 dark:text-white">${preview}</div>
+                                <div class="text-xs text-gray-500">${dateStr}</div>
+                            </div>
+                        `;
+                        
+                        chatItem.addEventListener('click', () => {
+                            loadChat(subject, chat.id);
+                            historyModal.classList.add('hidden');
+                        });
+                        
+                        historyList.appendChild(chatItem);
+                    });
+                }
+            }
+            
+            if (hasHistory) {
+                noHistory.classList.add('hidden');
+                historyList.classList.remove('hidden');
+            } else {
+                noHistory.classList.remove('hidden');
+                historyList.classList.add('hidden');
+            }
+        }
+        
+        // Load a specific chat
+        function loadChat(subject, chatId) {
+            if (state.currentSubject !== subject) {
+                changeSubject(subject);
+            }
+            
+            const chat = state.chatHistory[subject].find(c => c.id === chatId);
+            if (chat) {
+                state.activeChat = chat;
+                
+                // Clear chat container
+                chatContainer.innerHTML = '';
+                
+                // Add messages
+                chat.messages.forEach(msg => {
+                    appendMessage(msg.text, msg.sender);
+                });
+            }
+        }
+        
+        // Clear history
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear all chat history? This cannot be undone.')) {
+                state.chatHistory = {};
+                state.activeChat = null;
+                saveChatHistory();
+                updateHistoryModal();
+                
+                // Clear current chat
+                chatContainer.innerHTML = '';
+                // Add welcome message
+                const welcomeMessage = getWelcomeMessage(state.currentSubject);
+                appendMessage(welcomeMessage, 'ai');
+            }
+        }
+        
+        // Generate quiz
+        function generateQuiz() {
+            const numQuestions = document.getElementById('quiz-num-questions').value;
+            const difficulty = document.getElementById('quiz-difficulty').value;
+            const topic = document.getElementById('quiz-topic').value.trim();
+            
+            const quizContent = document.getElementById('quiz-content');
+            quizContent.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                        <i class="fas fa-spinner fa-spin text-2xl text-primary-500"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Generating Quiz</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Please wait while we create your quiz...</p>
+                </div>
+            `;
+            
+            // Construct prompt based on subject and parameters
+            let prompt = `Generate a ${numQuestions}-question ${difficulty} difficulty quiz about ${getSubjectDisplayName(state.currentSubject)}`;
+            if (topic) {
+                prompt += ` focusing on ${topic}`;
+            }
+            prompt += `. Format: numbered questions with multiple choice options (A, B, C, D) and correct answer marked. Include explanation for each answer.`;
+            
+            // Send message to API (we're reusing the existing API for simplicity)
+            fetch('https://server-ef04.onrender.com/api/chat/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chatId: currentChatId,
+                    message: prompt
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Parse quiz response and display
+                    displayQuiz(data.response, numQuestions, difficulty, topic);
+                } else {
+                    throw new Error(data.error || 'Failed to generate quiz');
+                }
+            })
+            .catch(error => {
+                quizContent.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Error</h3>
+                        <p class="text-gray-600 dark:text-gray-400">${error.message}</p>
+                        <button id="retry-quiz-btn" class="mt-4 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+                
+                document.getElementById('retry-quiz-btn').addEventListener('click', () => {
+                    document.getElementById('quiz-modal').classList.add('hidden');
+                    setTimeout(() => {
+                        document.getElementById('quiz-btn').click();
+                    }, 300);
+                });
+            });
+        }
+        
+        // Display quiz
+        function displayQuiz(quizText, numQuestions, difficulty, topic) {
+            const quizContent = document.getElementById('quiz-content');
+            
+            // Simple parsing to show the quiz content with markdown support
+            quizContent.innerHTML = `
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Quiz: ${getSubjectDisplayName(state.currentSubject)}</h3>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">${difficulty} · ${numQuestions} questions</div>
+                    </div>
+                    
+                    <div class="prose prose-sm md:prose-base max-w-none dark:prose-invert">
+                        ${marked.parse(quizText)}
+                    </div>
+                    
+                    <div class="mt-8 flex justify-between">
+                        <button id="new-quiz-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg transition text-gray-800 dark:text-white">
+                            New Quiz
+                        </button>
+                        <button id="save-quiz-btn" class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition">
+                            Save to Chat
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners
+            document.getElementById('new-quiz-btn').addEventListener('click', () => {
+                document.getElementById('quiz-modal').classList.add('hidden');
+                setTimeout(() => {
+                    document.getElementById('quiz-btn').click();
+                }, 300);
+            });
+            
+            document.getElementById('save-quiz-btn').addEventListener('click', () => {
+                // Save quiz to chat
+                appendMessage(`Quiz (${difficulty}, ${numQuestions} questions${topic ? ` on ${topic}` : ''})`, 'user');
+                appendMessage(quizText, 'ai');
+                
+                // Add to history
+                if (!state.activeChat) {
+                    state.activeChat = {
+                        id: Date.now(),
+                        subject: state.currentSubject,
+                        messages: []
+                    };
+                    if (!state.chatHistory[state.currentSubject]) {
+                        state.chatHistory[state.currentSubject] = [];
+                    }
+                    state.chatHistory[state.currentSubject].unshift(state.activeChat);
+                }
+                
+                state.activeChat.messages.push({
+                    sender: 'user',
+                    text: `Quiz (${difficulty}, ${numQuestions} questions${topic ? ` on ${topic}` : ''})`,
+                    timestamp: Date.now()
+                });
+                
+                state.activeChat.messages.push({
+                    sender: 'ai',
+                    text: quizText,
+                    timestamp: Date.now()
+                });
+                
+                saveChatHistory();
+                
+                // Close modal
+                document.getElementById('quiz-modal').classList.add('hidden');
+            });
+        }
+        
+        // Generate revision plan
+        function generateRevisionPlan() {
+            const examDate = document.getElementById('revision-exam-date').value;
+            const studyHours = document.getElementById('revision-hours').value;
+            const focusAreas = document.getElementById('revision-focus').value.trim();
+            
+            // Validate exam date
+            if (!examDate) {
+                alert('Please select an exam date');
+                return;
+            }
+            
+            const revisionContent = document.getElementById('revision-content');
+            revisionContent.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                        <i class="fas fa-spinner fa-spin text-2xl text-purple-500"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Creating Your Plan</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Please wait while we design your personalized revision plan...</p>
+                </div>
+            `;
+            
+            // Calculate weeks until exam
+            const today = new Date();
+            const examDay = new Date(examDate);
+            const daysUntilExam = Math.ceil((examDay - today) / (1000 * 60 * 60 * 24));
+            const weeksUntilExam = Math.ceil(daysUntilExam / 7);
+            
+            // Construct prompt
+            let prompt = `Create a ${weeksUntilExam}-week revision plan for ${getSubjectDisplayName(state.currentSubject)} with approximately ${studyHours} study hours per week`;
+            if (focusAreas) {
+                prompt += `, focusing on these areas: ${focusAreas}`;
+            }
+            prompt += `. The exam is on ${examDate}. Include specific topics to study each week, recommended resources, and practice questions. Format as a week-by-week schedule.`;
+            
+            // Send message to API
+            fetch('https://server-ef04.onrender.com/api/chat/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chatId: currentChatId,
+                    message: prompt
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Display revision plan
+                    displayRevisionPlan(data.response, examDate, studyHours, focusAreas);
+                } else {
+                    throw new Error(data.error || 'Failed to generate revision plan');
+                }
+            })
+            .catch(error => {
+                revisionContent.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Error</h3>
+                        <p class="text-gray-600 dark:text-gray-400">${error.message}</p>
+                        <button id="retry-plan-btn" class="mt-4 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+                
+                document.getElementById('retry-plan-btn').addEventListener('click', () => {
+                    document.getElementById('revision-modal').classList.add('hidden');
+                    setTimeout(() => {
+                        document.getElementById('revision-btn').click();
+                    }, 300);
+                });
+            });
+        }
+        
+        // Display revision plan
+        function displayRevisionPlan(planText, examDate, studyHours, focusAreas) {
+            const revisionContent = document.getElementById('revision-content');
+            
+            revisionContent.innerHTML = `
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Revision Plan: ${getSubjectDisplayName(state.currentSubject)}</h3>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Exam date: ${new Date(examDate).toLocaleDateString()}</div>
+                    </div>
+                    
+                    <div class="prose prose-sm md:prose-base max-w-none dark:prose-invert">
+                        ${marked.parse(planText)}
+                    </div>
+                    
+                    <div class="mt-8 flex justify-between">
+                        <button id="new-plan-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg transition text-gray-800 dark:text-white">
+                            New Plan
+                        </button>
+                        <button id="save-plan-btn" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
+                            Save to Chat
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners
+            document.getElementById('new-plan-btn').addEventListener('click', () => {
+                document.getElementById('revision-modal').classList.add('hidden');
+                setTimeout(() => {
+                    document.getElementById('revision-btn').click();
+                }, 300);
+            });
+            
+            document.getElementById('save-plan-btn').addEventListener('click', () => {
+                // Save plan to chat
+                const userPrompt = `Revision plan for ${getSubjectDisplayName(state.currentSubject)} (Exam: ${new Date(examDate).toLocaleDateString()}, ${studyHours} hours/week${focusAreas ? `, Focus: ${focusAreas}` : ''})`;
+                appendMessage(userPrompt, 'user');
+                appendMessage(planText, 'ai');
+                
+                // Add to history
+                if (!state.activeChat) {
+                    state.activeChat = {
+                        id: Date.now(),
+                        subject: state.currentSubject,
+                        messages: []
+                    };
+                    if (!state.chatHistory[state.currentSubject]) {
+                        state.chatHistory[state.currentSubject] = [];
+                    }
+                    state.chatHistory[state.currentSubject].unshift(state.activeChat);
+                }
+                
+                state.activeChat.messages.push({
+                    sender: 'user',
+                    text: userPrompt,
+                    timestamp: Date.now()
+                });
+                
+                state.activeChat.messages.push({
+                    sender: 'ai',
+                    text: planText,
+                    timestamp: Date.now()
+                });
+                
+                saveChatHistory();
+                
+                // Close modal
+                document.getElementById('revision-modal').classList.add('hidden');
+            });
+        }
+
+        // Initialize App
+        function initApp() {
+            // Set up color scheme listener
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+                state.isDarkMode = event.matches;
+                initTheme();
+            });
+            
+            // Load chat history
+            loadChatHistory();
+            
+            // Initialize theme
+            initTheme();
+            
+            // Initialize speech recognition
+            initSpeechRecognition();
+            
+            // Show app interface directly with default subject
+            setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+                appInterface.classList.remove('hidden');
+                
+                // Set default subject
+                const defaultSubject = 'biology';
+                state.currentSubject = defaultSubject;
+                
+                // Set subject title
+                currentSubjectEl.textContent = getSubjectDisplayName(defaultSubject);
+                
+                // Add welcome message
+                const welcomeMessage = getWelcomeMessage(defaultSubject);
+                appendMessage(welcomeMessage, 'ai');
+                
+                // Start new chat session
+                startNewChat();
+            }, 2000);
+            
+            // Subject buttons in sidebar
+            document.querySelectorAll('.sidebar-subject-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const subject = btn.getAttribute('data-sidebar-subject');
+                    changeSubject(subject);
+                });
+            });
+            
+            // Menu toggle
+            menuToggleBtn.addEventListener('click', () => {
+                toggleSidebar();
+            });
+            
+            // Send button
+            sendButton.addEventListener('click', () => {
+                const message = messageInput.value.trim();
+                if (message) {
+                    sendMessage(message);
+                    messageInput.value = '';
+                }
+            });
+            
+            // Message input enter key
+            messageInput.addEventListener('keypress', e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    const message = messageInput.value.trim();
+                    if (message) {
+                        sendMessage(message);
+                        messageInput.value = '';
+                    }
+                }
+            });
+            
+            // Voice button
+            voiceButton.addEventListener('click', toggleRecording);
+            
+            // Quiz button
+            document.getElementById('quiz-btn').addEventListener('click', () => {
+                quizModal.classList.remove('hidden');
+            });
+            
+            // Close quiz modal
+            document.getElementById('close-quiz-btn').addEventListener('click', () => {
+                quizModal.classList.add('hidden');
+            });
+            
+            // Start quiz button
+            document.getElementById('start-quiz-btn').addEventListener('click', generateQuiz);
+            
+            // Revision plan button
+            document.getElementById('revision-btn').addEventListener('click', () => {
+                // Set default exam date (30 days from now)
+                const defaultDate = new Date();
+                defaultDate.setDate(defaultDate.getDate() + 30);
+                document.getElementById('revision-exam-date').valueAsDate = defaultDate;
+                
+                revisionModal.classList.remove('hidden');
+            });
+            
+            // Close revision modal
+            document.getElementById('close-revision-btn').addEventListener('click', () => {
+                revisionModal.classList.add('hidden');
+            });
+            
+            // Create plan button
+            document.getElementById('create-plan-btn').addEventListener('click', generateRevisionPlan);
+            
+            // Chat history button
+            document.getElementById('chat-history-btn').addEventListener('click', () => {
+                updateHistoryModal();
+                historyModal.classList.remove('hidden');
+            });
+            
+            // Close history modal
+            document.getElementById('close-history-btn').addEventListener('click', () => {
+                historyModal.classList.add('hidden');
+            });
+            
+            // Clear history button
+            document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
+            
+            // Toggle theme button
+            document.getElementById('toggle-theme-btn').addEventListener('click', toggleTheme);
+            
+            // Close sidebar when clicking outside
+            document.addEventListener('click', e => {
+                if (sidebarMenu.classList.contains('translate-x-0') && 
+                    !sidebarMenu.contains(e.target) && 
+                    e.target !== menuToggleBtn && 
+                    !menuToggleBtn.contains(e.target)) {
+                    toggleSidebar(false);
+                }
+            });
+        }
+
+        // Initialize the app
+        initApp();
+    </script>
+</body>
