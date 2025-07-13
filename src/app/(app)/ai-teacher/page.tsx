@@ -1,0 +1,1332 @@
+"use client"
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { marked } from 'marked';
+
+// Add type for chatHistory
+interface ChatMessage { sender: string; text: string; timestamp: number; }
+interface ChatSession { id: number; subject: string; messages: ChatMessage[]; }
+type ChatHistory = { [subject: string]: ChatSession[] };
+
+const App = () => {
+    // State Management
+    const [currentSubject, setCurrentSubject] = useState(null);
+    const [chatHistory, setChatHistory] = useState<ChatHistory>({}); // { subject: [{ id: timestamp, messages: [{sender, text, timestamp}] }] }
+    const [activeChat, setActiveChat] = useState<ChatSession | null>(null); // The currently viewed chat session
+    const [quizModalOpen, setQuizModalOpen] = useState(false);
+    const [revisionModalOpen, setRevisionModalOpen] = useState(false);
+    const [historyModalOpen, setHistoryModalOpen] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [messageInput, setMessageInput] = useState('');
+    const [statusMessage, setStatusMessage] = useState('');
+    const [isStatusError, setIsStatusError] = useState(false);
+    const [isSending, setIsSending] = useState(false); // To disable input while AI is typing
+    const [currentChatId, setCurrentChatId] = useState(null); // Server-side LLM session ID
+    const [showConfirmClearModal, setShowConfirmClearModal] = useState(false);
+    const [speechRecognitionSupported, setSpeechRecognitionSupported] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    // Refs for DOM elements
+    const chatContainerRef = useRef(null);
+    const messageInputRef = useRef(null);
+    const sidebarMenuRef = useRef(null);
+    const recognitionRef = useRef(null); // For webkitSpeechRecognition
+
+    // --- Local Storage Management ---
+    // Load chat history from localStorage on initial mount
+    useEffect(() => {
+        // Ensure localStorage is available before accessing it
+        if (typeof window !== 'undefined' && window.localStorage) {
+            const savedHistory = localStorage.getItem('eduai-chat-history');
+            if (savedHistory) {
+                try {
+                    setChatHistory(JSON.parse(savedHistory));
+                } catch (e) {
+                    console.error('Error parsing chat history:', e);
+                    setChatHistory({});
+                }
+            }
+        }
+        // Immediately set up the chat, no loading screen
+        const defaultSubject = 'biology';
+        changeSubject(defaultSubject);
+        startNewChat();
+    }, []);
+
+    // Save chat history to localStorage whenever it changes
+    useEffect(() => {
+        // Ensure localStorage is available before accessing it
+        if (typeof window !== 'undefined' && window.localStorage) {
+            localStorage.setItem('eduai-chat-history', JSON.stringify(chatHistory));
+        }
+    }, [chatHistory]);
+
+    // --- Dynamically load Font Awesome CSS ---
+    useEffect(() => {
+        // Ensure document is available before manipulating it
+        if (typeof document !== 'undefined') {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+            document.head.appendChild(link);
+
+            return () => {
+                // Cleanup: remove the link when the component unmounts
+                if (document.head.contains(link)) {
+                    document.head.removeChild(link);
+                }
+            };
+        }
+    }, []); // Empty dependency array ensures this runs once on mount
+
+    // --- Speech Recognition ---
+    const initSpeechRecognition = useCallback(() => {
+        if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
+            setSpeechRecognitionSupported(true);
+            const recognition = new window.webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                setIsRecording(true);
+                setMessageInput(''); // Clear input when starting to listen
+                if (messageInputRef.current) {
+                    messageInputRef.current.placeholder = "Listening...";
+                }
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                setMessageInput(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error', event.error);
+                stopRecording();
+            };
+
+            recognition.onend = () => {
+                stopRecording();
+            };
+            recognitionRef.current = recognition;
+        } else {
+            setSpeechRecognitionSupported(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        initSpeechRecognition();
+    }, [initSpeechRecognition]);
+
+    const startRecording = () => {
+        if (recognitionRef.current) {
+            recognitionRef.current.start();
+        }
+    };
+
+    const stopRecording = () => {
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
+            setIsRecording(false);
+            if (messageInputRef.current) {
+                messageInputRef.current.placeholder = "Ask anything about your subject...";
+            }
+        }
+    };
+
+    const toggleRecording = () => {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    };
+
+    // --- API Interaction (Conceptual) ---
+    const startNewChat = useCallback(async () => {
+        try {
+            const response = await fetch('https://server-ef04.onrender.com/api/chat/new', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                setCurrentChatId(data.chatId); // Store server-side chat ID
+                updateStatus('Connected to chat session');
+            } else {
+                throw new Error(data.error || 'Failed to start chat session');
+            }
+        } catch (error) {
+            updateStatus('Error: ' + error.message, true);
+        }
+    }, []);
+
+    const sendMessage = async (message: string) => {
+        if (!currentChatId) {
+            updateStatus('No active chat session. Please wait for initialization.', true);
+            return;
+        }
+
+        if (!currentSubject || typeof currentSubject !== 'string') return;
+        const subjectKey = currentSubject;
+        let currentSubjectHistory = chatHistory[subjectKey] || [];
+        let currentActiveChat = activeChat as ChatSession | null;
+
+        if (!currentActiveChat || currentActiveChat.subject !== subjectKey) {
+            // If no active chat or subject changed, create a new local chat session
+            currentActiveChat = {
+                id: Date.now(), // Unique ID for this local chat session
+                subject: subjectKey,
+                messages: []
+            };
+            // Add new chat to the beginning of the subject's history list
+            currentSubjectHistory = [currentActiveChat, ...currentSubjectHistory];
+        }
+
+        const newUserMessage = { sender: 'user', text: message, timestamp: Date.now() };
+        currentActiveChat.messages.push(newUserMessage);
+
+        setActiveChat(currentActiveChat); // Update active chat to include user message
+        setChatHistory(prevHistory => ({
+            ...prevHistory,
+            [subjectKey]: currentSubjectHistory
+        }));
+
+        setIsSending(true); // Disable input while AI is typing
+
+        try {
+            const response = await fetch('https://server-ef04.onrender.com/api/chat/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chatId: currentChatId, // Use server-side chat ID for API
+                    message: message
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Save AI response to local history
+                const newAiMessage = { sender: 'ai', text: data.response, timestamp: Date.now() };
+                currentActiveChat.messages.push(newAiMessage);
+
+                setActiveChat({ ...currentActiveChat }); // Force update to trigger re-render
+                setChatHistory(prevHistory => ({
+                    ...prevHistory,
+                    [subjectKey]: currentSubjectHistory
+                }));
+            } else {
+                throw new Error(data.error || 'Failed to get response');
+            }
+        } catch (error) {
+            console.error("Error sending message:", error);
+            updateStatus('Error: ' + error.message, true);
+            // Append an error message from AI if the call fails
+            const errorAiMessage = { sender: 'ai', text: "Sorry, I encountered an error. Please try again.", timestamp: Date.now() };
+            currentActiveChat.messages.push(errorAiMessage);
+            setActiveChat({ ...currentActiveChat });
+            setChatHistory(prevHistory => ({
+                ...prevHistory,
+                [subjectKey]: currentSubjectHistory
+            }));
+        } finally {
+            setIsSending(false); // Re-enable input
+            if (chatContainerRef.current && 'scrollTop' in chatContainerRef.current && 'scrollHeight' in chatContainerRef.current) {
+                (chatContainerRef.current as HTMLElement).scrollTop = (chatContainerRef.current as HTMLElement).scrollHeight;
+            }
+        }
+    };
+
+    // --- UI Helper Functions ---
+    const copyToClipboard = (text: string, buttonElement: HTMLElement) => {
+        // Ensure document is available before manipulating it
+        if (typeof document !== 'undefined') {
+            try {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+
+                const successMessage = document.createElement('div');
+                successMessage.classList.add('copy-success-message');
+                successMessage.textContent = 'Copied!';
+                if (buttonElement.parentNode) {
+                    buttonElement.parentNode.appendChild(successMessage);
+                }
+                successMessage.classList.add('visible');
+
+                setTimeout(() => {
+                    successMessage.classList.remove('visible');
+                    successMessage.addEventListener('transitionend', () => {
+                        if (successMessage.parentNode) {
+                            successMessage.parentNode.removeChild(successMessage);
+                        }
+                    }, { once: true });
+                }, 1500);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                updateStatus('Failed to copy text.', true);
+            }
+        }
+    };
+
+    const MessageBubble = ({ message, sender }: { message: string; sender: string }) => {
+        const contentRef = useRef<HTMLDivElement>(null); // Ref to get the text content for copying
+
+        const handleCopy = () => {
+            if (contentRef.current) {
+                const copyButton = (contentRef.current as HTMLElement).closest('.message')?.querySelector('.copy-button') as HTMLElement | null;
+                if (copyButton) {
+                    copyToClipboard((contentRef.current as HTMLElement).textContent || '', copyButton);
+                }
+            }
+        };
+
+        return (
+            <div className={`message ${sender}-message p-3 rounded-lg break-words mb-2 relative`}>
+                <div className="message-content" ref={contentRef} dangerouslySetInnerHTML={{ __html: sender === 'ai' ? marked.parse(message) : message }}></div>
+                {/* Re-added copy button functionality */}
+                <div className="copy-button-container">
+                    <button onClick={handleCopy} className={`copy-button text-xs px-2 py-1 rounded-md ${sender === 'ai' ? 'ai-message' : ''}`}>
+                        <i className="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
+    const updateStatus = (message, isError = false) => {
+        setStatusMessage(message);
+        setIsStatusError(isError);
+        setTimeout(() => {
+            setStatusMessage('');
+        }, 3000);
+    };
+
+    const getSubjectDisplayName = (subject) => {
+        const subjectMap = {
+            'biology': 'Biology (Edexcel IAL)',
+            'chemistry': 'Chemistry (Edexcel IAL)',
+            'physics': 'Physics (Edexcel IAL)',
+            'math': 'Mathematics (Edexcel IAL)',
+            'chinese': 'Chinese (Edexcel IGCSE)',
+            'ielts-speaking': 'IELTS Speaking',
+            'ielts-writing': 'IELTS Writing',
+            'ielts-reading': 'IELTS Reading',
+            'ielts-listening': 'IELTS Listening'
+        };
+        return subjectMap[subject] || subject;
+    };
+
+    const getWelcomeMessage = (subject) => {
+        const welcomeMessages = {
+            'biology': "👋 Welcome to Biology! I'm your Edexcel IAL Biology tutor. I can help with topics like biological molecules, cells, genetics, ecology, and more. What would you like to learn about today?",
+            'chemistry': "👋 Welcome to Chemistry! I'm your Edexcel IAL Chemistry tutor. I can help with topics like atomic structure, bonding, energetics, organic chemistry, and more. What would you like to learn about today?",
+            'physics': "👋 Welcome to Physics! I'm your Edexcel IAL Physics tutor. I can help with topics like mechanics, electricity, waves, fields, nuclear physics, and more. What would you like to learn about today?",
+            'math': "👋 Welcome to Mathematics! I'm your Edexcel IAL Mathematics tutor. I can help with topics like pure mathematics, statistics, mechanics, and more. What would you like to learn about today?",
+            'chinese': "👋 Welcome to Chinese! I'm your Edexcel IGCSE Chinese tutor. I can help with topics like pure reading, writing, translating, Chinese topics and more. What would you like to learn about today?",
+            'ielts-speaking': "👋 Welcome to IELTS Speaking! I can help you prepare for your speaking test with practice questions, vocabulary, strategies, and feedback. How would you like to practice today?",
+            'ielts-writing': "👋 Welcome to IELTS Writing! I can help you improve your writing skills for both Task 1 and Task 2, including essay structure, vocabulary, grammar, and more. What aspect of IELTS writing would you like help with?",
+            'ielts-reading': "👋 Welcome to IELTS Reading! I can help you with reading strategies, practice questions, vocabulary building, and more to improve your reading skills. What aspect of IELTS reading would you like to work on?",
+            'ielts-listening': "👋 Welcome to IELTS Listening! I can help you with listening strategies, practice questions, note-taking skills, and more. How would you like to improve your listening skills today?"
+        };
+        return welcomeMessages[subject] || "👋 Welcome! How can I help you today?";
+    };
+
+    const changeSubject = (subject) => {
+        setCurrentSubject(subject);
+
+        let chatForSubject = null;
+        if (chatHistory[subject] && chatHistory[subject].length > 0) {
+            chatForSubject = chatHistory[subject][0]; // Load the most recent chat
+        } else {
+            // No history for this subject, create a new conceptual chat to show welcome message
+            chatForSubject = {
+                id: Date.now(),
+                subject: subject,
+                messages: [{ sender: 'ai', text: getWelcomeMessage(subject), timestamp: Date.now() }]
+            };
+            // Temporarily update history to include this new chat for display
+            setChatHistory(prev => ({
+                ...prev,
+                [subject]: [chatForSubject, ...(prev[subject] || [])]
+            }));
+        }
+        setActiveChat(chatForSubject);
+
+        // Close sidebar if open (only applies to mobile overlay)
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+            toggleSidebar(false);
+        }
+
+        setIsSidebarOpen(false);
+    };
+
+    const toggleSidebar = (forceState: boolean | null = null) => {
+        if (typeof window !== 'undefined' && window.innerWidth < 768 && sidebarMenuRef.current) {
+            const isOpen = sidebarMenuRef.current.classList.contains('translate-x-0');
+            const newState = forceState !== null ? forceState : !isOpen;
+            setIsSidebarOpen(newState);
+            if (newState) {
+                sidebarMenuRef.current.classList.remove('-translate-x-full');
+                sidebarMenuRef.current.classList.add('translate-x-0');
+            } else {
+                sidebarMenuRef.current.classList.remove('translate-x-0');
+                sidebarMenuRef.current.classList.add('-translate-x-full');
+            }
+        }
+    };
+
+    const loadChat = (subject, chatId) => {
+        if (currentSubject !== subject) {
+            setCurrentSubject(subject);
+        }
+
+        const chat = chatHistory[subject]?.find(c => c.id === chatId);
+        if (chat) {
+            setActiveChat(chat);
+            setHistoryModalOpen(false); // Close modal after loading chat
+        } else {
+            console.warn(`Chat with ID ${chatId} not found for subject ${subject}.`);
+        }
+    };
+
+    const clearHistory = () => {
+        setShowConfirmClearModal(true);
+    };
+
+    const handleConfirmClear = (confirm) => {
+        setShowConfirmClearModal(false);
+        if (confirm) {
+            setChatHistory({});
+            setActiveChat(null);
+            // Re-initialize current subject with welcome message after clearing all history
+            const defaultSubject = currentSubject || 'biology'; // Keep current subject or default
+            changeSubject(defaultSubject);
+        }
+    };
+
+    // --- Quiz Generation ---
+    const generateQuiz = async (numQuestions, difficulty, topic) => {
+        // Ensure document is available before manipulating it
+        if (typeof document === 'undefined') return;
+
+        const quizContentEl = document.getElementById('quiz-content');
+        if (quizContentEl) {
+            quizContentEl.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                        <i class="fas fa-spinner fa-spin text-2xl text-primary-500"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Generating Quiz</h3>
+                    <p class="text-gray-600">Please wait while we create your quiz...</p>
+                </div>
+            `;
+        }
+
+        let prompt = `Generate a ${numQuestions}-question ${difficulty} difficulty quiz about ${getSubjectDisplayName(currentSubject)}`;
+        if (topic) {
+            prompt += ` focusing on ${topic}`;
+        }
+        prompt += `. Format: numbered questions with multiple choice options (A, B, C, D) and correct answer marked. Include explanation for each answer.`;
+
+        try {
+            const response = await fetch('https://server-ef04.onrender.com/api/chat/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chatId: currentChatId,
+                    message: prompt
+                })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                displayQuiz(data.response, numQuestions, difficulty, topic);
+            } else {
+                throw new Error(data.error || 'Failed to generate quiz');
+            }
+        } catch (error) {
+            if (quizContentEl) {
+                quizContentEl.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Error</h3>
+                        <p class="text-gray-600">${error.message}</p>
+                        <button id="retry-quiz-btn" class="mt-4 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+                if (document.getElementById('retry-quiz-btn')) {
+                    document.getElementById('retry-quiz-btn').onclick = () => {
+                        setQuizModalOpen(false);
+                        setTimeout(() => setQuizModalOpen(true), 300);
+                    };
+                }
+            }
+        }
+    };
+
+    const displayQuiz = (quizText, numQuestions, difficulty, topic) => {
+        // Ensure document is available before manipulating it
+        if (typeof document === 'undefined') return;
+
+        const quizContentEl = document.getElementById('quiz-content');
+        if (quizContentEl) {
+            quizContentEl.innerHTML = `
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">Quiz: ${getSubjectDisplayName(currentSubject)}</h3>
+                        <div class="text-sm text-gray-500">${difficulty} · ${numQuestions} questions</div>
+                    </div>
+                    
+                    <div class="prose prose-sm md:prose-base max-w-none">
+                        ${marked.parse(quizText)}
+                    </div>
+                    
+                    <div class="mt-8 flex justify-between">
+                        <button id="new-quiz-btn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition text-gray-800">
+                            New Quiz
+                        </button>
+                        <button id="save-quiz-btn" class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition">
+                            Save to Chat
+                        </button>
+                    </div>
+                </div>
+            `;
+            if (document.getElementById('new-quiz-btn')) {
+                document.getElementById('new-quiz-btn').onclick = () => {
+                    // Reset quiz form and show it again
+                    if (document.getElementById('quiz-num-questions')) document.getElementById('quiz-num-questions').value = '10';
+                    if (document.getElementById('quiz-difficulty')) document.getElementById('quiz-difficulty').value = 'medium';
+                    if (document.getElementById('quiz-topic')) document.getElementById('quiz-topic').value = '';
+                    setQuizModalOpen(false);
+                    setTimeout(() => setQuizModalOpen(true), 300);
+                };
+            }
+            if (document.getElementById('save-quiz-btn')) {
+                document.getElementById('save-quiz-btn').onclick = () => {
+                    const userPrompt = `Generate a ${numQuestions}-question ${difficulty} difficulty quiz${topic ? ` focusing on ${topic}` : ''}.`;
+                    // Add to history
+                    const subjectKey = typeof currentSubject === 'string' ? currentSubject : '';
+                    let currentSubjectHistory = chatHistory[subjectKey] || [];
+                    let currentActiveChat = activeChat;
+
+                    if (!currentActiveChat || currentActiveChat.subject !== subjectKey) {
+                        currentActiveChat = {
+                            id: Date.now(),
+                            subject: subjectKey,
+                            messages: []
+                        };
+                        currentSubjectHistory = [currentActiveChat, ...currentSubjectHistory];
+                    }
+
+                    currentActiveChat.messages.push({ sender: 'user', text: userPrompt, timestamp: Date.now() });
+                    currentActiveChat.messages.push({ sender: 'ai', text: quizText, timestamp: Date.now() });
+
+                    setActiveChat(currentActiveChat);
+                    setChatHistory(prevHistory => ({
+                        ...prevHistory,
+                        [subjectKey]: currentSubjectHistory
+                    }));
+
+                    setQuizModalOpen(false);
+                };
+            }
+        }
+    };
+
+    // --- Revision Plan Generation ---
+    const generateRevisionPlan = async (examDate, studyHours, focusAreas) => {
+        // Ensure document is available before manipulating it
+        if (typeof document === 'undefined') return;
+
+        if (!examDate) {
+            updateStatus('Please select an exam date to create a revision plan.', true);
+            return;
+        }
+
+        const revisionContentEl = document.getElementById('revision-content');
+        if (revisionContentEl) {
+            revisionContentEl.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                        <i class="fas fa-spinner fa-spin text-2xl text-purple-500"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Creating Your Plan</h3>
+                    <p class="text-gray-600">Please wait while we design your personalized revision plan...</p>
+                </div>
+            `;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const examDay = new Date(examDate);
+        examDay.setHours(0, 0, 0, 0);
+
+        const diffTime = Math.abs(examDay - today);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const weeksUntilExam = Math.max(1, Math.ceil(diffDays / 7));
+
+        let prompt = `Create a ${weeksUntilExam}-week revision plan for ${getSubjectDisplayName(currentSubject)} with approximately ${studyHours} study hours per week`;
+        if (focusAreas) {
+            prompt += `, focusing on these areas: ${focusAreas}`;
+        }
+        prompt += `. The exam is on ${examDate}. Include specific topics to study each week, recommended resources, and practice questions. Format as a week-by-week schedule.`;
+
+        try {
+            const response = await fetch('https://server-ef04.onrender.com/api/chat/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chatId: currentChatId,
+                    message: prompt
+                })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                displayRevisionPlan(data.response, examDate, studyHours, focusAreas);
+            } else {
+                throw new Error(data.error || 'Failed to generate revision plan');
+            }
+        } catch (error) {
+            if (revisionContentEl) {
+                revisionContentEl.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Error</h3>
+                        <p class="text-gray-600">${error.message}</p>
+                        <button id="retry-plan-btn" class="mt-4 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+                if (document.getElementById('retry-plan-btn')) {
+                    document.getElementById('retry-plan-btn').onclick = () => {
+                        setRevisionModalOpen(false);
+                        setTimeout(() => setRevisionModalOpen(true), 300);
+                    };
+                }
+            }
+        }
+    };
+
+    const displayRevisionPlan = (planText, examDate, studyHours, focusAreas) => {
+        // Ensure document is available before manipulating it
+        if (typeof document === 'undefined') return;
+
+        const revisionContentEl = document.getElementById('revision-content');
+        if (revisionContentEl) {
+            revisionContentEl.innerHTML = `
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">Revision Plan: ${getSubjectDisplayName(currentSubject)}</h3>
+                        <div class="text-sm text-gray-500">Exam date: ${new Date(examDate).toLocaleDateString()}</div>
+                    </div>
+                    
+                    <div class="prose prose-sm md:prose-base max-w-none">
+                        ${marked.parse(planText)}
+                    </div>
+                    
+                    <div class="mt-8 flex justify-between">
+                        <button id="new-plan-btn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition text-gray-800">
+                            New Plan
+                        </button>
+                        <button id="save-plan-btn" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
+                            Save to Chat
+                        </button>
+                    </div>
+                </div>
+            `;
+            if (document.getElementById('new-plan-btn')) {
+                document.getElementById('new-plan-btn').onclick = () => {
+                    const defaultDate = new Date();
+                    defaultDate.setDate(defaultDate.getDate() + 30);
+                    if (document.getElementById('revision-exam-date')) document.getElementById('revision-exam-date').valueAsDate = defaultDate;
+                    if (document.getElementById('revision-hours')) document.getElementById('revision-hours').value = '10';
+                    if (document.getElementById('revision-focus')) document.getElementById('revision-focus').value = '';
+                    setRevisionModalOpen(false);
+                    setTimeout(() => setRevisionModalOpen(true), 300);
+                };
+            }
+            if (document.getElementById('save-plan-btn')) {
+                document.getElementById('save-plan-btn').onclick = () => {
+                    const userPrompt = `Generate a revision plan for ${getSubjectDisplayName(currentSubject)} (Exam: ${new Date(examDate).toLocaleDateString()}, ${studyHours} hours/week${focusAreas ? `, Focus: ${focusAreas}` : ''})`;
+
+                    const subjectKey = typeof currentSubject === 'string' ? currentSubject : '';
+                    let currentSubjectHistory = chatHistory[subjectKey] || [];
+                    let currentActiveChat = activeChat;
+
+                    if (!currentActiveChat || currentActiveChat.subject !== subjectKey) {
+                        currentActiveChat = {
+                            id: Date.now(),
+                            subject: subjectKey,
+                            messages: []
+                        };
+                        currentSubjectHistory = [currentActiveChat, ...currentSubjectHistory];
+                    }
+
+                    currentActiveChat.messages.push({ sender: 'user', text: userPrompt, timestamp: Date.now() });
+                    currentActiveChat.messages.push({ sender: 'ai', text: planText, timestamp: Date.now() });
+
+                    setActiveChat(currentActiveChat);
+                    setChatHistory(prevHistory => ({
+                        ...prevHistory,
+                        [subjectKey]: currentSubjectHistory
+                    }));
+
+                    setRevisionModalOpen(false);
+                };
+            }
+        }
+    };
+
+    // Auto-expanding textarea logic
+    useEffect(() => {
+        const textarea = messageInputRef.current;
+        if (textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 300) + 'px';
+            const container = textarea.parentElement;
+            if (container) {
+                container.style.height = textarea.style.height;
+            }
+        }
+    }, [messageInput]);
+
+    // Scroll to bottom of chat container when messages update
+    useEffect(() => {
+        if (chatContainerRef.current && 'scrollTop' in chatContainerRef.current && 'scrollHeight' in chatContainerRef.current) {
+            (chatContainerRef.current as HTMLElement).scrollTop = (chatContainerRef.current as HTMLElement).scrollHeight;
+        }
+    }, [activeChat]);
+
+    return (
+        <div className="flex h-full items-center justify-center p-0 transition-colors duration-300">
+            <style>
+                {`
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+                
+                :root {
+                    --primary-color: #1E90FF;
+                    --primary-light: #60a5fa;
+                    --primary-dark: #0369a1;
+                    --bg-blur: rgba(255, 255, 255, 0.8);
+                    --card-bg: rgba(255, 255, 255, 0.7);
+                    --card-border: rgba(255, 255, 255, 0.4);
+                    --shadow-color: rgba(0, 0, 0, 0.05);
+                    --text-primary: #1a202c;
+                    --text-secondary: #4a5568;
+                }
+
+                body {
+                    font-family: 'Inter', sans-serif;
+                    margin: 0;
+                    height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background-color: #f0f0f0;
+                }
+
+                #eduai-container {
+                    width: 100%;
+                    max-width: 1000px;
+                    height: 90vh;
+                    margin: 0 auto;
+                }
+
+                .blur-container {
+                    backdrop-filter: blur(15px);
+                    -webkit-backdrop-filter: blur(15px);
+                }
+
+                .glass-card {
+                    background: var(--card-bg);
+                    border: 1px solid var(--card-border);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    box-shadow: 0 4px 6px var(--shadow-color);
+                    transition: all 0.3s ease;
+                }
+
+                .glass-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 15px -3px var(--shadow-color);
+                }
+
+                ::-webkit-scrollbar {
+                    width: 6px;
+                    height: 6px;
+                }
+
+                ::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+
+                ::-webkit-scrollbar-thumb {
+                    background: #cbd5e1;
+                    border-radius: 3px;
+                }
+
+                .user-message {
+                    animation: slideIn 0.3s ease-out;
+                    align-self: flex-end;
+                    background-color: #1E90FF;
+                    color: white;
+                    max-width: 80%;
+                    margin-left: auto;
+                    width: fit-content;
+                }
+
+                .ai-message {
+                    animation: slideIn 0.3s ease-out;
+                    align-self: flex-start;
+                    background-color: var(--card-bg);
+                    color: var(--text-primary);
+                    max-width: 80%;
+                    margin-right: auto;
+                    width: fit-content;
+                }
+
+                .typing-indicator {
+                    display: flex;
+                    align-items: center;
+                    padding: 0.5rem 1rem;
+                    align-self: flex-start;
+                    margin-right: auto;
+                }
+
+                .typing-indicator span {
+                    height: 8px;
+                    width: 8px;
+                    background-color: var(--primary-color);
+                    border-radius: 50%;
+                    display: inline-block;
+                    margin-right: 3px;
+                    opacity: 0.7;
+                }
+
+                .typing-indicator span:nth-child(1) {
+                    animation: pulse 1s infinite;
+                }
+
+                .typing-indicator span:nth-child(2) {
+                    animation: pulse 1s infinite 0.2s;
+                }
+
+                .typing-indicator span:nth-child(3) {
+                    animation: pulse 1s infinite 0.4s;
+                }
+
+                @keyframes pulse {
+                    0%, 100% {
+                        transform: scale(1);
+                        opacity: 0.7;
+                    }
+                    50% {
+                        transform: scale(1.2);
+                        opacity: 1;
+                    }
+                }
+                
+                .message-content {
+                    width: 100%;
+                    overflow-wrap: break-word;
+                }
+                
+                .message-content p {
+                    margin-bottom: 0.5rem;
+                }
+                
+                .message-content ul, .message-content ol {
+                    margin-left: 1.5rem;
+                    margin-bottom: 0.5rem;
+                }
+                
+                .message-content ul {
+                    list-style-type: disc;
+                }
+                
+                .message-content ol {
+                    list-style-type: decimal;
+                }
+                
+                .message-content code {
+                    font-family: monospace;
+                    background-color: rgba(0, 0, 0, 0.1);
+                    padding: 0.1rem 0.2rem;
+                    border-radius: 3px;
+                    color: var(--text-primary);
+                }
+                
+                .message-content pre {
+                    background-color: rgba(0, 0, 0, 0.1);
+                    padding: 0.5rem;
+                    border-radius: 5px;
+                    margin-bottom: 0.5rem;
+                    overflow-x: auto;
+                }
+                
+                .message-content a {
+                    color: #2563eb;
+                    text-decoration: underline;
+                }
+                
+                .user-message .message-content a,
+                .user-message .message-content code,
+                .user-message .message-content pre {
+                    color: white;
+                    background-color: rgba(255, 255, 255, 0.2);
+                }
+
+                h1,h2,h3,h4,h5,h6 {
+                    margin-bottom: 0px; padding-bottom: 0px;
+                }
+
+                textarea, select {
+                    border: none;
+                }
+
+                .textarea-container {
+                    min-height: 40px;
+                    height: 40px;
+                    display: flex;
+                    align-items: flex-end;
+                }
+
+                #message-input {
+                    min-height: 40px;
+                    max-height: 300px;
+                    padding: 5px 15px;
+                    border-radius: 20px;
+                    background-color: #f5f5f5;
+                    transition: background 0.2s;
+                    resize: none;
+                    line-height: 30px;
+                    box-sizing: border-box;
+                }
+                #message-input:disabled {
+                    background-color: #f5f5f5;
+                    color: #b0b0b0;
+                    opacity: 1;
+                }
+                .flex-grow.relative.textarea-container {
+                    min-height: 40px;
+                    height: 40px;
+                }
+                textarea:focus {
+                    border-color: #1E90ff;
+                }
+                button:hover {
+                    color: none;
+                }
+
+                .copy-button-container {
+                    position: relative;
+                    margin-top: 0.5rem;
+                    display: flex;
+                    justify-content: flex-end;
+                }
+
+                .copy-button {
+                    background-color: rgba(0, 0, 0, 0);
+                    color: rgba(255, 255, 255, 0.5);
+                    border: none;
+                    border-radius: 0.375rem;
+                    padding: 0.25rem 0.5rem;
+                    font-size: 0.75rem;
+                    cursor: pointer;
+                    transition: background-color 0.2s ease;
+                    display: flex;
+                    align-items: center;
+                    
+                }
+
+                .ai-message .copy-button {
+                    background-color: rgba(0, 0, 0, 0);
+                    color: rgba(0, 0, 0, 0.2);
+                }
+
+                .copy-button:hover {
+                    background-color: rgba(0, 0, 0, 0.05);
+                }
+
+                .ai-message .copy-button:hover {
+                    background-color: rgba(0, 0, 0, 0.05);
+                     color: rgba(0, 0, 0, 0.5);
+                }
+
+                .copy-button i {
+          
+                }
+
+                .copy-success-message {
+                    position: absolute;
+                    right: 0;
+                    top: -2rem;
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 0.375rem;
+                    font-size: 0.75rem;
+                    opacity: 0;
+                    transition: opacity 0.3s ease-out;
+                    pointer-events: none;
+                }
+
+                .copy-success-message.visible {
+                    opacity: 1;
+                }
+
+                #sidebar-menu {
+                    will-change: transform;
+                }
+                `}
+            </style>
+            <div id="eduai-container" className="w-full h-[90vh] rounded-xl overflow-hidden border m-0 border-gray-200 relative transition-all duration-300 ease-in-out flex flex-col md:flex-row">
+                {/* Sidebar Menu */}
+                <div ref={sidebarMenuRef} id="sidebar-menu" className="absolute left-0 top-0 h-full w-64 bg-[#ffffff95] blur-container transform -translate-x-full z-40 border-r border-gray-200 overflow-y-auto transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:bg-white md:z-auto md:flex-shrink-0 md:flex-grow-0 md:rounded-l-xl">
+                    <div className="p-4 h-[60px] border-b border-b-[#00000020]">
+                        <h3 className="font-bold text-xl text-primary-500" style={{ marginBottom: 0, paddingBottom: 0 }}>AI Teacher <span className="text-[#ff3b30]">Pro</span></h3>
+                    </div>
+                    <div className="py-4">
+                        {/* General subject on top */}
+                        <button
+                            onClick={() => changeSubject('General')}
+                            className={`sidebar-subject-btn w-full text-left px-4 py-2 mb-2 flex items-center ${currentSubject === 'General' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 hover:text-black'}`}
+                            style={{ borderRadius: '0px' }}
+                        >
+                            <i className="fas fa-comments mr-2 text-blue-500"></i> General
+                        </button>
+                        <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4 h-[25px]">Edexcel IAL</h3>
+                        {['biology', 'chemistry', 'physics', 'math'].map((subject: string) => (
+                            <button
+                                key={subject}
+                                onClick={() => changeSubject(subject)}
+                                className={`sidebar-subject-btn w-full text-left px-4 py-2 flex items-center ${currentSubject === subject ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 hover:text-black'}`}
+                                style={{ borderRadius: '0px' }}
+                            >
+                                <i className={`fas ${subject === 'biology' ? 'fa-dna text-emerald-500' : subject === 'chemistry' ? 'fa-flask text-red-400' : subject === 'physics' ? 'fa-atom text-blue-500' : 'fa-calculator text-amber-500'} mr-2`}></i> {getSubjectDisplayName(subject).split(' ')[0]}
+                            </button>
+                        ))}
+                        <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4  h-[25px]">Edexcel IGCSE</h3>
+                        <button
+                            onClick={() => changeSubject('chinese')}
+                            className={`sidebar-subject-btn w-full text-left px-4 py-2 flex items-center ${currentSubject === 'chinese' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 hover:text-black'}`}
+                            style={{ borderRadius: '0px' }}
+                        >
+                            <i className="fas fa-language mr-2 text-purple-500"></i> Chinese
+                        </button>
+
+                        <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-4  h-[25px]">IELTS</h3>
+                        {['ielts-speaking', 'ielts-writing', 'ielts-reading', 'ielts-listening'].map((subject: string) => (
+                            <button
+                                key={subject}
+                                onClick={() => changeSubject(subject)}
+                                className={`sidebar-subject-btn w-full text-left px-4 py-2 flex items-center ${currentSubject === subject ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 hover:text-black'}`}
+                                style={{ borderRadius: '0px' }}
+                            >
+                                <i className={`fas ${subject === 'ielts-speaking' ? 'fa-microphone' : subject === 'ielts-writing' ? 'fa-pen-fancy' : subject === 'ielts-reading' ? 'fa-book-open' : 'fa-headphones'} mr-2 text-red-500`}></i> {getSubjectDisplayName(subject).split(' ')[1]}
+                            </button>
+                        ))}
+                        <div className="border-t border-t-[#00000020] h-[50px] mt-4 pt-4">
+                            <button onClick={clearHistory} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700">
+                                <i className="fas fa-trash-alt mr-2 text-gray-500"></i> Clear History
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main App Interface */}
+                <div id="app-interface" className="h-full flex flex-col bg-gray-50 relative flex flex-grow md:rounded-r-xl md:overflow-hidden">
+                    {/* Header */}
+                    <header className="flex justify-between items-center p-4 bg-white border-b border-b-[#00000020] h-[60px]">
+                        <div className="flex items-center">
+                            <button onClick={() => toggleSidebar()} id="menu-toggle" className="w-[40px] h-[40px] p-0 rounded-full hover:bg-gray-100 transition mr-2 block md:hidden" style={{ width: '40px', height: '40px' }}>
+                                <i className="fas fa-bars text-gray-600"></i>
+                            </button>
+                            <div>
+                                <h1 id="current-subject-header" className="text-xl font-bold text-gray-800 break-words overflow-hidden line-clamp-2" style={{ marginBottom: 0, paddingBottom: 0 }}>{currentSubject ? getSubjectDisplayName(currentSubject) : 'AI Teach'}</h1>
+                                <p className="text-xs text-gray-500 mt-0">Gemini 2.5 Flash</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            {/* <button onClick={() => setQuizModalOpen(true)} id="quiz-btn" className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm bg-blue-100 text-blue-500 hover:bg-blue-200 hover:text-primary-500 transition">
+                                <i className="fas fa-question-circle text-xs"></i>
+                                <span>Quiz</span>
+                            </button>
+                            <button onClick={() => setRevisionModalOpen(true)} id="revision-btn" className="flex items-center space-x-1 px-3 py-1.5 rounded-full text-sm bg-purple-100 text-purple-500 hover:text-purple-500 hover:bg-purple-200 transition">
+                                <i className="fas fa-book text-xs"></i>
+                                <span>Plan</span>
+                            </button> */}
+                            <button onClick={() => setHistoryModalOpen(true)} id="chat-history-btn" className="p-0 rounded-full hover:bg-gray-100 transition justify-center" style={{ width: '40px', height: '40px' }}>
+                                <i className="fas fa-history text-gray-600"></i>
+                            </button>
+                            {/* <button id="open-tone-modal-btn" className="p-0 rounded-full hover:bg-gray-100 transition text-gray-600 justify-center" style={{ width: '40px', height: '40px' }}>
+                                <i className="fas fa-cog"></i>
+                            </button> */}
+                        </div>
+                    </header>
+
+                    {/* Chat Container */}
+                    <div ref={chatContainerRef} id="chat-container" className="flex-grow overflow-y-auto text-[12px] p-4 space-y-4 bg-gray-50 pb-20 flex flex-col">
+                        {activeChat?.messages.map((msg: ChatMessage, index: number) => (
+                            <MessageBubble key={index} message={msg.text} sender={msg.sender} />
+                        ))}
+                        {isSending && (
+                            <div className="typing-indicator ai-message p-3 rounded-lg">
+                                <span></span><span></span><span></span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Input Area */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 blur-container flex justify-center z-10" style={{ borderTop: '1px solid #00000020' }}>
+                        <div className="flex gap-3 w-full max-w-xl p-0 h-auto items-end">
+                            <button
+                                onClick={toggleRecording}
+                                id="voice-btn"
+                                className={`p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition ${isRecording ? 'text-primary-500' : 'text-gray-500'}`}
+                                title="Use voice input"
+                                style={{ width: '40px', height: '40px' }}
+                                disabled={!speechRecognitionSupported} // Disable if not supported
+                            >
+                                <i className={`fas ${isRecording ? 'fa-microphone-slash' : 'fa-microphone'}`}></i>
+                            </button>
+                            <div className="flex-grow relative h-[40px] textarea-container">
+                                <textarea
+                                    ref={messageInputRef}
+                                    id="message-input"
+                                    rows="1"
+                                    placeholder="Type a message..."
+                                    value={messageInput}
+                                    onChange={(e) => setMessageInput(e.target.value)}
+                                    onKeyPress={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            if (messageInput.trim()) {
+                                                sendMessage(messageInput.trim());
+                                                setMessageInput('');
+                                            }
+                                        }
+                                    }}
+                                    disabled={isSending}
+                                    className="w-full rounded-[20px] focus:outline-none blur-container focus:ring-2 focus:ring-primary-500 text-gray-800 resize-none"
+                                    style={{ padding: '5px 15px' }}
+                                ></textarea>
+                                {statusMessage && (
+                                    <div id="status" className={`absolute text-xs bottom-full right-1 m-0 px-2 py-1 rounded-md ${isStatusError ? 'bg-red-500' : 'bg-black'} text-white`}>
+                                        {statusMessage}
+                                    </div>
+                                )}
+                            </div>
+                            <button
+                                onClick={() => {
+                                    if (messageInput.trim()) {
+                                        sendMessage(messageInput.trim());
+                                        setMessageInput('');
+                                    }
+                                }}
+                                id="send-button"
+                                className={`p-2 bg-primary-500 rounded-full hover:bg-primary-600 transition text-white ${isSending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                style={{ width: '40px', height: '40px', backgroundColor: '#2563eb' }}
+                                disabled={isSending}
+                            >
+                                <i className="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Quiz Modal */}
+                {quizModalOpen && (
+                    <div id="quiz-modal" className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col animate-fade-in">
+                        <div className="p-4 border-b flex justify-between items-center">
+                            <h2 className="font-semibold text-xl text-gray-800">Quiz Mode</h2>
+                            <button onClick={() => setQuizModalOpen(false)} className="p-2 rounded-full hover:bg-gray-100 transition">
+                                <i className="fas fa-times text-gray-600"></i>
+                            </button>
+                        </div>
+                        <div id="quiz-content" className="flex-grow p-6 overflow-y-auto">
+                            <div className="text-center py-8">
+                                <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                                    <i className="fas fa-question-circle text-2xl text-primary-500"></i>
+                                </div>
+                                <h3 className="text-xl font-semibold text-gray-800 mb-2">Start a Quiz</h3>
+                                <p className="text-gray-600 mb-6">Test your knowledge with a subject-specific quiz</p>
+
+                                <div className="max-w-md mx-auto">
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Number of questions</label>
+                                        <select id="quiz-num-questions" className="w-full p-2 border rounded-lg bg-white text-gray-800">
+                                            <option value="5">5 questions</option>
+                                            <option value="10">10 questions</option>
+                                            <option value="15">15 questions</option>
+                                            <option value="20">20 questions</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Difficulty</label>
+                                        <select id="quiz-difficulty" className="w-full p-2 border rounded-lg bg-white text-gray-800">
+                                            <option value="easy">Easy</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="hard">Hard</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="mb-6">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Topic (optional)</label>
+                                        <input type="text" id="quiz-topic" placeholder="Leave blank for mixed topics" className="w-full p-2 border rounded-lg bg-white text-gray-800" />
+                                    </div>
+
+                                    <button onClick={() => generateQuiz(document.getElementById('quiz-num-questions').value, document.getElementById('quiz-difficulty').value, document.getElementById('quiz-topic').value)} id="start-quiz-btn" className="w-full py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition">
+                                        Start Quiz
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Revision Plan Modal */}
+                {revisionModalOpen && (
+                    <div id="revision-modal" className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col animate-fade-in">
+                        <div className="p-4 border-b flex justify-between items-center">
+                            <h2 className="font-semibold text-xl text-gray-800">Revision Plan</h2>
+                            <button onClick={() => setRevisionModalOpen(false)} className="p-2 rounded-full hover:bg-gray-100 transition">
+                                <i className="fas fa-times text-gray-600"></i>
+                            </button>
+                        </div>
+                        <div id="revision-content" className="flex-grow p-6 overflow-y-auto">
+                            <div className="text-center py-8">
+                                <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
+                                    <i className="fas fa-calendar-alt text-2xl text-purple-500"></i>
+                                </div>
+                                <h3 className="text-xl font-semibold text-gray-800 mb-2">Create a Revision Plan</h3>
+                                <p className="text-gray-600 mb-6">Let AI create a personalized study schedule</p>
+
+                                <div className="max-w-md mx-auto">
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Exam Date</label>
+                                        <input type="date" id="revision-exam-date" className="w-full p-2 border rounded-lg bg-white text-gray-800" />
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Study hours per week</label>
+                                        <select id="revision-hours" className="w-full p-2 border rounded-lg bg-white text-gray-800">
+                                            <option value="5">~5 hours</option>
+                                            <option value="10">10 hours</option>
+                                            <option value="15">~15 hours</option>
+                                            <option value="20">~20 hours</option>
+                                            <option value="30">~30 hours</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="mb-6">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Focus areas (optional)</label>
+                                        <textarea id="revision-focus" rows="3" placeholder="Any specific topics you want to focus on?" className="w-full p-2 border rounded-lg bg-white text-gray-800 resize-none"></textarea>
+                                    </div>
+
+                                    <button onClick={() => generateRevisionPlan(document.getElementById('revision-exam-date').value, document.getElementById('revision-hours').value, document.getElementById('revision-focus').value)} id="create-plan-btn" className="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
+                                        Create Plan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Chat History Modal */}
+                {historyModalOpen && (
+                    <div id="history-modal" className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col animate-fade-in">
+                        <div className="p-4 border-b border-[#00000020] flex justify-between items-center">
+                            <h2 className="font-semibold text-xl text-gray-800">Chat History</h2>
+                            <button onClick={() => setHistoryModalOpen(false)} className="h-[40px] w-[40px] justify-center align-center p-0 rounded-full hover:bg-gray-100 transition">
+                                <i className="fas fa-times text-gray-600"></i>
+                            </button>
+                        </div>
+                        <div id="history-content" className="flex-grow p-4 overflow-y-auto">
+                            {Object.keys(chatHistory).length === 0 ? (
+                                <div id="no-history" className="text-center py-8 text-gray-500">
+                                    <i className="fas fa-history text-4xl mb-2"></i>
+                                    <p>No chat history yet</p>
+                                </div>
+                            ) : (
+                                <div id="history-list" className="space-y-3">
+                                    {Object.entries(chatHistory).map(([subject, chats]: [string, ChatSession[]]) => (
+                                        <React.Fragment key={subject}>
+                                            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-4">{getSubjectDisplayName(subject)}</h3>
+                                            {chats.map((chat: ChatSession) => {
+                                                const firstUserMsg = chat.messages?.find((m: ChatMessage) => m.sender === 'user');
+                                                let preview = firstUserMsg ? firstUserMsg.text : (chat.messages?.[0]?.text || 'No message preview');
+                                                if (preview.length > 40) {
+                                                    preview = preview.substring(0, 40) + '...';
+                                                }
+                                                const date = new Date(chat.id);
+                                                const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                                                return (
+                                                    <div
+                                                        key={chat.id}
+                                                        onClick={() => loadChat(subject, chat.id)}
+                                                        className="glass-card p-3 rounded-lg cursor-pointer hover:bg-gray-100"
+                                                    >
+                                                        <div className="flex justify-between items-start">
+                                                            <div className="text-sm font-medium text-gray-800">{preview}</div>
+                                                            <div className="text-xs text-gray-500">{dateStr}</div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Confirm Clear History Modal */}
+                {showConfirmClearModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-xl text-center">
+                            <p className="mb-4 text-gray-800">Are you sure you want to clear all chat history? This cannot be undone.</p>
+                            <button onClick={() => handleConfirmClear(true)} className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md mr-2">Yes, Clear</button>
+                            <button onClick={() => handleConfirmClear(false)} className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md">No, Cancel</button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Overlay for mobile sidebar */}
+                {isSidebarOpen && (
+                    <div
+                        className="fixed inset-0 z-30 bg-transparent md:hidden"
+                        onClick={() => toggleSidebar(false)}
+                        aria-label="Close sidebar overlay"
+                        style={{ pointerEvents: 'auto' }}
+                    />
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default App;
