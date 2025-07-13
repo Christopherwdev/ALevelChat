@@ -858,7 +858,7 @@ const PaperCard: React.FC<PaperCardProps> = ({ paper, getSubjectColor, getFullMo
     const paperPartDisplay = paper.paper === 'N/A' ? '' : paper.paper;
 
     return (
-        <div className="paper-card gap-[10px] bg-white dark:bg-gray-800 rounded-lg p-2 shadow-2xl border border-[#00000020] flex justify-between items-center text-sm">
+        <div className="paper-card gap-[10px] bg-white dark:bg-gray-800 rounded-lg p-2 shadow-2xl shadow-[#00000020] border border-[#00000020] flex justify-between items-center text-sm">
             {paper.isComingSoon ? (
                 <div className="flex items-center space-x-2">
                     <span className={`font-semibold text-${subjectColor}`}>{paper.subject}</span>

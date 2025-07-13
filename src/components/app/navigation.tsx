@@ -4,18 +4,19 @@ import { useState, useRef} from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn"; // Assuming cn utility is available
 import Link from "next/link";
-import { Home, BookOpen, Files, LayoutDashboard, Library, Users, BotMessageSquare, User } from "lucide-react";
+import { Home, BookOpenText, Files, LayoutDashboard, School, Library, Users, BotMessageSquare, User } from "lucide-react";
 
 const navItems = [
 
   { name: "Home", href: "/home", icon: Home },
-  { name: "Learn", href: "/learn", icon: BookOpen },
+  { name: "Learn", href: "/learn", icon: BookOpenText },
   { name: "Past Papers", href: "/past-paper", icon: Files },
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "AI Teacher", href: "/ai-teacher", icon: BotMessageSquare },
 
   // { name: "Resources", href: "/resources", icon: Library },
   // { name: "Social", href: "/social", icon: Users },
+  { name: "Tutor", href: "/tutor", icon: School },  
   { name: "Profile", href: "/profile", icon: User },
 ];
 

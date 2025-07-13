@@ -47,7 +47,7 @@ const LearnPage = () => {
       <AppHeader isAuthenticated={true} />
       <div className="min-h-screen bg-white p-0 font-inter">
         <div className="max-w-4xl mx-auto mt-5 p-4">
-          <h1 className="text-5xl font-medium text-gray-800 text-center mb-5 font-bold">Learning</h1>
+          <h1 className="text-5xl font-medium text-gray-800 text-center mb-5 font-bold font-serif">Learning</h1>
           <p className="text-lg text-gray-600 mb-8 text-center  ">
             Explore AI-powered revision tools, past papers, and expert resources for Edexcel IGCSE, IAL, and IELTS. Start your journey to top grades with instant feedback and 24/7 support.
           </p>

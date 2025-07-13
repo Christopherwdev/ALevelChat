@@ -338,7 +338,7 @@ const App: React.FC = () => {
     const [calendarRange, setCalendarRange] = useState<{start: string, end: string}>(() => {
         const today = new Date();
         const start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
-        const end = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().slice(0, 10);
+        const end = new Date(today.getFullYear(), today.getMonth() + 12, 0).toISOString().slice(0, 10);
         return { start, end };
     });
     const [calendarData, setCalendarData] = useState<Record<string, string>>({});
@@ -455,7 +455,7 @@ const App: React.FC = () => {
             if (bottomActionsRef.current) {
                 const rect = bottomActionsRef.current.getBoundingClientRect();
                 const initialLeft = window.innerWidth - rect.width - 60;
-                const initialTop = window.innerHeight - rect.height - 60;
+                const initialTop = window.innerHeight - rect.height - 100;
                 bottomActionsRef.current.style.left = `${initialLeft}px`;
                 bottomActionsRef.current.style.top = `${initialTop}px`;
             }
@@ -947,23 +947,30 @@ const App: React.FC = () => {
                 }
                 .table-container {
                     width: 100%;
-                    height: calc(100vh - 150px); /* Adjust based on header height */
+                    height: calc(100vh - 150px); /* Mobile height */
                     overflow: auto;
                     border: 1px solid #e2e8f0;
                    
                     margin-bottom: 30px;
                     position: relative; /* Needed for absolute positioning of message */
                 }
+                
+                @media (min-width: 1024px) {
+                    .table-container {
+                        height: calc(100vh - 80px); /* Desktop height */
+                    }
+                }
                 .table-container::-webkit-scrollbar {
                     display: none;
                 }
                 table {
-                    border-collapse: separate;
+                    border-collapse: collapse;
                     border-spacing: 0;
                     width: 100%;
                 }
                 th, td {
-                    border: 1px solid #00000010;
+                    border: 1px solid #00000020;
+                    border-left: none;
                     padding: 0;
                     white-space: nowrap;
                     text-align: center;
@@ -1274,7 +1281,7 @@ const App: React.FC = () => {
                             </tbody>
                             <tfoot id="table-foot">
                                 <tr className="mean-score-row">
-                                    <td>Mean Score</td>
+                                    <td ><span className='font-extrabold'>MEAN</span></td>
                                     {flatPaperList.map(({ subject, paper }) => {
                                         const mean = calculateMeanScore(subject, paper);
                                         const meanText = mean !== null ? mean.toFixed(1) : 'N/A';
@@ -1398,10 +1405,10 @@ const App: React.FC = () => {
                                         <div key={monthKey} className="mb-8 w-full">
                                             <div className="text-xl font-bold mb-2 text-center">{monthName} {year}</div>
                                             <div className="overflow-auto w-full">
-                                                <table className="w-full border-collapse border-2 border-[#00000020] bg-white shadow rounded-lg overflow-hidden" style={{tableLayout:'fixed'}}>
+                                                <table className="w-full border-separate border-2 border-[#00000020] bg-white  rounded-xl overflow-hidden" style={{tableLayout:'fixed'}}>
                                                     <thead>
-                                                        <tr className="bg-[#ff3b30] text-white">
-                                                            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>(<th key={d} className="py-2 font-semibold">{d}</th>))}
+                                                        <tr className="bg-white text-white">
+                                                            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>(<th key={d} className="py-2 font-semibold rounded-full">{d}</th>))}
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -1410,7 +1417,13 @@ const App: React.FC = () => {
                                                                 {week.map((date,di)=>(
                                                                     <td key={di} className="align-top border border-gray-200 h-32 p-[0px] relative group">
                                                                         {date && (
-                                                                            <div className="absolute top-1 left-2 text-xs font-bold text-gray-500">{date.getDate()}</div>
+                                                                            <div className={`absolute top-1 left-2 text-xs font-bold ${
+                                                                                date.toDateString() === new Date().toDateString() 
+                                                                                    ? 'bg-red-500 text-white px-1 rounded-sm' 
+                                                                                    : 'text-gray-500'
+                                                                            }`}>
+                                                                                {date.getDate()}
+                                                                            </div>
                                                                         )}
                                                                         {date && (
                                                                             <textarea

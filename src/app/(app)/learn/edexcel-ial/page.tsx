@@ -72,7 +72,7 @@ const App = () => {
 
   // Content for the "Details" tab
   const DetailsContent = () => (
-    <div className="p-6 bg-white rounded-xl shadow-sm">
+    <div className="p-6 bg-white">
       <h3 className="text-2xl font-semibold text-gray-800 mb-4">Edexcel IAL Details</h3>
       <p className="text-gray-700 leading-relaxed mb-4">
         The Edexcel International Advanced Level (IAL) is a globally recognized qualification, equivalent to A-levels in the UK. It's designed for students who wish to progress to higher education. For each of the subjects below, there are comprehensive revision notes, factsheets, questions from past exam papers separated by topic, and other worksheets to aid your learning.
@@ -85,7 +85,7 @@ const App = () => {
 
   // Content for the "Timetable" tab
   const TimetableContent = () => (
-    <div className="p-6 bg-white rounded-xl shadow-sm">
+    <div className="p-6 bg-white">
       <h3 className="text-2xl font-semibold text-gray-800 mb-4">Exam Timetable</h3>
       <p className="text-gray-700 mb-4">
         Here you can find the provisional and final timetables for upcoming Edexcel IAL examinations. Please check regularly for updates.
@@ -103,7 +103,7 @@ const App = () => {
 
   // Content for the "Find a Tutor" tab
   const FindTutorContent = () => (
-    <div className="p-6 bg-white rounded-xl shadow-sm">
+    <div className="p-6 bg-white">
       <h3 className="text-2xl font-semibold text-gray-800 mb-4">Find a Private Tutor</h3>
       <p className="text-gray-700 mb-4">
         Need personalized help? Our platform connects you with experienced private tutors specializing in Edexcel IAL subjects.
@@ -137,13 +137,6 @@ const App = () => {
     if (!subj) return '';
     return subj.charAt(0).toUpperCase() + subj.slice(1).toLowerCase();
 };
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const subjectParam = urlParams.get('subject');
-    if (subjectParam) setSubject(normalizeSubject(subjectParam));
-    // ... rest unchanged
-}, []);
 
 
   return (
@@ -280,7 +273,7 @@ const App = () => {
           {revisionTools.map((tool) => (
             <div
               key={tool.id}
-              className="bg-white p-6 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[5px] border-[#00000010] transition duration-200 hover:border-[5px] hover:border-[#ff3b30] hover:ring-[10px] hover:ring-[#ff3b3020]"
+              className="bg-white p-6 hover:cursor-pointer rounded-4xl flex items-center space-x-4 border-[5px] border-[#00000010] transition duration-200 hover:border-[5px] hover:border-[#ff3b30] hover:ring-[10px] hover:ring-[#ff3b3020]"
               onClick={() => {
                 if (tool.id === 'past-papers') navigate('/past-paper');
                 else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
@@ -299,36 +292,28 @@ const App = () => {
         </div>
 
         {/* 3-Pane Window Section */}
-        <div className="bg-gray-100 rounded-xl p-2 shadow-inner mb-12">
+        <div className="bg-white   mb-12">
           {/* Horizontal Tab Bar */}
-          <div className="relative flex justify-around bg-white rounded-lg p-2 border-b border-gray-200 gap-x-2">
-            {/* Sliding Indicator */}
-            <div
-              className="absolute bottom-0 left-0 h-1 bg-blue-600 rounded transition-transform duration-300"
-              style={{
-                width: '33.3333%',
-                transform: `translateX(${['details', 'timetable', 'find-tutor'].indexOf(activeTab) * 100}%)`,
-              }}
-            />
+          <div className="flex border-b border-gray-200">
             <button
-              className={`flex-1 py-3 px-4 text-center text-lg font-medium rounded-md transition-colors duration-200 ${
-                activeTab === 'details' ? 'text-blue-600 font-bold' : 'text-gray-700 hover:bg-gray-100'
+              className={`flex-1 py-4 px-6 text-center text-sm font-medium transition-colors duration-200 ${
+                activeTab === 'details' ? 'text-[#ff3b30] border-b-2 border-[#ff3b30]' : 'text-gray-600 hover:text-gray-900'
               }`}
               onClick={() => setActiveTab('details')}
             >
               Details
             </button>
             <button
-              className={`flex-1 py-3 px-4 text-center text-lg font-medium rounded-md transition-colors duration-200 ${
-                activeTab === 'timetable' ? 'text-blue-600 font-bold' : 'text-gray-700 hover:bg-gray-100'
+              className={`flex-1 py-4 px-6 text-center text-sm font-medium transition-colors duration-200 ${
+                activeTab === 'timetable' ? 'text-[#ff3b30] border-b-2 border-[#ff3b30]' : 'text-gray-600 hover:text-gray-900'
               }`}
               onClick={() => setActiveTab('timetable')}
             >
               Timetable
             </button>
             <button
-              className={`flex-1 py-3 px-4 text-center text-lg font-medium rounded-md transition-colors duration-200 ${
-                activeTab === 'find-tutor' ? 'text-blue-600 font-bold' : 'text-gray-700 hover:bg-gray-100'
+              className={`flex-1 py-4 px-6 text-center text-sm font-medium transition-colors duration-200 ${
+                activeTab === 'find-tutor' ? 'text-[#ff3b30] border-b-2 border-[#ff3b30]' : 'text-gray-600 hover:text-gray-900'
               }`}
               onClick={() => setActiveTab('find-tutor')}
             >
@@ -337,7 +322,7 @@ const App = () => {
           </div>
 
           {/* Content Pane */}
-          <div className="mt-2">
+          <div>
             {activeTab === 'details' && <DetailsContent />}
             {activeTab === 'timetable' && <TimetableContent />}
             {activeTab === 'find-tutor' && <FindTutorContent />}
