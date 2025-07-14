@@ -11,7 +11,8 @@ interface Subject {
     Icon: React.ComponentType<{ size: number; color: string }>;
 }
 
-export const defaultSubjects: Subject[] = [
+// Move the subjects array here
+const subjects: Subject[] = [
     { name: 'Edexcel IAL Biology', color: '#0fBD8C', url: '/learn/edexcel-ial/biology', score: 85, pastPapers: 12, Icon: Dna },
     { name: 'Edexcel IAL Chemistry', color: '#FF6B6B', url: '/learn/edexcel-ial/chemistry', score: 78, pastPapers: 9, Icon: FlaskConical },
     { name: 'Edexcel IAL Physics', color: '#4081FF', url: '/learn/edexcel-ial/physics', score: 92, pastPapers: 15, Icon: Atom },
@@ -23,18 +24,14 @@ export const defaultSubjects: Subject[] = [
     { name: 'IELTS Listening', color: '#007aff', url: '/learn/ielts/listening', score: 90, pastPapers: 13, Icon: Headphones },
 ];
 
-interface MySubjectsSectionProps {
-    subjects?: Subject[];
-}
-
-const MySubjectsSection: React.FC<MySubjectsSectionProps> = ({ subjects }) => (
+const MySubjectsSection: React.FC = () => (
     <div className="bg-[#00000010] rounded-xl border-box shadow-xl p-0 pb-2  border-2 border-[#00000020]">
         <div className='p-3 border-b-2 border-b-[#00000020] flex justify-between gap-2 items-center align-center'>
             <h3 className="text-xl font-semibold text-gray-700">My subjects</h3>
             <button className='bg-black hover:shadow-[0_0_0_7.5px_#00000040] transition rounded-full text-white p-1 px-5'>Edit</button>
         </div>
         <div className="space-y-0">
-            {(subjects || defaultSubjects).map((subject, index) => (
+            {subjects.map((subject, index) => (
                 <Link
                     key={index}
                     href={subject.url}

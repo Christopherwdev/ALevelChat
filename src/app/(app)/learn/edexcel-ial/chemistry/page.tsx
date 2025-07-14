@@ -1,10 +1,10 @@
 "use client"
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-
+import Image from 'next/image';
 // Removed AppHeader import as we are creating a custom header within App
 import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle, FlaskConical } from 'lucide-react';
 import { marked } from 'marked'; // Import marked library
-
+import Link from 'next/link';
 // Import content from separate JS files
 import { CHEMISTRY_UNIT_1_CONTENT } from './Unit1.js';
 import { CHEMISTRY_UNIT_2_CONTENT } from './Unit2.js';
@@ -77,19 +77,9 @@ const App: React.FC = () => {
 
     // Function to handle navigation (for breadcrumbs and other links) - now internal to the app
     const navigate = (path: string) => {
-        // This function is now simplified as navigation is handled by activeHeaderSection
-        if (path.includes('learn')) {
-            setActiveHeaderSection('revision-notes');
-        } else if (path.includes('past-paper')) {
-            setActiveHeaderSection('past-papers');
-        } else if (path.includes('ai-teacher')) {
-            // Placeholder for AI Teacher, could be another section or external link
-            console.log('Navigating to AI Teacher (placeholder)');
-        } else if (path.includes('social')) {
-            // Placeholder for Ask for Help, could be another section or external link
-            console.log('Navigating to Social (placeholder)');
-        }
+        window.location.href = `/${path.replace(/^\//, '')}`;
     };
+
 
     // Set CSS variables for dynamic coloring
     useEffect(() => {
@@ -421,7 +411,7 @@ const App: React.FC = () => {
 
     // --- New Section Components ---
     const HomePageContent: React.FC = () => (
-        <div className="rounded-2xl p-6 items-center flex justify-center mt-6">
+        <div className="rounded-2xl p-6 items-center flex justify-center">
            <div className='max-w-4xl'>
            <nav className="inline-block self-start text-gray-500 text-sm mb-8 font-light border-[1px] bg-[#00000005] border-[#00000010] px-3 py-1 rounded-lg">
                         <a href="#" onClick={() => navigate('/learn')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
@@ -450,14 +440,14 @@ const App: React.FC = () => {
                 {revisionTools.map((tool) => (
                     <div
                         key={tool.id}
-                        className="bg-white p-4 mt-0 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[5px] transition duration-200"
+                        className="bg-white p-4 mt-0 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[4px] transition duration-200"
                         style={{
                             borderColor: "#00000010",
                         }}
                         onClick={() => {
-                            if (tool.id === 'past-papers') setActiveHeaderSection('past-papers'); // Directly switch section
-                            else if (tool.id === 'ai-teacher') console.log('AI Teacher clicked'); // Placeholder
-                            else if (tool.id === 'ask-help') console.log('Ask for Help clicked'); // Placeholder
+                            if (tool.id === 'past-papers') navigate('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Chemistry&paper=Unit+1');
+                            else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
+                            else if (tool.id === 'ask-help') navigate('/social');
                         }}
                         onMouseEnter={e => {
                             e.currentTarget.style.borderColor = SUBJECT_COLOR;
@@ -1288,15 +1278,25 @@ const App: React.FC = () => {
                 `}
             </style>
 
-            <div className="w-full h-screen flex flex-col">
+            <div className="w-full h-screen flex flex-col bg-white">
                 {/* Header */}
-                <header className="fixed w-full bg-white border-b border-[#00000020] dark:bg-gray-800 dark:border-gray-700 px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 relative">
-                    <div className="flex flex-row items-center justify-between w-full md:w-auto">
+                <header className="fixed w-full bg-white border-b border-[#00000020] dark:bg-gray-800 dark:border-gray-700 px-4 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 relative">
+                    <div className="flex flex-row items-center justify-between w-full lg:w-auto">
                         <div className="flex flex-row items-center">
-                            <h1 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-200 flex items-center">
-                                <span id="subject-title">{CURRENT_SUBJECT}</span>
+                            <h1 className="text-xl font-bold text-gray-800 dark:text-gray-200 flex items-center">
+                            <Link href="/" className="flex items-center space-x-2">
+                <Image
+                  src="/logo-300x300.png"
+                  alt="AIToLearn Logo"
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                />
+              
+              </Link>
+                                <span id="subject-title" className='ml-4 hidden sm:block'>AIToLearn</span><span className='font-light ml-2'>/ Chemistry</span>
                                 {/* Mobile: show current page label between Chemistry and menu button */}
-                                <div className="ml-2 md:hidden flex items-center px-3 py-1 rounded-full bg-gray-100 border border-gray-300 text-gray-700 text-sm font-semibold select-none">
+                                <div className="ml-2 lg:hidden flex items-center px-3 py-1 rounded-full bg-gray-100 border border-gray-300 text-gray-700 text-sm font-semibold select-none">
                                     {(() => {
                                         switch (activeHeaderSection) {
                                             case 'home': return 'Home';
@@ -1313,7 +1313,7 @@ const App: React.FC = () => {
                         </div>
                         {/* Hamburger menu for mobile */}
                         <button
-                            className="md:hidden p-2 ml-2 text-gray-700 dark:text-gray-200 focus:outline-none"
+                            className="lg:hidden p-2 ml-2 text-gray-700 dark:text-gray-200 focus:outline-none"
                             aria-label="Open navigation menu"
                             onClick={() => setShowMobileNav(prev => !prev)}
                         >
@@ -1322,7 +1322,7 @@ const App: React.FC = () => {
                     </div>
                     {/* Navigation Buttons */}
                     <nav
-                        className={`flex-col md:flex-row flex gap-2 md:gap-2 w-full md:w-auto ${showMobileNav ? 'flex' : 'hidden'} md:flex bg-white dark:bg-gray-800 md:bg-transparent  p-2 md:p-0 rounded-lg smd:rounded-none shadow md:shadow-none z-20 absolute md:static top-full left-0`}
+                        className={`flex-col lg:flex-row flex gap-2 lg:gap-2 w-full lg:w-auto ${showMobileNav ? 'flex' : 'hidden'} lg:flex bg-white dark:bg-gray-800 md:bg-transparent  p-2 md:p-0 rounded-lg smd:rounded-none shadow lg:shadow-none z-20 absolute lg:static top-full left-0`}
                         style={{ minWidth: '180px' }}
                     >
                         <button

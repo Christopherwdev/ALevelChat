@@ -72,7 +72,7 @@ export default function App() {
                         </div>
 
                         {/* My Subjects section (modular) */}
-                        <MySubjectsSection subjects={subjects} />
+                        <MySubjectsSection />
                     </div>
 
                     {/* Right pane of widgets */}
