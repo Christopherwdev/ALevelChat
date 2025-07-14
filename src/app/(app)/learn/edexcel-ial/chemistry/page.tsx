@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-import AppHeader from '@/components/app/header';
+// Removed AppHeader import as we are creating a custom header within App
 import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle, FlaskConical } from 'lucide-react';
 import { marked } from 'marked'; // Import marked library
 
@@ -66,75 +66,30 @@ const App: React.FC = () => {
     const [currentNotesDuration, setCurrentNotesDuration] = useState<string>('');
     const [sectionCompletionStatus, setSectionCompletionStatus] = useState<{ [key: string]: boolean }>({});
     const [lastViewedLesson, setLastViewedLesson] = useState<{ unitIndex: number; sectionId: string } | null>(null);
-    const [activeTab, setActiveTab] = useState('details'); // 'details', 'timetable', 'find-tutor'
+
+    // New state for header navigation
+    const [activeHeaderSection, setActiveHeaderSection] = useState<'home' | 'revision-notes' | 'past-papers' | 'battle-mode' | 'tutor'>('home');
+    const [showMobileNav, setShowMobileNav] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     const markdownDisplayRef = useRef<HTMLDivElement>(null);
 
 
-    // Function to handle navigation (for breadcrumbs and other links)
+    // Function to handle navigation (for breadcrumbs and other links) - now internal to the app
     const navigate = (path: string) => {
-        window.location.href = `/${path.replace(/^\//, '')}`;
+        // This function is now simplified as navigation is handled by activeHeaderSection
+        if (path.includes('learn')) {
+            setActiveHeaderSection('revision-notes');
+        } else if (path.includes('past-paper')) {
+            setActiveHeaderSection('past-papers');
+        } else if (path.includes('ai-teacher')) {
+            // Placeholder for AI Teacher, could be another section or external link
+            console.log('Navigating to AI Teacher (placeholder)');
+        } else if (path.includes('social')) {
+            // Placeholder for Ask for Help, could be another section or external link
+            console.log('Navigating to Social (placeholder)');
+        }
     };
-
-    // Content for the "Details" tab
-    const DetailsContent = () => (
-        <div className="p-6 bg-white rounded-xl shadow-sm">
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Chemistry IAL Details</h3>
-            <p className="text-gray-700 leading-relaxed mb-4">
-                The Edexcel International Advanced Level (IAL) Chemistry is a globally recognized qualification, equivalent to A-levels in the UK. It's designed for students who wish to progress to higher education. For Chemistry, there are comprehensive revision notes, factsheets, questions from past exam papers separated by topic, and other worksheets to aid your learning.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-                Our platform provides a structured approach to your Chemistry IAL revision, offering AI-powered mock tests, detailed solutions, and access to AI teachers and private tutors for personalized support. Prepare effectively and achieve your best results!
-            </p>
-        </div>
-    );
-
-    // Content for the "Timetable" tab
-    const TimetableContent = () => (
-        <div className="p-6 bg-white rounded-xl shadow-sm">
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Exam Timetable</h3>
-            <p className="text-gray-700 mb-4">
-                Here you can find the provisional and final timetables for upcoming Edexcel IAL Chemistry examinations. Please check regularly for updates.
-            </p>
-            <ul className="list-disc list-inside text-gray-700 space-y-2">
-                <li>Summer 2025 Exam Series: Provisional Timetable (Available Now)</li>
-                <li>Winter 2025 Exam Series: Provisional Timetable (Expected September 2025)</li>
-                <li>January 2026 Exam Series: Provisional Timetable (Expected November 2025)</li>
-            </ul>
-            <p className="mt-4 text-sm text-gray-500">
-                *Dates are subject to change. Always refer to the official Edexcel website for the most accurate and up-to-date information.
-            </p>
-        </div>
-    );
-
-    // Content for the "Find a Tutor" tab
-    const FindTutorContent = () => (
-        <div className="p-6 bg-white rounded-xl shadow-sm">
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Find a Private Tutor</h3>
-            <p className="text-gray-700 mb-4">
-                Need personalized help? Our platform connects you with experienced private tutors specializing in Edexcel IAL Chemistry.
-            </p>
-            <form className="space-y-4">
-                <div>
-                    <label htmlFor="subject" className="block text-gray-700 text-sm font-semibold mb-2">Subject:</label>
-                    <select id="subject" name="subject" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="chemistry">Chemistry</option>
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="level" className="block text-gray-700 text-sm font-semibold mb-2">Level:</label>
-                    <input type="text" id="level" name="level" value="Edexcel IAL" readOnly className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" />
-                </div>
-                <div>
-                    <label htmlFor="message" className="block text-gray-700 text-sm font-semibold mb-2">Your Message:</label>
-                    <textarea id="message" name="message" rows={4} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Describe your learning needs..."></textarea>
-                </div>
-                <button type="submit" className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200">
-                    Request a Tutor
-                </button>
-            </form>
-        </div>
-    );
 
     // Set CSS variables for dynamic coloring
     useEffect(() => {
@@ -223,6 +178,7 @@ const App: React.FC = () => {
     const fetchAndDisplayNote = useCallback((unitIndex: number, sectionIdToScrollTo: string | null = null) => {
         setActiveUnitIndex(unitIndex);
         setActiveSectionId(sectionIdToScrollTo);
+        setActiveHeaderSection('revision-notes'); // Switch to revision notes section
 
         // Always extract and set the heading from the markdown
         const unitName = `${UNIT_PREFIX} ${unitIndex}`;
@@ -274,7 +230,7 @@ const App: React.FC = () => {
 
                     const isCompleted = loadCompletionStatus(unitIndex, sectionId);
                     const completionClass = isCompleted ? 'completed' : 'incomplete';
-                    const completionText = isCompleted ? 'Completed' : 'Mark as Complete';
+                    const completionText = isCompleted ? 'Completed' : 'Complete';
                     const completionIcon = isCompleted ? 'fas fa-check-circle' : 'far fa-circle';
 
                     renderedHtml += `
@@ -296,12 +252,6 @@ const App: React.FC = () => {
             setNotesContent(renderedHtml);
             setCurrentNotesDuration(`Approx ${Math.ceil(markdownText.length / 1000)} min read`);
 
-            // Store sections for sidebar rendering
-            // This is a bit tricky with React's state. We need to pass these sections to the sidebar component.
-            // For now, let's keep the logic for rendering sections within the main component's state or props.
-            // A better way would be to have a `sectionsData` state that gets updated here and passed to a `Sidebar` component.
-            // For this conversion, I'll update the `sectionsInUnit` array and use it in the JSX.
-            // This means `sectionsInUnit` needs to be part of the component's state.
             const newSectionsData = sectionsInUnit.map(sec => ({
                 ...sec,
                 unitIndex: unitIndex,
@@ -338,6 +288,7 @@ const App: React.FC = () => {
         setCurrentNotesTitle('');
         setCurrentNotesDuration('');
         setNotesContent(''); // Clear markdown content for home page
+        setActiveHeaderSection('home'); // Ensure header is set to home
     }, []);
 
     // --- Effects ---
@@ -362,8 +313,16 @@ const App: React.FC = () => {
         setSectionCompletionStatus(initialCompletionStatus);
         setLastViewedLesson(loadLastViewedLessonFromLocalStorage());
 
-        displayHomePage(); // Show home page by default
+        // Show home page by default
+        displayHomePage();
     }, [displayHomePage, getLocalStorageKey, loadLastViewedLessonFromLocalStorage]);
+
+    // Select Unit 1 by default when entering revision notes
+    useEffect(() => {
+        if (activeHeaderSection === 'revision-notes' && activeUnitIndex === null) {
+            fetchAndDisplayNote(1);
+        }
+    }, [activeHeaderSection, activeUnitIndex, fetchAndDisplayNote]);
 
     // Effect to scroll to section after content updates
     useEffect(() => {
@@ -416,7 +375,7 @@ const App: React.FC = () => {
     // --- Components for Home Page ---
     const ContinueLessonButton: React.FC = () => {
         return (
-            <div id="continue-lesson-button" className="continue-lesson-card flex items-center justify-center" style={{ width: 150, height: 150 }}>
+            <div id="continue-lesson-button" className="continue-lesson-card flex items-center justify-center w-[75px] h-[75px] md:w-[115px] md:h-[115px]">
                 <FlaskConical size={90} color="#fff" />
             </div>
         );
@@ -459,6 +418,267 @@ const App: React.FC = () => {
             <span className="font-semibold text-gray-800 dark:text-gray-200">{title}</span>
         </div>
     );
+
+    // --- New Section Components ---
+    const HomePageContent: React.FC = () => (
+        <div className="rounded-2xl p-6 items-center flex justify-center mt-6">
+           <div className='max-w-4xl'>
+           <nav className="inline-block self-start text-gray-500 text-sm mb-8 font-light border-[1px] bg-[#00000005] border-[#00000010] px-3 py-1 rounded-lg">
+                        <a href="#" onClick={() => navigate('/learn')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
+                        <span className="mx-2">/</span>
+                        <a href="#" onClick={() => navigate('/learn/edexcel-ial')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Edexcel IAL</a>
+                        <span className="mx-2">/</span>
+                        <span className='font-semibold'>Chemistry</span>
+                    </nav>
+            <div className="flex flex-row items-stretch md:items-start gap-4 md:gap-6 mb-6">
+                <ContinueLessonButton />
+                <div className="flex flex-col flex-grow title-buttons-container">
+                    
+                    {/* Page Title */}
+                    <div className="text-4xl md:text-5xl font-bold text-black md:mb-6">
+                        Edexcel IAL <br className="block md:hidden" />
+                        <span className="font-medium" style={{ color: 'var(--subject-primary-color)'}}>{CURRENT_SUBJECT}</span>
+                    
+                    </div>
+                    <p className="text-gray-700 text-lg max-w-3xl hidden md:block">Welcome to the Chemistry Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
+                </div>
+                
+            </div>
+            <p className="text-gray-700 text-lg max-w-3xl block md:hidden">Welcome to the Chemistry Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
+               
+            <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-3 gap-6 mt-10">
+                {revisionTools.map((tool) => (
+                    <div
+                        key={tool.id}
+                        className="bg-white p-4 mt-0 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[5px] transition duration-200"
+                        style={{
+                            borderColor: "#00000010",
+                        }}
+                        onClick={() => {
+                            if (tool.id === 'past-papers') setActiveHeaderSection('past-papers'); // Directly switch section
+                            else if (tool.id === 'ai-teacher') console.log('AI Teacher clicked'); // Placeholder
+                            else if (tool.id === 'ask-help') console.log('Ask for Help clicked'); // Placeholder
+                        }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.borderColor = SUBJECT_COLOR;
+                            e.currentTarget.style.boxShadow = `0 0 0 10px ${SUBJECT_COLOR}20`;
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.borderColor = "#00000010";
+                            e.currentTarget.style.boxShadow = "none";
+                        }}
+                    >
+                        <div className="border-2 p-3 rounded-full" style={{ borderColor: SUBJECT_COLOR }}>
+                            <tool.icon className="w-6 h-6" style={{ color: SUBJECT_COLOR }} />
+                        </div>
+                        <div className="flex flex-col leading-tight">
+                            <span className="text-xl font-bold" style={{ color: SUBJECT_COLOR }}>{tool.titleTop}</span>
+                            <span className="text-lg font-semibold text-gray-900">{tool.titleBottom}</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            </div>
+        </div>
+    );
+
+    const RevisionNotesContent: React.FC = () => (
+        <div className="flex flex-1 overflow-hidden relative">
+            {/* Chevron button for desktop (always visible, docked to left of content) */}
+            <button
+                className="hidden md:flex items-center justify-center z-40 bg-white border border-gray-200 rounded-full shadow-xl p-1 absolute top-2 left-2 transition-all duration-300"
+                style={{ width: 50, height: 50, marginLeft: sidebarCollapsed ? 0 : 270 }}
+                onClick={() => setSidebarCollapsed((prev) => !prev)}
+                aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+                <i className={`fas fa-chevron-${sidebarCollapsed ? 'right' : 'left'} text-gray-600 text-2xl`}></i>
+            </button>
+            {/* Sidebar overlay for mobile */}
+            <div
+                id="left-sidebar"
+                className={`fixed top-0 left-0 h-full z-30 bg-white overflow-x-visible dark:bg-white dark:border-gray-700 overflow-y-auto p-4 transition-transform duration-300 ease-in-out w-64 md:static md:translate-x-0 ${activeHeaderSection === 'revision-notes' && !sidebarCollapsed ? 'translate-x-0' : '-translate-x-full'} md:relative md:h-auto md:w-72 md:block ${sidebarCollapsed ? 'md:-ml-72' : ''}`}
+                // style={{ boxShadow: '0 2px 20px rgba(0,0,0,0.08)' }}
+            >
+                {/* No Home button here, as it's in the main header */}
+                {/* Learning Notes Section */}
+                <div className="mb-4">
+                    <h3 className='mb-4 font-bold'>Revision Notes</h3>
+                    <div id="unit-buttons-container" className="space-y-4">
+                        {Array.from({ length: TOTAL_UNITS }, (_, i) => i + 1).map(unitIndex => {
+                            const unitName = `${UNIT_PREFIX} ${unitIndex}`;
+                            const markdownContent = UNIT_NOTES_CONTENT[unitIndex];
+                            let unitTitleWithoutPrefix = unitName;
+
+                            if (markdownContent) {
+                                const tokens = marked.lexer(markdownContent);
+                                const h1Token = tokens.find(token => token.type === 'heading' && token.depth === 1 && isTextToken(token));
+                                if (h1Token && isTextToken(h1Token)) {
+                                    unitTitleWithoutPrefix = h1Token.text;
+                                    if (unitTitleWithoutPrefix.startsWith(`${unitName}:`)) {
+                                        unitTitleWithoutPrefix = unitTitleWithoutPrefix.substring(`${unitName}:`.length).trim();
+                                    }
+                                }
+                            }
+
+                            const sectionsInUnit: { id: string; text: string }[] = [];
+                            if (markdownContent) {
+                                let sectionCounter = 0;
+                                marked.lexer(markdownContent).forEach(token => {
+                                    if (token.type === 'heading' && token.depth === 2) {
+                                        sectionCounter++;
+                                        sectionsInUnit.push({ id: `unit-${unitIndex}-section-${sectionCounter}`, text: token.text });
+                                    }
+                                });
+                            }
+
+                            return (
+                                <div key={unitIndex}>
+                                    <button
+                                        className={`unit-button w-full text-left px-3 py-2 rounded-[15px] text-sm font-medium flex items-center justify-between ${activeUnitIndex === unitIndex ? 'active' : ''}`}
+                                        onClick={() => fetchAndDisplayNote(unitIndex)}
+                                    >
+                                        <span><span style={{ fontWeight: 'bold' }}>{unitName}:</span> {unitTitleWithoutPrefix}</span>
+                                    </button>
+                                    {activeUnitIndex === unitIndex && sectionsInUnit.length > 0 && (
+                                        <div className="unit-sections-container space-y-1 mt-2 mb-2 ml-4 border-l border-l-[2px] border-gray-200 dark:border-gray-600">
+                                            {sectionsInUnit.map(section => {
+                                                const sectionKey = getLocalStorageKey(unitIndex, section.id);
+                                                const isCompleted = sectionCompletionStatus[sectionKey] || false;
+                                                return (
+                                                    <a
+                                                        key={section.id}
+                                                        href={`#${section.id}`}
+                                                        className={`section-link ${activeSectionId === section.id ? 'active-section' : ''}`}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setActiveSectionId(section.id);
+                                                            saveLastViewedLessonToLocalStorage(unitIndex, section.id);
+                                                            // Scroll handled by useEffect based on activeSectionId
+                                                        }}
+                                                    >
+                                                        <span className="section-link-text">{section.text}</span>
+                                                        {isCompleted && (
+                                                            <i className="section-completion-icon fas fa-check-circle text-green-500 text-xs inline-block"></i>
+                                                        )}
+                                                    </a>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+
+            {/* Overlay for mobile when sidebar is open */}
+            {activeHeaderSection === 'revision-notes' && !sidebarCollapsed && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-30 z-20 md:hidden"
+                    onClick={() => setSidebarCollapsed(true)}
+                ></div>
+            )}
+
+            {/* Right Content Area - Notes Display */}
+            <div
+                className={`flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900 max-4xl transition-all duration-300`}
+            >
+                <div className="max-w-4xl mx-auto markdown-content" style={{ fontSize: '14px', outline: 'none' }} ref={markdownDisplayRef}>
+                    {/* Mobile chevron above heading in revision notes */}
+                    {activeHeaderSection === 'revision-notes' && sidebarCollapsed && (
+                        <button
+                            className="md:hidden flex items-center justify-center bg-white border border-gray-200 rounded-full shadow p-1 mb-4"
+                            style={{ width: 50, height: 50 }}
+                            onClick={() => setSidebarCollapsed(false)}
+                            aria-label="Expand sidebar"
+                        >
+                            <i className="fas fa-chevron-right text-gray-600 text-2xl"></i>
+                        </button>
+                    )}
+                    <div className="flex items-center justify-between mb-2">
+                        <h1 id="notes-title" className="text-4xl font-bold text-black">{currentNotesTitle}</h1>
+                    </div>
+                    <p id="notes-info-text" className="text-gray-600 dark:text-gray-400 mb-6">
+                        Learning Notes | <span id="notes-duration">{currentNotesDuration}</span> | AI powered
+                    </p>
+                    <hr id="notes-divider" className="border-t border-gray-300 dark:border-gray-700 my-6" />
+                    <div id="markdown-display" className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: notesContent }}></div>
+                </div>
+            </div>
+        </div>
+    );
+
+    const PastPapersContent: React.FC = () => (
+        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900">
+            <div className="max-w-4xl mx-auto text-center py-12">
+                <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-4">Past Papers Section</h1>
+                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+                    This section would display past exam papers and mark schemes for {CURRENT_SUBJECT}.
+                </p>
+                <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-md" role="alert">
+                    <p className="font-bold">Coming Soon!</p>
+                    <p>Integration with the full past paper functionality from `/past-paper/page.tsx` will be available here.</p>
+                </div>
+                <div className="mt-8">
+                    <button
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+                        onClick={() => console.log('Simulate browsing past papers')}
+                    >
+                        Browse Sample Papers
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
+    const BattleModeContent: React.FC = () => (
+        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900">
+            <div className="max-w-4xl mx-auto text-center py-12">
+                <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-4">Battle Mode</h1>
+                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+                    Challenge your friends or AI in a fun, interactive quiz battle!
+                </p>
+                <div className="bg-purple-100 border-l-4 border-purple-500 text-purple-700 p-4 rounded-md" role="alert">
+                    <p className="font-bold">Get Ready to Compete!</p>
+                    <p>This exciting feature is currently under development.</p>
+                </div>
+                <div className="mt-8">
+                    <button
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+                        onClick={() => console.log('Simulate Battle Mode')}
+                    >
+                        Learn More
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
+    const TutorContent: React.FC = () => (
+        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900">
+            <div className="max-w-4xl mx-auto text-center py-12">
+                <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-4">Find a Tutor</h1>
+                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+                    Connect with experienced tutors for personalized one-on-one support.
+                </p>
+                <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md" role="alert">
+                    <p className="font-bold">Expert Help at Your Fingertips!</p>
+                    <p>Browse tutor profiles and book sessions tailored to your needs.</p>
+                </div>
+                <div className="mt-8">
+                    <button
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+                        onClick={() => console.log('Simulate finding a tutor')}
+                    >
+                        Browse Tutors
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
 
     // --- Main Render ---
     return (
@@ -515,7 +735,7 @@ const App: React.FC = () => {
 
                 /* Styles for the active unit button and active home/subject button */
                 .unit-button.active,
-                .home-subject-button.active {
+                .header-nav-button.active { /* Changed from .home-subject-button.active */
                     background-color: var(--subject-primary-color);
                     color: white;
                     border: 2px solid black;
@@ -524,7 +744,7 @@ const App: React.FC = () => {
 
                 /* Styles for inactive unit button and inactive home/subject button */
                 .unit-button:not(.active),
-                .home-subject-button:not(.active) {
+                .header-nav-button:not(.active) { /* Changed from .home-subject-button:not(.active) */
                     background-color: #00000005;
                     /* gray-100 */
                     color: #4b5563;
@@ -533,19 +753,10 @@ const App: React.FC = () => {
                     /* Light border for inactive */
                 }
 
-                .dark .unit-button:not(.active),
-                .dark .home-subject-button:not(.active) {
-                    background-color: #374151;
-                    /* gray-700 */
-                    color: #d1d5db;
-                    /* gray-300 */
-                    border: 2px solid #4b5563;
-                    /* Darker border for inactive in dark mode */
-                }
+               
 
                 .unit-button,
-                .home-subject-button {
-                
+                .header-nav-button { /* Changed from .home-subject-button */
                     
                 }
 
@@ -929,8 +1140,7 @@ const App: React.FC = () => {
                 }
                 /* Continue Lesson Element Style */
                 .continue-lesson-card {
-                    width: 150px; /* Fixed width as per image */
-                    height: 150px; /* Fixed height to match title/buttons div */
+                   
                     background-color: rgba(var(--subject-primary-color-rgb),1); /* White background */
                     /* border: 1px solid #e2e8f0; */
                     /* border: 3px solid var(--subject-primary-color); */
@@ -1038,20 +1248,116 @@ const App: React.FC = () => {
                     flex-direction: column;
                     justify-content: space-between; 
                 }
+
+                /* Header Navigation Styles */
+                .header-nav-button {
+                    padding: 0.3rem 0.7rem;
+                    border-radius: 0;
+                    font-weight: 500;
+                    font-size: 0.97rem;
+                    background: none;
+                    border: none;
+                    color: #4b5563;
+                    transition: color 0.15s, border-bottom 0.15s;
+                    box-shadow: none;
+                    margin: 0 0.1rem;
+                     font-weight: 700;
+                }
+                .header-nav-button.active {
+                    color: var(--subject-primary-color);
+                    border-bottom: 2px solid var(--subject-primary-color);
+                    background: none;
+                    font-weight: 700;
+                }
+                .header-nav-button:not(.active):hover {
+                    color: #222;
+                    background: none;
+                    border-bottom: 2px solid #e5e7eb;
+                }
+                .dark .header-nav-button {
+                    color: #d1d5db;
+                }
+                .dark .header-nav-button.active {
+                    color: var(--subject-primary-color);
+                    border-bottom: 2px solid var(--subject-primary-color);
+                }
+                .dark .header-nav-button:not(.active):hover {
+                    color: #fff;
+                    border-bottom: 2px solid #374151;
+                }
                 `}
             </style>
 
             <div className="w-full h-screen flex flex-col">
                 {/* Header */}
-                {/* <header className="flex justify-between items-center p-4 bg-white border-b border-[#00000020] dark:bg-gray-800 dark:border-gray-700 h-[80px]">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-                            <a href="../../Revision.html" className="hover:underline">Revision Notes</a> / <span id="subject-title">{CURRENT_SUBJECT}</span>
-                        </h1>
-                        <p className="text-xs text-gray-500 mt-1">Your comprehensive revision guide</p>
+                <header className="fixed w-full bg-white border-b border-[#00000020] dark:bg-gray-800 dark:border-gray-700 px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2 relative">
+                    <div className="flex flex-row items-center justify-between w-full md:w-auto">
+                        <div className="flex flex-row items-center">
+                            <h1 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-200 flex items-center">
+                                <span id="subject-title">{CURRENT_SUBJECT}</span>
+                                {/* Mobile: show current page label between Chemistry and menu button */}
+                                <div className="ml-2 md:hidden flex items-center px-3 py-1 rounded-full bg-gray-100 border border-gray-300 text-gray-700 text-sm font-semibold select-none">
+                                    {(() => {
+                                        switch (activeHeaderSection) {
+                                            case 'home': return 'Home';
+                                            case 'revision-notes': return 'Revision Notes';
+                                            case 'past-papers': return 'Past Papers';
+                                            case 'battle-mode': return 'Battle Mode';
+                                            case 'tutor': return 'Tutor';
+                                            default: return '';
+                                        }
+                                    })()}
+                                </div>
+                            </h1>
+                            {/* If you have a dropdown menu button for unit changing, it would go here */}
+                        </div>
+                        {/* Hamburger menu for mobile */}
+                        <button
+                            className="md:hidden p-2 ml-2 text-gray-700 dark:text-gray-200 focus:outline-none"
+                            aria-label="Open navigation menu"
+                            onClick={() => setShowMobileNav(prev => !prev)}
+                        >
+                            <i className="fas fa-bars text-xl"></i>
+                        </button>
                     </div>
-               
-                    <div className="flex items-center space-x-2">
+                    {/* Navigation Buttons */}
+                    <nav
+                        className={`flex-col md:flex-row flex gap-2 md:gap-2 w-full md:w-auto ${showMobileNav ? 'flex' : 'hidden'} md:flex bg-white dark:bg-gray-800 md:bg-transparent  p-2 md:p-0 rounded-lg smd:rounded-none shadow md:shadow-none z-20 absolute md:static top-full left-0`}
+                        style={{ minWidth: '180px' }}
+                    >
+                        <button
+                            className={`header-nav-button w-full md:w-auto ${activeHeaderSection === 'home' ? 'active' : ''}`}
+                            onClick={() => { setActiveHeaderSection('home'); setShowMobileNav(false); }}
+                        >
+                            Home
+                        </button>
+                        <button
+                            className={`header-nav-button w-full md:w-auto ${activeHeaderSection === 'revision-notes' ? 'active' : ''}`}
+                            onClick={() => { setActiveHeaderSection('revision-notes'); setShowMobileNav(false); }}
+                        >
+                            Revision Notes
+                        </button>
+                        <button
+                            className={`header-nav-button w-full md:w-auto ${activeHeaderSection === 'past-papers' ? 'active' : ''}`}
+                            onClick={() => { setActiveHeaderSection('past-papers'); setShowMobileNav(false); }}
+                        >
+                            Past Papers
+                        </button>
+                        <button
+                            className={`header-nav-button w-full md:w-auto ${activeHeaderSection === 'battle-mode' ? 'active' : ''}`}
+                            onClick={() => { setActiveHeaderSection('battle-mode'); setShowMobileNav(false); }}
+                        >
+                            Battle Mode
+                        </button>
+                        <button
+                            className={`header-nav-button w-full md:w-auto ${activeHeaderSection === 'tutor' ? 'active' : ''}`}
+                            onClick={() => { setActiveHeaderSection('tutor'); setShowMobileNav(false); }}
+                        >
+                            Tutor
+                        </button>
+                    </nav>
+                    {/* Editor Toolbar - hidden on mobile */}
+                    {/* <div className="hidden md:flex items-center space-x-2 mt-4 md:mt-0 invisible">
                         <button id="bold-button" className="editor-button" title="Bold" onClick={() => applyTextEffect('bold')}>
                             <i className="fas fa-bold"></i>
                         </button>
@@ -1067,177 +1373,15 @@ const App: React.FC = () => {
                         <button id="clear-effects-button" className="editor-button" title="Clear All Effects" onClick={() => applyTextEffect('removeFormat')}>
                             <i className="fas fa-eraser"></i>
                         </button>
-                    </div>
-                </header> */}
-   <AppHeader isAuthenticated={true} />
-                {/* Main Content Area */}
-                <div className="flex flex-1 overflow-hidden">
-                    {/* Left Sidebar - Navigation */}
-                    <div id="left-sidebar" className="w-72 pt-6 bg-white flex flex-col dark:bg-white dark:border-gray-700 overflow-y-auto p-4">
-                        {/* Subject Home Button */}
-                        <button
-                            id="home-subject-button"
-                            className={`home-subject-button w-full text-left px-4 py-3 rounded-[15px] text-lg font-semibold mb-4 flex items-center justify-center transition duration-200 ${activeUnitIndex === null ? 'active' : ''}`}
-                            onClick={displayHomePage}
-                        >
-                            <i id="sidebar-subject-icon" className={`fas fa-home mr-3 text-md`}></i>
-                            <span id="sidebar-subject-name" style={{ fontWeight: 'bold' }}>Home</span>
-                            <i className="fas fa-chevron-right ml-auto text-sm"></i>
-                        </button>
+                    </div> */}
+                </header>
 
-                        {/* Learning Notes Section */}
-                        <div className="mb-4">
-                            {/* <h3 className="text-md font-semibold text-gray-700 mb-2 dark:text-gray-300">Learning Notes</h3> */}
-                            <div id="unit-buttons-container" className="space-y-4">
-                                {Array.from({ length: TOTAL_UNITS }, (_, i) => i + 1).map(unitIndex => {
-                                    const unitName = `${UNIT_PREFIX} ${unitIndex}`;
-                                    const markdownContent = UNIT_NOTES_CONTENT[unitIndex];
-                                    let unitTitleWithoutPrefix = unitName;
-
-                                    if (markdownContent) {
-                                        const tokens = marked.lexer(markdownContent);
-                                        const h1Token = tokens.find(token => token.type === 'heading' && token.depth === 1 && isTextToken(token));
-                                        if (h1Token && isTextToken(h1Token)) {
-                                            unitTitleWithoutPrefix = h1Token.text;
-                                            if (unitTitleWithoutPrefix.startsWith(`${unitName}:`)) {
-                                                unitTitleWithoutPrefix = unitTitleWithoutPrefix.substring(`${unitName}:`.length).trim();
-                                            }
-                                        }
-                                    }
-
-                                    const sectionsInUnit: { id: string; text: string }[] = [];
-                                    if (markdownContent) {
-                                        let sectionCounter = 0;
-                                        marked.lexer(markdownContent).forEach(token => {
-                                            if (token.type === 'heading' && token.depth === 2) {
-                                                sectionCounter++;
-                                                sectionsInUnit.push({ id: `unit-${unitIndex}-section-${sectionCounter}`, text: token.text });
-                                            }
-                                        });
-                                    }
-
-                                    return (
-                                        <div key={unitIndex}>
-                                            <button
-                                                className={`unit-button w-full text-left px-3 py-2 rounded-[15px] text-sm font-medium flex items-center justify-between ${activeUnitIndex === unitIndex ? 'active' : ''}`}
-                                                onClick={() => fetchAndDisplayNote(unitIndex)}
-                                            >
-                                                <span><span style={{ fontWeight: 'bold' }}>{unitName}:</span> {unitTitleWithoutPrefix}</span>
-                                            </button>
-                                            {activeUnitIndex === unitIndex && sectionsInUnit.length > 0 && (
-                                                <div className="unit-sections-container space-y-1 mt-2 mb-2 ml-4 border-l border-l-[2px] border-gray-200 dark:border-gray-600">
-                                                    {sectionsInUnit.map(section => {
-                                                        const sectionKey = getLocalStorageKey(unitIndex, section.id);
-                                                        const isCompleted = sectionCompletionStatus[sectionKey] || false;
-                                                        return (
-                                                            <a
-                                                                key={section.id}
-                                                                href={`#${section.id}`}
-                                                                className={`section-link ${activeSectionId === section.id ? 'active-section' : ''}`}
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    setActiveSectionId(section.id);
-                                                                    saveLastViewedLessonToLocalStorage(unitIndex, section.id);
-                                                                    // Scroll handled by useEffect based on activeSectionId
-                                                                }}
-                                                            >
-                                                                <span className="section-link-text">{section.text}</span>
-                                                                {isCompleted && (
-                                                                    <i className="section-completion-icon fas fa-check-circle text-green-500 text-xs inline-block"></i>
-                                                                )}
-                                                            </a>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right Content Area - Notes Display */}
-                    <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900 max-4xl">
-                        <div
-                            className="max-w-4xl mx-auto markdown-content"
-                            contentEditable={activeUnitIndex !== null} // Only editable when a unit is displayed
-                            style={{ fontSize: '14px', outline: 'none' }}
-                            ref={markdownDisplayRef}
-                        >
-                            {activeUnitIndex === null ? (
-                                // Home Page Content
-                                <div className="rounded-2xl p-2">
-                                    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-6 mb-6">
-                                        <ContinueLessonButton />
-                                        <div className="flex flex-col flex-grow title-buttons-container">
-                                            <nav className="inline-block self-start text-gray-500 text-sm mb-6 font-light border-[1px] bg-[#00000005] border-[#00000010] px-3 py-1 rounded-lg">
-                                                <a href="#" onClick={() => navigate('/learn')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
-                                                <span className="mx-2">/</span>
-                                                <a href="#" onClick={() => navigate('/learn/edexcel-ial')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Edexcel IAL</a>
-                                                <span className="mx-2">/</span>
-                                                <span className='font-semibold'>Chemistry</span>
-                                            </nav>
-                                            {/* Page Title */}
-                                            <div className="text-5xl font-bold text-black mb-8">
-                                                Edexcel IAL <span className="font-medium" style={{ color: 'var(--subject-primary-color)'}}>{CURRENT_SUBJECT}</span>
-                                            </div>
-                                            <p  className="text-gray-700 text-lg mb-10 max-w-3xl">Welcome to the Chemistry Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {revisionTools.map((tool) => (
-                                            <div
-                                                key={tool.id}
-                                                className="bg-white p-4 mt-0 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[5px] transition duration-200"
-                                                style={{
-                                                    borderColor: "#00000010",
-                                                }}
-                                                onClick={() => {
-                                                    if (tool.id === 'past-papers') navigate('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Chemistry&paper=Unit+1');
-                                                    else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
-                                                    else if (tool.id === 'ask-help') navigate('/social');
-                                                }}
-                                                onMouseEnter={e => {
-                                                    e.currentTarget.style.borderColor = SUBJECT_COLOR;
-                                                    e.currentTarget.style.boxShadow = `0 0 0 10px ${SUBJECT_COLOR}20`;
-                                                }}
-                                                onMouseLeave={e => {
-                                                    e.currentTarget.style.borderColor = "#00000010";
-                                                    e.currentTarget.style.boxShadow = "none";
-                                                }}
-                                            >
-                                                <div className="border-2 p-3 rounded-full" style={{ borderColor: SUBJECT_COLOR }}>
-                                                    <tool.icon className="w-6 h-6" style={{ color: SUBJECT_COLOR }} />
-                                                </div>
-                                                <div className="flex flex-col leading-tight">
-                                                    <span className="text-xl font-bold" style={{ color: SUBJECT_COLOR }}>{tool.titleTop}</span>
-                                                    <span className="text-lg font-semibold text-gray-900">{tool.titleBottom}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                 
-                                    
-                                    
-                                 
-                                </div>
-                            ) : (
-                                // Notes Display Content
-                                <>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h1 id="notes-title" className="text-4xl font-bold text-black">{currentNotesTitle}</h1>
-                                    </div>
-                                    <p id="notes-info-text" className="text-gray-600 dark:text-gray-400 mb-6">
-                                        Learning Notes | <span id="notes-duration">{currentNotesDuration}</span> | AI powered
-                                    </p>
-                                    <hr id="notes-divider" className="border-t border-gray-300 dark:border-gray-700 my-6" />
-                                    <div id="markdown-display" className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: notesContent }}></div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                {/* Main Content Area - Conditional Rendering */}
+                {activeHeaderSection === 'home' && <HomePageContent />}
+                {activeHeaderSection === 'revision-notes' && <RevisionNotesContent />}
+                {activeHeaderSection === 'past-papers' && <PastPapersContent />}
+                {activeHeaderSection === 'battle-mode' && <BattleModeContent />}
+                {activeHeaderSection === 'tutor' && <TutorContent />}
             </div>
         </React.Fragment>
     );
