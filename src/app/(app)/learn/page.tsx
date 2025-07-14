@@ -1,5 +1,6 @@
 import { BookText, Settings, MessageCircle } from 'lucide-react'; // Importing Lucide React icons
 import AppHeader from '@/components/app/header';
+import MySubjectsSection from '@/components/app/mysubject';
 import ExamCard, { ExamCardProps } from './exam-card';
 
 const exams: Array<ExamCardProps> = [
@@ -59,6 +60,8 @@ const LearnPage = () => {
               />
             ))}
           </div>
+
+          <MySubjectsSection />
         </div>
       </div>
     </>

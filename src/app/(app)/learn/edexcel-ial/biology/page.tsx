@@ -1194,7 +1194,7 @@ const App: React.FC = () => {
                                                     borderColor: "#00000010",
                                                 }}
                                                 onClick={() => {
-                                                    if (tool.id === 'past-papers') navigate('//past-paper?examBoard=Edexcel&examLevel=IAL&subject=Chemistry&paper=Unit+1');
+                                                    if (tool.id === 'past-papers') navigate('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Biology&paper=Unit+1');
                                                     else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
                                                     else if (tool.id === 'ask-help') navigate('/social');
                                                 }}
