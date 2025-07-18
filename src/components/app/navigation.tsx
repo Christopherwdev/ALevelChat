@@ -31,7 +31,7 @@ export default function AppHeader() {
 
   // Defines the main navigation links for the header
   const navLinks = [
-    { name: "Revision Notes", href: "/learn", icon: BookOpenText },
+    { name: "Revision", href: "/learn", icon: BookOpenText },
     { name: "Past Papers", href: "/past-paper", icon: Files },
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "AI Teacher", href: "/ai-teacher", icon: BotMessageSquare },
@@ -140,14 +140,14 @@ export default function AppHeader() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2 p-2 rounded-lg transition-all duration-300 font-bold",
+                "flex items-center gap-2 p-2 px-3 rounded-lg transition-all duration-300 font-bold",
                 isActive
                   ? "bg-black text-white hover:shadow-[0px_0px_10px_0px_#00000010]" // Active link styling
                   : "text-[#00000080] hover:text-gray-900 hover:bg-[#00000010]" // Inactive link styling
               )}
               aria-current={isActive ? "page" : undefined} // ARIA attribute for current page
             >
-              {/* <Icon size={20} strokeWidth={isActive ? 2 : 1.5} className="min-w-[20px] min-h-[20px]" /> */}
+              <Icon size={20} strokeWidth={isActive ? 2 : 1.5} className="min-w-[20px] min-h-[20px]" />
               <span className="text-sm whitespace-nowrap">{item.name}</span>
             </Link>
           );

@@ -652,10 +652,10 @@ const App: React.FC = () => {
             </style>
 
             <div className="w-full h-screen flex flex-col antialiased bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200">
-                {/* Header */}
-                <header className="flex justify-between items-center p-4 bg-white border-b border-b-[#00000020] dark:bg-gray-800 dark:border-gray-700 h-[80px]">
+              
+                {/* <header className="flex justify-between items-center p-4 bg-white border-b border-b-[#00000020] dark:bg-gray-800 dark:border-gray-700 h-[80px]">
                     <div className="flex items-center space-x-4">
-                        {/* Mobile menu button */}
+                
                         <button
                             onClick={toggleMobileSidebar}
                             className="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
@@ -670,7 +670,7 @@ const App: React.FC = () => {
                             <p className="text-xs text-gray-500 mt-1">Search and access past papers</p>
                         </div>
                     </div>
-                </header>
+                </header> */}
 
                 {/* Main Content */}
                 <div className="flex flex-1 overflow-hidden relative">
