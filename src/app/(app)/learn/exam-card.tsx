@@ -29,15 +29,15 @@ const ExamCard = ({exam}: {exam: ExamCardProps}) => {
           {exam.icon}
         </div>
         <h1 className="text-3xl font-semibold text-gray-900 mb-4">{exam.title}</h1>
-        
-        <p className="text-[#00000080] mb-6 flex-grow">{exam.description}</p>
-        <button
+          <button
           onClick={() => router.push(`/learn/${exam.id}`)}
           className={cn("flex items-center justify-between cursor-pointer px-6 py-3 rounded-full text-white mb-2 font-semibold text-xl transition-all duration-200 w-auto", exam.buttonClassNames)}
         >
           {exam.buttonText}
           <ChevronRight className="w-5 h-5 ml-2" />
         </button>
+        {/* <p className="text-[#00000080] mb-6 flex-grow">{exam.description}</p> */}
+      
       </div>
       
       {/* Subject buttons */}

@@ -412,61 +412,82 @@ const App: React.FC = () => {
     // --- New Section Components ---
     const HomePageContent: React.FC = () => (
         <div className="rounded-2xl p-6 items-center flex justify-center">
-           <div className='max-w-4xl'>
-           <nav className="inline-block self-start text-gray-500 text-sm mb-8 font-light border-[1px] bg-[#00000005] border-[#00000010] px-3 py-1 rounded-lg">
-                        <a href="#" onClick={() => navigate('/learn')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
-                        <span className="mx-2">/</span>
-                        <a href="#" onClick={() => navigate('/learn/edexcel-ial')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Edexcel IAL</a>
-                        <span className="mx-2">/</span>
-                        <span className='font-semibold'>Chemistry</span>
-                    </nav>
-            <div className="flex flex-row items-stretch md:items-start gap-4 md:gap-6 mb-6">
-                <ContinueLessonButton />
-                <div className="flex flex-col flex-grow title-buttons-container">
-                    
-                    {/* Page Title */}
-                    <div className="text-4xl md:text-5xl font-bold text-black md:mb-6">
-                        Edexcel IAL <br className="block md:hidden" />
-                        <span className="font-medium" style={{ color: 'var(--subject-primary-color)'}}>{CURRENT_SUBJECT}</span>
-                    
+            <div className='max-w-4xl'>
+                <nav className="inline-block self-start text-gray-500 text-sm mb-8 font-light border-[1px] bg-[#00000005] border-[#00000010] px-3 py-1 rounded-lg">
+                    <a href="#" onClick={() => navigate('/learn')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
+                    <span className="mx-2">/</span>
+                    <a href="#" onClick={() => navigate('/learn/edexcel-ial')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Edexcel IAL</a>
+                    <span className="mx-2">/</span>
+                    <span className='font-semibold'>Chemistry</span>
+                </nav>
+                <div className="flex flex-row items-stretch md:items-start gap-4 md:gap-6 mb-6">
+                    <ContinueLessonButton />
+                    <div className="flex flex-col flex-grow title-buttons-container">
+
+                        {/* Page Title */}
+                        <div className="text-4xl md:text-5xl font-bold text-black md:mb-6">
+                            Edexcel IAL <br className="block md:hidden" />
+                            <span className="font-medium" style={{ color: 'var(--subject-primary-color)' }}>{CURRENT_SUBJECT}</span>
+
+                        </div>
+                        <p className="text-gray-700 text-lg max-w-3xl hidden md:block">Welcome to the Chemistry Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
                     </div>
-                    <p className="text-gray-700 text-lg max-w-3xl hidden md:block">Welcome to the Chemistry Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
+
                 </div>
-                
-            </div>
-            <p className="text-gray-700 text-lg max-w-3xl block md:hidden">Welcome to the Chemistry Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
+                <p className="text-gray-700 text-lg max-w-3xl block md:hidden">Welcome to the Chemistry Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-3 gap-6 mt-10">
+                    {/* {revisionTools.map((tool) => (
+                        <div
+                            key={tool.id}
+                            className="bg-white p-4 mt-0 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[4px] transition duration-200"
+                            style={{
+                                borderColor: "#00000010",
+                            }}
+                            onClick={() => {
+                                if (tool.id === 'past-papers') navigate('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Chemistry&paper=Unit+1');
+                                else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
+                                else if (tool.id === 'ask-help') navigate('/social');
+                            }}
+                            onMouseEnter={e => {
+                                e.currentTarget.style.borderColor = SUBJECT_COLOR;
+                                e.currentTarget.style.boxShadow = `0 0 0 10px ${SUBJECT_COLOR}20`;
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.borderColor = "#00000010";
+                                e.currentTarget.style.boxShadow = "none";
+                            }}
+                        >
+                            <div className="border-2 p-3 rounded-full" style={{ borderColor: SUBJECT_COLOR }}>
+                                <tool.icon className="w-6 h-6" style={{ color: SUBJECT_COLOR }} />
+                            </div>
+                            <div className="flex flex-col leading-tight">
+                                <span className="text-xl font-bold" style={{ color: SUBJECT_COLOR }}>{tool.titleTop}</span>
+                                <span className="text-lg font-semibold text-gray-900">{tool.titleBottom}</span>
+                            </div>
+                        </div>
+                    ))} */}
+                </div>
+
+            {/* Additional Features Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+                 <div className="bg-white border-2 border-[#00000020] rounded-2xl p-6 flex flex-col transition">
+                    <h3 className="text-2xl font-normal text-black mb-2">Study Notes</h3>
+                    <p className="text-gray-700 text-base">Master every topic with concise, examiner-focused notes. Our study materials are tailored to the latest marking schemes, ensuring you know exactly how to earn top marks.</p>
+                </div>
+                <div className="bg-white border-2 border-[#00000020] rounded-2xl p-6 flex flex-col transition">
+                    <h3 className="text-2xl font-normal text-black mb-2">By-Topic Questions</h3>
+                    <p className="text-gray-700 text-base">Accelerate your progress with targeted practice questions, expertly organized by topic. Build confidence and pinpoint your strengths and weaknesses with every session.</p>
+                </div>
                
-            <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-3 gap-6 mt-10">
-                {revisionTools.map((tool) => (
-                    <div
-                        key={tool.id}
-                        className="bg-white p-4 mt-0 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[4px] transition duration-200"
-                        style={{
-                            borderColor: "#00000010",
-                        }}
-                        onClick={() => {
-                            if (tool.id === 'past-papers') navigate('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Chemistry&paper=Unit+1');
-                            else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
-                            else if (tool.id === 'ask-help') navigate('/social');
-                        }}
-                        onMouseEnter={e => {
-                            e.currentTarget.style.borderColor = SUBJECT_COLOR;
-                            e.currentTarget.style.boxShadow = `0 0 0 10px ${SUBJECT_COLOR}20`;
-                        }}
-                        onMouseLeave={e => {
-                            e.currentTarget.style.borderColor = "#00000010";
-                            e.currentTarget.style.boxShadow = "none";
-                        }}
-                    >
-                        <div className="border-2 p-3 rounded-full" style={{ borderColor: SUBJECT_COLOR }}>
-                            <tool.icon className="w-6 h-6" style={{ color: SUBJECT_COLOR }} />
-                        </div>
-                        <div className="flex flex-col leading-tight">
-                            <span className="text-xl font-bold" style={{ color: SUBJECT_COLOR }}>{tool.titleTop}</span>
-                            <span className="text-lg font-semibold text-gray-900">{tool.titleBottom}</span>
-                        </div>
-                    </div>
-                ))}
+                <div className="bg-white border-2 border-[#00000020] rounded-2xl p-6 flex flex-col transition">
+                    <h3 className="text-2xl font-normal text-black mb-2">Past Papers</h3>
+                    <p className="text-gray-700 text-base">Practice real exam papers anytime, anywhere, and get instant AI-powered grading. Track your scores and unlock powerful analytics to maximize your exam performance.</p>
+                </div>
+                <div className="bg-white border-2 border-[#00000020] rounded-2xl p-6 flex flex-col transition">
+                    <h3 className="text-2xl font-normal text-black mb-2">Battle Mode</h3>
+                    <p className="text-gray-700 text-base">Challenge students worldwide in real-time quizzes. Climb the leaderboard, sharpen your skills, and make revision exciting with competitive Battle Mode.</p>
+                </div>
             </div>
 
             </div>
@@ -477,8 +498,8 @@ const App: React.FC = () => {
         <div className="flex flex-1 overflow-hidden relative">
             {/* Chevron button for desktop (always visible, docked to left of content) */}
             <button
-                className="hidden md:flex items-center justify-center z-40 bg-white border border-gray-200 rounded-full shadow-xl p-1 absolute top-2 left-2 transition-all duration-300"
-                style={{ width: 50, height: 50, marginLeft: sidebarCollapsed ? 0 : 270 }}
+                className="hidden md:flex items-center justify-center z-40 bg-white border border-gray-200 rounded-full shadow-xl p-1 absolute top-2 transition-all duration-300"
+                style={{ width: 50, height: 50, marginLeft: sidebarCollapsed ? 0 : 265, left: sidebarCollapsed? 8 : 0 }}
                 onClick={() => setSidebarCollapsed((prev) => !prev)}
                 aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
@@ -488,7 +509,7 @@ const App: React.FC = () => {
             <div
                 id="left-sidebar"
                 className={`fixed top-0 left-0 h-full z-30 bg-white overflow-x-visible dark:bg-white dark:border-gray-700 overflow-y-auto p-4 transition-transform duration-300 ease-in-out w-64 md:static md:translate-x-0 ${activeHeaderSection === 'revision-notes' && !sidebarCollapsed ? 'translate-x-0' : '-translate-x-full'} md:relative md:h-auto md:w-72 md:block ${sidebarCollapsed ? 'md:-ml-72' : ''}`}
-                // style={{ boxShadow: '0 2px 20px rgba(0,0,0,0.08)' }}
+            // style={{ boxShadow: '0 2px 20px rgba(0,0,0,0.08)' }}
             >
                 {/* No Home button here, as it's in the main header */}
                 {/* Learning Notes Section */}
@@ -577,14 +598,14 @@ const App: React.FC = () => {
             >
                 <div className="max-w-4xl mx-auto markdown-content" style={{ fontSize: '14px', outline: 'none' }} ref={markdownDisplayRef}>
                     {/* Mobile chevron above heading in revision notes */}
-                    {activeHeaderSection === 'revision-notes' && sidebarCollapsed && (
+                    {activeHeaderSection === 'revision-notes' && (
                         <button
                             className="md:hidden flex items-center justify-center bg-white border border-gray-200 rounded-full shadow p-1 mb-4"
                             style={{ width: 50, height: 50 }}
-                            onClick={() => setSidebarCollapsed(false)}
-                            aria-label="Expand sidebar"
+                            onClick={() => setSidebarCollapsed((prev) => !prev)}
+                            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                         >
-                            <i className="fas fa-chevron-right text-gray-600 text-2xl"></i>
+                            <i className={`fas fa-chevron-${sidebarCollapsed ? 'right' : 'left'} text-gray-600 text-2xl`}></i>
                         </button>
                     )}
                     <div className="flex items-center justify-between mb-2">
@@ -1278,23 +1299,23 @@ const App: React.FC = () => {
                 `}
             </style>
 
-            <div className="w-full h-screen flex flex-col bg-white">
+            <div className="w-full flex flex-col bg-[#00000005]">
                 {/* Header */}
-                <header className="fixed w-full bg-white border-b border-[#00000020] dark:bg-gray-800 dark:border-gray-700 px-4 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 relative">
+                <header className="fixed h-[64px] w-full bg-white border-b border-[#00000020] shadow-xl shadow-[#00000005] px-4 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 relative">
                     <div className="flex flex-row items-center justify-between w-full lg:w-auto">
                         <div className="flex flex-row items-center">
                             <h1 className="text-xl font-bold text-gray-800 dark:text-gray-200 flex items-center">
-                            <Link href="/" className="flex items-center space-x-2">
-                <Image
-                  src="/logo-300x300.png"
-                  alt="AIToLearn Logo"
-                  width={32}
-                  height={32}
-                  className="object-contain"
-                />
-              
-              </Link>
-                                <span id="subject-title" className='ml-4 hidden sm:block'>AIToLearn</span><span className='font-light ml-2'>/ Chemistry</span>
+                                <Link href="/" className="flex items-center space-x-2">
+                                    <Image
+                                        src="/logo-300x300.png"
+                                        alt="AIToLearn Logo"
+                                        width={32}
+                                        height={32}
+                                        className="object-contain"
+                                    />
+
+                                </Link>
+                                <span id="subject-title" className='ml-2 hidden sm:block'>AIToLearn</span><span className='font-light ml-2'>/ Chemistry</span>
                                 {/* Mobile: show current page label between Chemistry and menu button */}
                                 <div className="ml-2 lg:hidden flex items-center px-3 py-1 rounded-full bg-gray-100 border border-gray-300 text-gray-700 text-sm font-semibold select-none">
                                     {(() => {
@@ -1322,39 +1343,34 @@ const App: React.FC = () => {
                     </div>
                     {/* Navigation Buttons */}
                     <nav
-                        className={`flex-col lg:flex-row flex gap-2 lg:gap-2 w-full lg:w-auto ${showMobileNav ? 'flex' : 'hidden'} lg:flex bg-white dark:bg-gray-800 md:bg-transparent  p-2 md:p-0 rounded-lg smd:rounded-none shadow lg:shadow-none z-20 absolute lg:static top-full left-0`}
+                        className={`flex-col lg:flex-row flex w-full h-full lg:w-auto ${showMobileNav ? 'flex' : 'hidden'} lg:flex bg-white dark:bg-gray-800 md:bg-transparent p-2 md:p-0 rounded-lg smd:rounded-none shadow lg:shadow-none z-20 absolute lg:static top-full left-0`}
                         style={{ minWidth: '180px' }}
                     >
-                        <button
-                            className={`header-nav-button w-full md:w-auto ${activeHeaderSection === 'home' ? 'active' : ''}`}
-                            onClick={() => { setActiveHeaderSection('home'); setShowMobileNav(false); }}
-                        >
-                            Home
-                        </button>
-                        <button
-                            className={`header-nav-button w-full md:w-auto ${activeHeaderSection === 'revision-notes' ? 'active' : ''}`}
-                            onClick={() => { setActiveHeaderSection('revision-notes'); setShowMobileNav(false); }}
-                        >
-                            Revision Notes
-                        </button>
-                        <button
-                            className={`header-nav-button w-full md:w-auto ${activeHeaderSection === 'past-papers' ? 'active' : ''}`}
-                            onClick={() => { setActiveHeaderSection('past-papers'); setShowMobileNav(false); }}
-                        >
-                            Past Papers
-                        </button>
-                        <button
-                            className={`header-nav-button w-full md:w-auto ${activeHeaderSection === 'battle-mode' ? 'active' : ''}`}
-                            onClick={() => { setActiveHeaderSection('battle-mode'); setShowMobileNav(false); }}
-                        >
-                            Battle Mode
-                        </button>
-                        <button
-                            className={`header-nav-button w-full md:w-auto ${activeHeaderSection === 'tutor' ? 'active' : ''}`}
-                            onClick={() => { setActiveHeaderSection('tutor'); setShowMobileNav(false); }}
-                        >
-                            Tutor
-                        </button>
+                        <div className="flex w-full lg:w-auto  relative">
+                            {[
+                                { key: 'home', label: 'Home' },
+                                { key: 'revision-notes', label: 'Revision Notes' },
+                                { key: 'past-papers', label: 'Past Papers' },
+                                { key: 'battle-mode', label: 'Battle Mode' },
+                                { key: 'tutor', label: 'Tutor' },
+                            ].map(btn => (
+                                <button
+                                    key={btn.key}
+                                    className={`relative w-full flex flex-col hover:bg-[#00000010] rounded-full justify-center items-center text-center md:w-auto px-5 py-2 text-base transition-colors duration-200
+                                        ${activeHeaderSection === btn.key
+                                            ? 'font-bold'
+                                            : ' text-[#00000070] font-medium'}
+                                    `}
+                                    style={{ outline: 'none', fontWeight: 700 }}
+                                    onClick={() => { setActiveHeaderSection(btn.key as any); setShowMobileNav(false); }}
+                                >
+                                    <span className="relative z-10">{btn.label}</span>
+                                    {activeHeaderSection === btn.key && (
+                                        <span className="absolute -bottom-[1px] w-[50px] h-[4px] px-2 bg-black rounded-full transition-all duration-300"></span>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
                     </nav>
                     {/* Editor Toolbar - hidden on mobile */}
                     {/* <div className="hidden md:flex items-center space-x-2 mt-4 md:mt-0 invisible">

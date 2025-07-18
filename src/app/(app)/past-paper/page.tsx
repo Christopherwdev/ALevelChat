@@ -670,20 +670,6 @@ const App: React.FC = () => {
                             <p className="text-xs text-gray-500 mt-1">Search and access past papers</p>
                         </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                        {/* Exam Level Selector */}
-                        <div className="relative">
-                            <select
-                                id="exam-level-select"
-                                className="w-[100px] p-2 text-base bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                                value={examLevel}
-                                onChange={(e) => setExamLevel(e.target.value)}
-                            >
-                                <option value="IAL">IAL</option>
-                                <option value="IGCSE">IGCSE</option>
-                            </select>
-                        </div>
-                    </div>
                 </header>
 
                 {/* Main Content */}
@@ -758,6 +744,19 @@ const App: React.FC = () => {
                                 >
                                     <option value="Edexcel">Edexcel</option>
                                     <option value="Cambridge">Cambridge</option>
+                                </select>
+                            </div>
+                            <div className="relative mt-3">
+                                <label htmlFor="exam-level-select" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Select Level</label>
+                                <select
+                                    id="exam-level-select"
+                                    className="w-full p-2 text-base bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                                    value={examLevel}
+                                    onChange={(e) => setExamLevel(e.target.value)}
+                                    disabled={isKeywordSearchActive}
+                                >
+                                    <option value="IAL">IAL</option>
+                                    <option value="IGCSE">IGCSE</option>
                                 </select>
                             </div>
                         </div>
