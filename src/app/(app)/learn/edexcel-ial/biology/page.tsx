@@ -1069,7 +1069,7 @@ const App: React.FC = () => {
                         </button>
                     </div>
                 </header> */}
-   <AppHeader isAuthenticated={true} />
+   {/* <AppHeader isAuthenticated={true} /> */}
                 {/* Main Content Area */}
                 <div className="flex flex-1 overflow-hidden">
                     {/* Left Sidebar - Navigation */}

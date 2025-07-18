@@ -1403,12 +1403,12 @@ const App: React.FC = () => {
                                     while (week.length < 7) week.push(null);
                                     return (
                                         <div key={monthKey} className="mb-8 w-full">
-                                            <div className="text-xl font-bold mb-2 text-center">{monthName} {year}</div>
+                                            <div className="text-xl font-bold mb-2 text-center sticky top-0 z-20 bg-white border-b border-gray-200">{monthName} {year}</div>
                                             <div className="overflow-auto w-full">
-                                                <table className="w-full border-separate border-2 border-[#00000020] bg-white  rounded-xl overflow-hidden" style={{tableLayout:'fixed'}}>
+                                                <table className="w-full border-separate border-2 border-[#00000020] bg-white min-w-[100px] rounded-xl overflow-hidden" style={{tableLayout:'fixed'}}>
                                                     <thead>
-                                                        <tr className="bg-white text-white">
-                                                            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>(<th key={d} className="py-2 font-semibold rounded-full">{d}</th>))}
+                                                        <tr className="bg-white text-white sticky top-[40px] z-10">
+                                                            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>(<th key={d} className="py-2 font-semibold bg-white">{d}</th>))}
                                                         </tr>
                                                     </thead>
                                                     <tbody>
