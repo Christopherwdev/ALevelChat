@@ -957,7 +957,7 @@ const App: React.FC = () => {
                 
                 @media (min-width: 1024px) {
                     .table-container {
-                        height: calc(100vh - 80px); /* Desktop height */
+                        height: calc(100vh - 130px); /* Desktop height */
                     }
                 }
                 .table-container::-webkit-scrollbar {
@@ -1174,12 +1174,12 @@ const App: React.FC = () => {
                 `}
             </style>
 
-            <header className="flex justify-between items-center p-4 h-[80px]">
+            <header className="flex justify-between items-center p-4 h-[80px] mt-[50px]">
                 <div id="left-header-content">
                     <h1 className="text-2xl font-bold text-gray-800" id="header-date"></h1>
                     <p className="text-xs text-gray-500 mt-1">Dashboard</p>
                 </div>
-                <div className="flex rounded-full overflow-hidden border border-[#00000020] bg-white shadow gap-1" style={{boxShadow:'0 2px 8px #0001'}}>
+                <div className="flex rounded-full overflow-hidden border border-gray-200 bg-white shadow gap-1" style={{boxShadow:'0 2px 8px #0001'}}>
                     <button
                         className={`px-6 py-2 font-semibold transition-all rounded-full m-1 mr-0 ${dashboardMode==='score' ? 'bg-[#ff3b30] text-white' : 'text-black bg-white hover:bg-[#00000010]'}`}
                         style={{outline:'none'}}
@@ -1330,7 +1330,7 @@ const App: React.FC = () => {
                     <div
                         id="bottom-actions"
                         ref={bottomActionsRef}
-                        className={`fixed p-4 bg-white rounded-xl border-2 border-[#00000015] shadow-2xl shadow-[#00000020] z-20 flex flex-col items-center w-[290px] h-[155px] max-w-sm cursor-grab pt-6 transition-transform duration-300 ${isBottomActionsVisible ? 'translate-y-0 opacity-100 visible' : 'translate-y-20 opacity-0 invisible'}`}
+                        className={`fixed p-4 bg-white rounded-xl border-2 border-[#00000015] shadow-2xl shadow-gray-200 z-20 flex flex-col items-center w-[290px] h-[155px] max-w-sm cursor-grab pt-6 transition-transform duration-300 ${isBottomActionsVisible ? 'translate-y-0 opacity-100 visible' : 'translate-y-20 opacity-0 invisible'}`}
                         onMouseDown={startDrag}
                         onTouchStart={startTouchDrag}
                         style={{ position: 'fixed' }} // Ensure position is fixed for dragging
@@ -1402,20 +1402,36 @@ const App: React.FC = () => {
                                     });
                                     while (week.length < 7) week.push(null);
                                     return (
-                                        <div key={monthKey} className="mb-8 w-full">
-                                            <div className="text-xl font-bold mb-2 text-center sticky top-0 z-20 bg-white border-b border-gray-200">{monthName} {year}</div>
+                                        <div key={monthKey} className="mb-8 w-full border-[2px] border-gray-200">
+                                            <div
+                                                className="text-xl font-bold text-center z-100 bg-white border-1 border-gray-200"
+                                                style={{ background: '#fff', position: 'sticky', top: 0 }}
+                                            >
+                                                {monthName} {year}
+                                            </div>
                                             <div className="overflow-auto w-full">
-                                                <table className="w-full border-separate border-2 border-[#00000020] bg-white min-w-[100px] rounded-xl overflow-hidden" style={{tableLayout:'fixed'}}>
+                                                <table
+                                                    className="w-full border-separate bg-white min-w-[100px] overflow-hidden"
+                                                    style={{ tableLayout: 'fixed' }}
+                                                >
                                                     <thead>
-                                                        <tr className="bg-white text-white sticky top-[40px] z-10">
-                                                            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>(<th key={d} className="py-2 font-semibold bg-white">{d}</th>))}
+                                                        <tr className="bg-gray-200 text-gray-700 uppercase h-8">
+                                                            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>(
+                                                                <th
+                                                                    key={d}
+                                                                    className="py-1 font-bold bg-gray-200 uppercase text-xs z-10 tracking-wider h-8 border border-gray-200"
+                                                                    style={{ background: '#f3f4f6' }} // ensure solid background
+                                                                >
+                                                                    {d}
+                                                                </th>
+                                                            ))}
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         {weeks.map((week,wi)=>(
                                                             <tr key={wi}>
                                                                 {week.map((date,di)=>(
-                                                                    <td key={di} className="align-top border border-gray-200 h-32 p-[0px] relative group">
+                                                                    <td key={di} className="align-top border border-gray-200 h-32 relative group">
                                                                         {date && (
                                                                             <div className={`absolute top-1 left-2 text-xs font-bold ${
                                                                                 date.toDateString() === new Date().toDateString() 

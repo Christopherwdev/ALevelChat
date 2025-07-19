@@ -562,57 +562,54 @@ const App: React.FC = () => {
 
         // Default start screen
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center' }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Welcome to your IGCSE Chinese Listening Practice!</h2>
-                <p style={{ color: '#374151', marginBottom: '1.5rem' }}>Click 'Start Test' to generate a new listening passage and questions.</p>
-                <button onClick={generateContent} className="btn-primary">Start Test</button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center', background: 'linear-gradient(to bottom, white, #ff3b3030' }} className='p-6'>
+                <h1 className='text-xl md:text-3xl font-bold mb-2'>Edexcel IGCSE Chinese</h1>
+                <h2 className='text-5xl font-regular mb-4'>AI Listening Mock Test</h2>
+                <p style={{ color: '#374151'}} className='mb-6'>Click 'Start Test' to generate a new listening passage and questions.</p>
+                <div className='flex flex-col md:flex-row gap-4'>
+                <button onClick={generateContent} className="btn-primary w-[300px] ">Start Test</button>
+                <button onClick={window.location = '/past-paper'} className="btn-secondary w-[300px]">Past Papers</button>
+                </div>
             </div>
         );
     };
 
     // --- Main Component Render ---
     return (
+    
         <div id="igcseTool" className="igcse-tool-container">
             {/* Styles are embedded directly for simplicity, can be externalized if preferred */}
             <style>
                 {`
                 /* General Reset and Body Styling */
               
- body {
-                    font-family: 'Inter', sans-serif;
-                    background-color: #f0f4f8;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    min-height: 100vh;
-                    margin: 0;
-                    padding: 20px;
-                    box-sizing: border-box;
-                }
+
                 /* Container styling */
                 .igcse-tool-container {
-                    width: 100%;
+                    width: 90%;
                     height: 90vh; /* Adjust as needed */
-                    max-width: 900px; /* Equivalent to max-w-4xl */
+                
                     margin: 0px auto;
-                    border: 2px solid black;
+                    border: 1.5px solid #ff3b30;
                     border-radius: 12px; /* Equivalent to rounded-xl */
                     overflow: hidden;
                     background-color: white; /* White background for the tool */
                     color: #333;
                     display: flex;
                     flex-direction: column;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Equivalent to shadow-lg */
+                    margin-top: 60px;
+                    box-shadow: 0 5px 20px #ff3b3030; 
                 }
 
                 /* Header Styling */
                 .tool-header {
-                    background-color: #FF3b30; /* Primary color */
-                    color: white;
+                    background-color: white; /* Primary color */
+                    color: #ff3b30;
                     padding: 1rem;
                     text-align: center;
                     font-weight: 700; /* Equivalent to font-bold */
                     font-size: 1.5rem; /* Equivalent to text-2xl */
+                    border-bottom: 2px solid #00000010;
                     border-top-left-radius: 10px;
                     border-top-right-radius: 10px;
                 }
@@ -620,7 +617,7 @@ const App: React.FC = () => {
                 /* Content Area Styling */
                 .tool-content {
                     flex-grow: 1;
-                    padding: 1.5rem; /* Equivalent to p-6 or p-4 for inner elements */
+               
                     overflow-y: auto; /* Make content scrollable */
                     background-color: white; /* Ensure white background for content */
                 }
@@ -632,14 +629,14 @@ const App: React.FC = () => {
                     justify-content: center;
                     gap: 1rem; /* Equivalent to gap-4 */
                     background-color: #f9f9f9; /* Light gray */
-                    border-top: 1px solid #eee;
+                    border-top: 1.5px solid #00000020;
                     border-bottom-left-radius: 10px;
                     border-bottom-right-radius: 10px;
                 }
 
                 /* Button Styling */
                 .btn-primary {
-                    background-color: #FF3b30;
+                    background-color: #ff3b30;
                     color: white;
                     padding: 0.75rem 1.5rem; /* Equivalent to px-6 py-3 */
                     border-radius: 9999px; /* Fully rounded, equivalent to rounded-full */
@@ -647,14 +644,15 @@ const App: React.FC = () => {
                     transition: background-color 0.2s ease-in-out;
                     border: none;
                     cursor: pointer;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                   
                     display: flex; /* To align SVG and text */
                     align-items: center;
                     justify-content: center;
+                    transition: all 0.3s;
                 }
 
                 .btn-primary:hover {
-                    background-color: #E6352C; /* Slightly darker red */
+                     box-shadow: 0px 0px 0px 7.5px  #ff3b3030;
                 }
 
                 .btn-primary svg {
@@ -663,23 +661,24 @@ const App: React.FC = () => {
                     margin-right: 0.5rem; /* Equivalent to mr-2 */
                 }
 
-                .btn-secondary {
-                    background-color: #4a5568; /* Dark gray */
+              .btn-secondary {
+                    background-color: black;
                     color: white;
-                    padding: 0.75rem 1.5rem;
-                    border-radius: 9999px;
-                    font-weight: 600;
+                    padding: 0.75rem 1.5rem; /* Equivalent to px-6 py-3 */
+                    border-radius: 9999px; /* Fully rounded, equivalent to rounded-full */
+                    font-weight: 600; /* Equivalent to font-semibold */
                     transition: background-color 0.2s ease-in-out;
                     border: none;
                     cursor: pointer;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                    display: flex;
+                   
+                    display: flex; /* To align SVG and text */
                     align-items: center;
                     justify-content: center;
+                    transition: all 0.3s;
                 }
 
                 .btn-secondary:hover {
-                    background-color: #2d3748; /* Even darker gray on hover */
+                     box-shadow: 0px 0px 0px 7.5px rgba(0, 0, 0, 0.19);
                 }
 
                 /* Input Styling */
@@ -958,14 +957,36 @@ const App: React.FC = () => {
                 }
                 `}
             </style>
-            <div className="tool-header">
-                IGCSE Chinese Listening
+          
+            <div className="tool-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '1rem' }}>
+                <button
+                    onClick={() => window.history.length > 1 ? window.history.back() : (window.location.href = '/app/learn/edexcel-igcse/chinese')}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        marginRight: '0.75rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        color: '#ff3b30',
+                        fontSize: '1.5rem',
+                        height: '2.5rem',
+                        width: '2.5rem',
+                    }}
+                    aria-label="Back"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '2rem', height: '2rem' }}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                </button>
+                <span style={{ flex: 1, textAlign: 'center', marginRight: '2.5rem' }}>AI Mock Test</span>
             </div>
 
             <div id="toolContent" className="tool-content">
                 {statusMessage && (
                     <div
-                        className={`p-3 rounded-lg text-sm mb-4 ${statusMessage.isError ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}
+                        className={`hidden p-3 rounded-lg text-sm mb-4 ${statusMessage.isError ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}
                         style={{
                             padding: '0.75rem',
                             borderRadius: '0.5rem',
@@ -992,7 +1013,7 @@ const App: React.FC = () => {
                     </button>
                 )}
                 {isTestActive && (
-                    <button onClick={handleSubmitAnswers} className="btn-primary">
+                    <button onClick={handleSubmitAnswers} className="btn-secondary">
                         Submit Answers
                     </button>
                 )}
@@ -1012,6 +1033,8 @@ const App: React.FC = () => {
                 )}
             </div>
         </div>
+        
+
     );
 };
 

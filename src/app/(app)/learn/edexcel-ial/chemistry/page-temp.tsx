@@ -2,16 +2,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import AppHeader from '@/components/app/header';
-import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle, Languages } from 'lucide-react';
+import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle, FlaskConical } from 'lucide-react';
 import { marked } from 'marked'; // Import marked library
 
 // Import content from separate JS files
-import { CHINESE_UNIT_1_CONTENT } from './Unit1.js';
-import { CHINESE_UNIT_2_CONTENT } from './Unit2.js';
-import { CHINESE_UNIT_3_CONTENT } from './Unit3.js';
-import { CHINESE_UNIT_4_CONTENT } from './Unit4.js';
-import { CHINESE_UNIT_5_CONTENT } from './Unit5.js';
-import { CHINESE_UNIT_6_CONTENT } from './Unit6.js';
+import { CHEMISTRY_UNIT_1_CONTENT } from './Unit1.js';
+import { CHEMISTRY_UNIT_2_CONTENT } from './Unit2.js';
+import { CHEMISTRY_UNIT_3_CONTENT } from './Unit3.js';
+import { CHEMISTRY_UNIT_4_CONTENT } from './Unit4.js';
+import { CHEMISTRY_UNIT_5_CONTENT } from './Unit5.js';
+import { CHEMISTRY_UNIT_6_CONTENT } from './Unit6.js';
 
 
 interface UnitContent {
@@ -19,26 +19,26 @@ interface UnitContent {
 }
 
 const UNIT_NOTES_CONTENT: UnitContent = {
-    1: CHINESE_UNIT_1_CONTENT,
-    2: CHINESE_UNIT_2_CONTENT,
-    3: CHINESE_UNIT_3_CONTENT,
-    4: CHINESE_UNIT_4_CONTENT,
-    5: CHINESE_UNIT_5_CONTENT,
-    6: CHINESE_UNIT_6_CONTENT,
+    1: CHEMISTRY_UNIT_1_CONTENT,
+    2: CHEMISTRY_UNIT_2_CONTENT,
+    3: CHEMISTRY_UNIT_3_CONTENT,
+    4: CHEMISTRY_UNIT_4_CONTENT,
+    5: CHEMISTRY_UNIT_5_CONTENT,
+    6: CHEMISTRY_UNIT_6_CONTENT,
 };
 
 
 const revisionTools = [
-    { id: 'past-papers', titleTop: 'Chinese', titleBottom: 'Past Papers', icon: FileText },
+    { id: 'past-papers', titleTop: 'Chemistry', titleBottom: 'Past Papers', icon: FileText },
     { id: 'ai-teacher', titleTop: 'AI Teacher', titleBottom: '& Grading', icon: Lightbulb },
     { id: 'ask-help', titleTop: 'Ask for', titleBottom: 'Our Help', icon: HelpCircle },
 ];
 
 
 // --- CONFIGURATION FOR EASY ADAPTATION ---
-const CURRENT_SUBJECT = 'Chinese';
-const SUBJECT_COLOR = '#ff3b30'; // Corresponds to primary color in Tailwind config
-const SUBJECT_ICON_CLASS = 'fas fa-flask'; // Font Awesome icon for Chinese
+const CURRENT_SUBJECT = 'Chemistry';
+const SUBJECT_COLOR = '#ff6b6b'; // Corresponds to primary color in Tailwind config
+const SUBJECT_ICON_CLASS = 'fas fa-flask'; // Font Awesome icon for Chemistry
 const UNIT_PREFIX = 'Unit'; // For units like "Unit 1", "Unit 2"
 const TOTAL_UNITS = 6; // Number of units for the subject
 // Key prefix for local storage. Now includes unit and section.
@@ -58,20 +58,6 @@ function isTextToken(token: any): token is { text: string } {
     return typeof token.text === 'string';
 }
 
-const PRACTICE_TESTS = [
-  { key: 'listening', label: 'Listening Practice' },
-  { key: 'reading', label: 'Reading Practice' },
-  { key: 'translating', label: 'Translating Practice' },
-  { key: 'writing', label: 'Writing Practice' },
-];
-
-const PRACTICE_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
-  listening: React.lazy(() => import('./listening/page')),
-  reading: React.lazy(() => import('./reading/page')),
-  translating: React.lazy(() => import('./translating/page')),
-  writing: React.lazy(() => import('./writing/page')),
-};
-
 const App: React.FC = () => {
     const [activeUnitIndex, setActiveUnitIndex] = useState<number | null>(null); // null for home page
     const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
@@ -81,7 +67,6 @@ const App: React.FC = () => {
     const [sectionCompletionStatus, setSectionCompletionStatus] = useState<{ [key: string]: boolean }>({});
     const [lastViewedLesson, setLastViewedLesson] = useState<{ unitIndex: number; sectionId: string } | null>(null);
     const [activeTab, setActiveTab] = useState('details'); // 'details', 'timetable', 'find-tutor'
-    const [activePractice, setActivePractice] = useState<string | null>(null);
 
     const markdownDisplayRef = useRef<HTMLDivElement>(null);
 
@@ -94,12 +79,12 @@ const App: React.FC = () => {
     // Content for the "Details" tab
     const DetailsContent = () => (
         <div className="p-6 bg-white rounded-xl shadow-sm">
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Chinese IAL Details</h3>
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Chemistry IAL Details</h3>
             <p className="text-gray-700 leading-relaxed mb-4">
-                The Edexcel International Advanced Level (IAL) Chinese is a globally recognized qualification, equivalent to A-levels in the UK. It's designed for students who wish to progress to higher education. For Chinese, there are comprehensive revision notes, factsheets, questions from past exam papers separated by topic, and other worksheets to aid your learning.
+                The Edexcel International Advanced Level (IAL) Chemistry is a globally recognized qualification, equivalent to A-levels in the UK. It's designed for students who wish to progress to higher education. For Chemistry, there are comprehensive revision notes, factsheets, questions from past exam papers separated by topic, and other worksheets to aid your learning.
             </p>
             <p className="text-gray-700 leading-relaxed">
-                Our platform provides a structured approach to your Chinese IAL revision, offering AI-powered mock tests, detailed solutions, and access to AI teachers and private tutors for personalized support. Prepare effectively and achieve your best results!
+                Our platform provides a structured approach to your Chemistry IAL revision, offering AI-powered mock tests, detailed solutions, and access to AI teachers and private tutors for personalized support. Prepare effectively and achieve your best results!
             </p>
         </div>
     );
@@ -109,7 +94,7 @@ const App: React.FC = () => {
         <div className="p-6 bg-white rounded-xl shadow-sm">
             <h3 className="text-2xl font-semibold text-gray-800 mb-4">Exam Timetable</h3>
             <p className="text-gray-700 mb-4">
-                Here you can find the provisional and final timetables for upcoming Edexcel IAL Chinese examinations. Please check regularly for updates.
+                Here you can find the provisional and final timetables for upcoming Edexcel IAL Chemistry examinations. Please check regularly for updates.
             </p>
             <ul className="list-disc list-inside text-gray-700 space-y-2">
                 <li>Summer 2025 Exam Series: Provisional Timetable (Available Now)</li>
@@ -127,13 +112,13 @@ const App: React.FC = () => {
         <div className="p-6 bg-white rounded-xl shadow-sm">
             <h3 className="text-2xl font-semibold text-gray-800 mb-4">Find a Private Tutor</h3>
             <p className="text-gray-700 mb-4">
-                Need personalized help? Our platform connects you with experienced private tutors specializing in Edexcel IAL Chinese.
+                Need personalized help? Our platform connects you with experienced private tutors specializing in Edexcel IAL Chemistry.
             </p>
             <form className="space-y-4">
                 <div>
                     <label htmlFor="subject" className="block text-gray-700 text-sm font-semibold mb-2">Subject:</label>
                     <select id="subject" name="subject" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="chinese">Chinese</option>
+                        <option value="chemistry">Chemistry</option>
                     </select>
                 </div>
                 <div>
@@ -249,10 +234,10 @@ const App: React.FC = () => {
             if (h1Token && isTextToken(h1Token)) {
                 headingTitle = h1Token.text;
             } else {
-                headingTitle = `${unitName}: Chinese Notes`;
+                headingTitle = `${unitName}: Chemistry Notes`;
             }
         } else {
-            headingTitle = `${unitName}: Chinese Notes`;
+            headingTitle = `${unitName}: Chemistry Notes`;
         }
         setCurrentNotesTitle(headingTitle);
         setCurrentNotesDuration('');
@@ -432,7 +417,7 @@ const App: React.FC = () => {
     const ContinueLessonButton: React.FC = () => {
         return (
             <div id="continue-lesson-button" className="continue-lesson-card flex items-center justify-center" style={{ width: 150, height: 150 }}>
-                <Languages size={90} color="#fff" />
+                <FlaskConical size={90} color="#fff" />
             </div>
         );
     };
@@ -475,16 +460,6 @@ const App: React.FC = () => {
         </div>
     );
 
-    // Dynamic import for practice test components
-    // const PracticeComponent = React.useMemo(() => {
-    //     if (!activePractice) return null;
-    //     const test = PRACTICE_TESTS.find(t => t.key === activePractice);
-    //     if (!test) return null;
-    //     // Dynamic import using React.lazy
-    //     const Comp = React.lazy(() => import(`${test.importPath}`));
-    //     return <React.Suspense fallback={<div className="p-8 text-center">Loading...</div>}><Comp /></React.Suspense>;
-    // }, [activePractice]);
-
     // --- Main Render ---
     return (
         <React.Fragment>
@@ -501,8 +476,8 @@ const App: React.FC = () => {
                     theme: {
                         extend: {
                             colors: {
-                                primary: '#ff3b30', /* Custom primary color for Chinese, matches #ff3b30 */
-                                subjectColor: '#ff3b30', /* Dynamic subject color */
+                                primary: '#ff6b6b', /* Custom primary color for Chemistry, matches #ff6b6b */
+                                subjectColor: '#ff6b6b', /* Dynamic subject color */
                             },
                         },
                     },
@@ -511,9 +486,9 @@ const App: React.FC = () => {
                 /* Custom styles for the app */
                 :root {
                     /* This variable will be dynamically updated by JavaScript based on the subject */
-                    --subject-primary-color: #ff3b30;
-                    --subject-primary-color-trans: #ff3b3070;
-                    /* Default for Chinese */
+                    --subject-primary-color: #ff6b6b;
+                    --subject-primary-color-trans: #ff6b6b70;
+                    /* Default for Chemistry */
                     --subject-primary-color-rgb: 255, 107, 107;
                     /* RGB equivalent for rgba usage */
                 }
@@ -1072,9 +1047,9 @@ const App: React.FC = () => {
                     <div>
                         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
                             <a href="../../Revision.html" className="hover:underline">Revision Notes</a> / <span id="subject-title">{CURRENT_SUBJECT}</span>
-                        </h1>
+                            </h1>
                         <p className="text-xs text-gray-500 mt-1">Your comprehensive revision guide</p>
-                    </div>
+                        </div>
                
                     <div className="flex items-center space-x-2">
                         <button id="bold-button" className="editor-button" title="Bold" onClick={() => applyTextEffect('bold')}>
@@ -1097,59 +1072,117 @@ const App: React.FC = () => {
    {/* <AppHeader isAuthenticated={true} /> */}
                 {/* Main Content Area */}
                 <div className="flex flex-1 overflow-hidden">
-                    {/* Sidebar */}
+                    {/* Left Sidebar - Navigation */}
                     <div id="left-sidebar" className="w-72 pt-6 bg-white flex flex-col dark:bg-white dark:border-gray-700 overflow-y-scroll h-[full] p-4 pt-[70px]">
-                        {/* Home Button */}
+                        {/* Subject Home Button */}
                         <button
                             id="home-subject-button"
-                            className={`home-subject-button w-full text-left px-4 py-3 rounded-[15px] text-lg font-semibold mb-4 flex items-center justify-center transition duration-200 ${activeUnitIndex === null && !activePractice ? 'active' : ''}`}
-                            onClick={() => { setActiveUnitIndex(null); setActivePractice(null); }}
+                            className={`home-subject-button w-full text-left px-4 py-3 rounded-[15px] text-lg font-semibold mb-4 flex items-center justify-center transition duration-200 ${activeUnitIndex === null ? 'active' : ''}`}
+                            onClick={displayHomePage}
                         >
                             <i id="sidebar-subject-icon" className={`fas fa-home mr-3 text-md`}></i>
                             <span id="sidebar-subject-name" style={{ fontWeight: 'bold' }}>Home</span>
                             <i className="fas fa-chevron-right ml-auto text-sm"></i>
                         </button>
-                        {/* Revision Notes */}
-                        <button
-                            className={`unit-button w-full text-left px-3 py-2 rounded-[15px] text-sm font-medium flex items-center justify-between ${activeUnitIndex === 1 && !activePractice ? 'active' : ''}`}
-                            onClick={() => { setActiveUnitIndex(1); setActivePractice(null); }}
-                        >
-                            <span><span style={{ fontWeight: 'bold' }}>Revision Notes</span></span>
-                        </button>
-                        {/* Practice Tests */}
-                        <div className="mt-4">
-                            {PRACTICE_TESTS.map(test => (
-                                <button
-                                    key={test.key}
-                                    className={`unit-button w-full text-left px-3 py-2 mb-4 rounded-[15px] text-sm font-medium flex items-center justify-between`}
-                                    onClick={() => navigate(`/learn/edexcel-igcse/chinese/${test.key}`)}
-                                >
-                                    <span><span style={{ fontWeight: 'bold' }}>{test.label}</span></span>
-                                </button>
-                            ))}
+
+                        {/* Learning Notes Section */}
+                        <div className="mb-4">
+                            {/* <h3 className="text-md font-semibold text-gray-700 mb-2 dark:text-gray-300">Learning Notes</h3> */}
+                            <div id="unit-buttons-container" className="space-y-4">
+                                {Array.from({ length: TOTAL_UNITS }, (_, i) => i + 1).map(unitIndex => {
+                                    const unitName = `${UNIT_PREFIX} ${unitIndex}`;
+                                    const markdownContent = UNIT_NOTES_CONTENT[unitIndex];
+                                    let unitTitleWithoutPrefix = unitName;
+
+                                    if (markdownContent) {
+                                        const tokens = marked.lexer(markdownContent);
+                                        const h1Token = tokens.find(token => token.type === 'heading' && token.depth === 1 && isTextToken(token));
+                                        if (h1Token && isTextToken(h1Token)) {
+                                            unitTitleWithoutPrefix = h1Token.text;
+                                            if (unitTitleWithoutPrefix.startsWith(`${unitName}:`)) {
+                                                unitTitleWithoutPrefix = unitTitleWithoutPrefix.substring(`${unitName}:`.length).trim();
+                                            }
+                                        }
+                                    }
+
+                                    const sectionsInUnit: { id: string; text: string }[] = [];
+                                    if (markdownContent) {
+                                        let sectionCounter = 0;
+                                        marked.lexer(markdownContent).forEach(token => {
+                                            if (token.type === 'heading' && token.depth === 2) {
+                                                sectionCounter++;
+                                                sectionsInUnit.push({ id: `unit-${unitIndex}-section-${sectionCounter}`, text: token.text });
+                                            }
+                                        });
+                                    }
+
+                                    return (
+                                        <div key={unitIndex}>
+                                            <button
+                                                className={`unit-button w-full text-left px-3 py-2 rounded-[15px] text-sm font-medium flex items-center justify-between ${activeUnitIndex === unitIndex ? 'active' : ''}`}
+                                                onClick={() => fetchAndDisplayNote(unitIndex)}
+                                            >
+                                                <span><span style={{ fontWeight: 'bold' }}>{unitName}:</span> {unitTitleWithoutPrefix}</span>
+                                            </button>
+                                            {activeUnitIndex === unitIndex && sectionsInUnit.length > 0 && (
+                                                <div className="unit-sections-container space-y-1 mt-2 mb-2 ml-4 border-l border-l-[2px] border-gray-200 dark:border-gray-600">
+                                                    {sectionsInUnit.map(section => {
+                                                        const sectionKey = getLocalStorageKey(unitIndex, section.id);
+                                                        const isCompleted = sectionCompletionStatus[sectionKey] || false;
+                                                        return (
+                                                            <a
+                                                                key={section.id}
+                                                                href={`#${section.id}`}
+                                                                className={`section-link ${activeSectionId === section.id ? 'active-section' : ''}`}
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    setActiveSectionId(section.id);
+                                                                    saveLastViewedLessonToLocalStorage(unitIndex, section.id);
+                                                                    // Scroll handled by useEffect based on activeSectionId
+                                                                }}
+                                                            >
+                                                                <span className="section-link-text">{section.text}</span>
+                                                                {isCompleted && (
+                                                                    <i className="section-completion-icon fas fa-check-circle text-green-500 text-xs inline-block"></i>
+                                                                )}
+                                                            </a>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
-                    {/* Main Content */}
+
+                    {/* Right Content Area - Notes Display */}
                     <div className="flex-1 pt-[60px] overflow-y-auto p-6 bg-white dark:bg-gray-900 max-4xl">
-                        <div className="max-w-4xl mx-auto markdown-content" style={{ fontSize: '14px', outline: 'none' }} ref={markdownDisplayRef}>
-                            {activeUnitIndex === null && !activePractice ? (
+                        <div
+                            className="max-w-4xl mx-auto markdown-content"
+                            contentEditable={activeUnitIndex !== null} // Only editable when a unit is displayed
+                            style={{ fontSize: '14px', outline: 'none' }}
+                            ref={markdownDisplayRef}
+                        >
+                            {activeUnitIndex === null ? (
                                 // Home Page Content
                                 <div className="rounded-2xl p-2">
-                                    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-6">
-                                        {/* <ContinueLessonButton /> */}
+                                    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-6 mb-6">
+                                        <ContinueLessonButton />
                                         <div className="flex flex-col flex-grow title-buttons-container">
                                             <nav className="inline-block self-start text-gray-500 text-sm mb-6 font-light border-[1px] bg-[#00000005] border-[#00000010] px-3 py-1 rounded-lg">
                                                 <a href="#" onClick={() => navigate('/learn')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
                                                 <span className="mx-2">/</span>
                                                 <a href="#" onClick={() => navigate('/learn/edexcel-ial')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Edexcel IAL</a>
                                                 <span className="mx-2">/</span>
-                                                <span className='font-semibold'>Chinese</span>
+                                                <span className='font-semibold'>Chemistry</span>
                                             </nav>
                                             {/* Page Title */}
                                             <div className="text-5xl font-bold text-black mb-8">
                                                 Edexcel IAL <span className="font-medium" style={{ color: 'var(--subject-primary-color)'}}>{CURRENT_SUBJECT}</span>
                                             </div>
-                                            {/* <p  className="text-gray-700 text-lg mb-10 max-w-3xl">Welcome to the Chinese Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p> */}
+                                            <p  className="text-gray-700 text-lg mb-10 max-w-3xl">Welcome to the Chemistry Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1161,7 +1194,7 @@ const App: React.FC = () => {
                                                     borderColor: "#00000010",
                                                 }}
                                                 onClick={() => {
-                                                    if (tool.id === 'past-papers') navigate('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Chinese&paper=Unit+1');
+                                                    if (tool.id === 'past-papers') navigate('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Chemistry&paper=Unit+1');
                                                     else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
                                                     else if (tool.id === 'ask-help') navigate('/social');
                                                 }}
@@ -1184,21 +1217,13 @@ const App: React.FC = () => {
                                             </div>
                                         ))}
                                     </div>
-<div className='mt-8'>
-    <h3>Practice is key for acing your Chinese papers.</h3>
-
-                                    <p>The difficulty of the Chinese paper for native speakers is avoiding careless mistakes throughout the exam. Therefore, you should keep practising to train your mind to be accurate. Your revision should be divided into two parts: use Golden Notes and AI Teacher to grasp all the necessary knowledge within the exam scope, and utilize Past Papers along with our AI-verified Questions By Topic to master the exam’s framework and thinking patterns.</p>
                                  
-                                    </div>
+                                    
                                     
                                  
                                 </div>
-                            ) : activePractice && PRACTICE_COMPONENTS[activePractice] ? (
-                                <React.Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
-                                    {React.createElement(PRACTICE_COMPONENTS[activePractice])}
-                                </React.Suspense>
                             ) : (
-                                // Notes Display Content (only one notes file)
+                                // Notes Display Content
                                 <>
                                     <div className="flex items-center justify-between mb-2">
                                         <h1 id="notes-title" className="text-4xl font-bold text-black">{currentNotesTitle}</h1>
