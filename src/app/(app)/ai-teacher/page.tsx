@@ -1,6 +1,7 @@
 "use client"
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { marked } from 'marked';
+import Image from 'next/image';
 
 // Add type for chatHistory
 interface ChatMessage { sender: string; text: string; timestamp: number; }
@@ -26,10 +27,10 @@ const App = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Refs for DOM elements
-    const chatContainerRef = useRef(null);
-    const messageInputRef = useRef(null);
-    const sidebarMenuRef = useRef(null);
-    const recognitionRef = useRef(null); // For webkitSpeechRecognition
+    const chatContainerRef = useRef<HTMLDivElement | null>(null);
+    const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
+    const sidebarMenuRef = useRef<HTMLDivElement | null>(null);
+    const recognitionRef = useRef<any>(null); // For webkitSpeechRecognition
 
     // --- Local Storage Management ---
     // Load chat history from localStorage on initial mount
@@ -82,7 +83,7 @@ const App = () => {
     const initSpeechRecognition = useCallback(() => {
         if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
             setSpeechRecognitionSupported(true);
-            const recognition = new window.webkitSpeechRecognition();
+            const recognition = new (window as any).webkitSpeechRecognition();
             recognition.continuous = false;
             recognition.interimResults = true;
 
@@ -94,12 +95,12 @@ const App = () => {
                 }
             };
 
-            recognition.onresult = (event) => {
+            recognition.onresult = (event: any) => {
                 const transcript = event.results[0][0].transcript;
                 setMessageInput(transcript);
             };
 
-            recognition.onerror = (event) => {
+            recognition.onerror = (event: any) => {
                 console.error('Speech recognition error', event.error);
                 stopRecording();
             };
@@ -118,13 +119,13 @@ const App = () => {
     }, [initSpeechRecognition]);
 
     const startRecording = () => {
-        if (recognitionRef.current) {
+        if (recognitionRef.current && typeof recognitionRef.current.start === 'function') {
             recognitionRef.current.start();
         }
     };
 
     const stopRecording = () => {
-        if (recognitionRef.current) {
+        if (recognitionRef.current && typeof recognitionRef.current.stop === 'function') {
             recognitionRef.current.stop();
             setIsRecording(false);
             if (messageInputRef.current) {
@@ -157,8 +158,8 @@ const App = () => {
             } else {
                 throw new Error(data.error || 'Failed to start chat session');
             }
-        } catch (error) {
-            updateStatus('Error: ' + error.message, true);
+        } catch (error: any) {
+            updateStatus('Error: ' + (error?.message || String(error)), true);
         }
     }, []);
 
@@ -222,9 +223,9 @@ const App = () => {
             } else {
                 throw new Error(data.error || 'Failed to get response');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error sending message:", error);
-            updateStatus('Error: ' + error.message, true);
+            updateStatus('Error: ' + (error?.message || String(error)), true);
             // Append an error message from AI if the call fails
             const errorAiMessage = { sender: 'ai', text: "Sorry, I encountered an error. Please try again.", timestamp: Date.now() };
             currentActiveChat.messages.push(errorAiMessage);
@@ -279,29 +280,41 @@ const App = () => {
     const MessageBubble = ({ message, sender }: { message: string; sender: string }) => {
         const contentRef = useRef<HTMLDivElement>(null); // Ref to get the text content for copying
 
-        const handleCopy = () => {
-            if (contentRef.current) {
-                const copyButton = (contentRef.current as HTMLElement).closest('.message')?.querySelector('.copy-button') as HTMLElement | null;
-                if (copyButton) {
-                    copyToClipboard((contentRef.current as HTMLElement).textContent || '', copyButton);
-                }
-            }
-        };
+        // Remove handleCopy and copy button logic
 
-        return (
-            <div className={`message ${sender}-message p-3 rounded-lg break-words mb-2 relative`}>
-                <div className="message-content" ref={contentRef} dangerouslySetInnerHTML={{ __html: sender === 'ai' ? marked.parse(message) : message }}></div>
-                {/* Re-added copy button functionality */}
-                <div className="copy-button-container">
-                    <button onClick={handleCopy} className={`copy-button text-xs px-2 py-1 rounded-md ${sender === 'ai' ? 'ai-message' : ''}`}>
-                        <i className="fas fa-copy"></i>
-                    </button>
+        if (sender === 'ai') {
+            return (
+                <div className={`message ai-message p-3 pb-1 rounded-xl break-words mb-4 relative flex items-start`}>
+                   
+                    <div className="flex flex-col items-center justify-start mr-3 w-[50px] h-[50px]">
+                         <div className='absolute border-2 border-[#007aff] w-[45px] h-[45px] rounded-full z-5'>
+
+                    </div>
+                    <Image
+                            src="/logo-300x300.png"
+                            alt="AIToLearn Logo"
+                            width={25}
+                            height={25}
+                            className="object-contain rounded-full mt-2"
+                        />
+                        <span className="text-[10px] text-blue-500 font-bold mt-[1px] bg-white z-10 px-1">AI</span>
+                    </div>
+                    <div className="flex-1">
+                    <span className="text-md text-blue-500 font-bold bg-white z-10">AI Teacher</span>
+                        <div className="message-content" ref={contentRef} dangerouslySetInnerHTML={{ __html: marked.parse(message) }}></div>
+                    </div>
                 </div>
+            );
+        }
+        // user message
+        return (
+            <div className={`message user-message p-3 px-4 rounded-xl break-words mb-4 relative`}>
+                <div className="message-content" ref={contentRef} dangerouslySetInnerHTML={{ __html: message }}></div>
             </div>
         );
     };
 
-    const updateStatus = (message, isError = false) => {
+    const updateStatus = (message: string, isError: boolean = false) => {
         setStatusMessage(message);
         setIsStatusError(isError);
         setTimeout(() => {
@@ -309,8 +322,8 @@ const App = () => {
         }, 3000);
     };
 
-    const getSubjectDisplayName = (subject) => {
-        const subjectMap = {
+    const getSubjectDisplayName = (subject: string) => {
+        const subjectMap: { [key: string]: string } = {
             'biology': 'Biology (Edexcel IAL)',
             'chemistry': 'Chemistry (Edexcel IAL)',
             'physics': 'Physics (Edexcel IAL)',
@@ -324,8 +337,8 @@ const App = () => {
         return subjectMap[subject] || subject;
     };
 
-    const getWelcomeMessage = (subject) => {
-        const welcomeMessages = {
+    const getWelcomeMessage = (subject: string) => {
+        const welcomeMessages: { [key: string]: string } = {
             'biology': "👋 Welcome to Biology! I'm your Edexcel IAL Biology tutor. I can help with topics like biological molecules, cells, genetics, ecology, and more. What would you like to learn about today?",
             'chemistry': "👋 Welcome to Chemistry! I'm your Edexcel IAL Chemistry tutor. I can help with topics like atomic structure, bonding, energetics, organic chemistry, and more. What would you like to learn about today?",
             'physics': "👋 Welcome to Physics! I'm your Edexcel IAL Physics tutor. I can help with topics like mechanics, electricity, waves, fields, nuclear physics, and more. What would you like to learn about today?",
@@ -339,10 +352,10 @@ const App = () => {
         return welcomeMessages[subject] || "👋 Welcome! How can I help you today?";
     };
 
-    const changeSubject = (subject) => {
-        setCurrentSubject(subject);
+    const changeSubject = (subject: string) => {
+        setCurrentSubject(subject as any); // Accept string for state
 
-        let chatForSubject = null;
+        let chatForSubject: ChatSession | null = null;
         if (chatHistory[subject] && chatHistory[subject].length > 0) {
             chatForSubject = chatHistory[subject][0]; // Load the most recent chat
         } else {
@@ -353,10 +366,13 @@ const App = () => {
                 messages: [{ sender: 'ai', text: getWelcomeMessage(subject), timestamp: Date.now() }]
             };
             // Temporarily update history to include this new chat for display
-            setChatHistory(prev => ({
-                ...prev,
-                [subject]: [chatForSubject, ...(prev[subject] || [])]
-            }));
+            setChatHistory(prev => {
+                const arr = [chatForSubject, ...(prev[subject] || [])].filter((c): c is ChatSession => c !== null);
+                return {
+                    ...prev,
+                    [subject]: arr
+                };
+            });
         }
         setActiveChat(chatForSubject);
 
@@ -383,12 +399,12 @@ const App = () => {
         }
     };
 
-    const loadChat = (subject, chatId) => {
+    const loadChat = (subject: string, chatId: number) => {
         if (currentSubject !== subject) {
-            setCurrentSubject(subject);
+            setCurrentSubject(subject as any);
         }
 
-        const chat = chatHistory[subject]?.find(c => c.id === chatId);
+        const chat = chatHistory[subject]?.find((c: ChatSession) => c.id === chatId);
         if (chat) {
             setActiveChat(chat);
             setHistoryModalOpen(false); // Close modal after loading chat
@@ -401,7 +417,7 @@ const App = () => {
         setShowConfirmClearModal(true);
     };
 
-    const handleConfirmClear = (confirm) => {
+    const handleConfirmClear = (confirm: boolean) => {
         setShowConfirmClearModal(false);
         if (confirm) {
             setChatHistory({});
@@ -413,7 +429,7 @@ const App = () => {
     };
 
     // --- Quiz Generation ---
-    const generateQuiz = async (numQuestions, difficulty, topic) => {
+    const generateQuiz = async (numQuestions: string, difficulty: string, topic: string) => {
         // Ensure document is available before manipulating it
         if (typeof document === 'undefined') return;
 
@@ -430,7 +446,7 @@ const App = () => {
             `;
         }
 
-        let prompt = `Generate a ${numQuestions}-question ${difficulty} difficulty quiz about ${getSubjectDisplayName(currentSubject)}`;
+        let prompt = `Generate a ${numQuestions}-question ${difficulty} difficulty quiz about ${getSubjectDisplayName((currentSubject || '') as string)}`;
         if (topic) {
             prompt += ` focusing on ${topic}`;
         }
@@ -454,7 +470,7 @@ const App = () => {
             } else {
                 throw new Error(data.error || 'Failed to generate quiz');
             }
-        } catch (error) {
+        } catch (error: any) {
             if (quizContentEl) {
                 quizContentEl.innerHTML = `
                     <div class="text-center py-8">
@@ -468,8 +484,9 @@ const App = () => {
                         </button>
                     </div>
                 `;
-                if (document.getElementById('retry-quiz-btn')) {
-                    document.getElementById('retry-quiz-btn').onclick = () => {
+                const retryBtn = document.getElementById('retry-quiz-btn');
+                if (retryBtn) {
+                    retryBtn.onclick = () => {
                         setQuizModalOpen(false);
                         setTimeout(() => setQuizModalOpen(true), 300);
                     };
@@ -478,7 +495,7 @@ const App = () => {
         }
     };
 
-    const displayQuiz = (quizText, numQuestions, difficulty, topic) => {
+    const displayQuiz = (quizText: string, numQuestions: string, difficulty: string, topic: string) => {
         // Ensure document is available before manipulating it
         if (typeof document === 'undefined') return;
 
@@ -487,7 +504,7 @@ const App = () => {
             quizContentEl.innerHTML = `
                 <div class="p-4">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-semibold text-gray-800">Quiz: ${getSubjectDisplayName(currentSubject)}</h3>
+                        <h3 class="text-xl font-semibold text-gray-800">Quiz: ${getSubjectDisplayName((currentSubject || '') as string)}</h3>
                         <div class="text-sm text-gray-500">${difficulty} · ${numQuestions} questions</div>
                     </div>
                     
@@ -505,18 +522,23 @@ const App = () => {
                     </div>
                 </div>
             `;
-            if (document.getElementById('new-quiz-btn')) {
-                document.getElementById('new-quiz-btn').onclick = () => {
+            const newQuizBtn = document.getElementById('new-quiz-btn');
+            if (newQuizBtn) {
+                newQuizBtn.onclick = () => {
                     // Reset quiz form and show it again
-                    if (document.getElementById('quiz-num-questions')) document.getElementById('quiz-num-questions').value = '10';
-                    if (document.getElementById('quiz-difficulty')) document.getElementById('quiz-difficulty').value = 'medium';
-                    if (document.getElementById('quiz-topic')) document.getElementById('quiz-topic').value = '';
+                    const numQ = document.getElementById('quiz-num-questions') as HTMLSelectElement | null;
+                    if (numQ) numQ.value = '10';
+                    const diff = document.getElementById('quiz-difficulty') as HTMLSelectElement | null;
+                    if (diff) diff.value = 'medium';
+                    const topic = document.getElementById('quiz-topic') as HTMLInputElement | null;
+                    if (topic) topic.value = '';
                     setQuizModalOpen(false);
                     setTimeout(() => setQuizModalOpen(true), 300);
                 };
             }
-            if (document.getElementById('save-quiz-btn')) {
-                document.getElementById('save-quiz-btn').onclick = () => {
+            const saveQuizBtn = document.getElementById('save-quiz-btn');
+            if (saveQuizBtn) {
+                saveQuizBtn.onclick = () => {
                     const userPrompt = `Generate a ${numQuestions}-question ${difficulty} difficulty quiz${topic ? ` focusing on ${topic}` : ''}.`;
                     // Add to history
                     const subjectKey = typeof currentSubject === 'string' ? currentSubject : '';
@@ -548,7 +570,7 @@ const App = () => {
     };
 
     // --- Revision Plan Generation ---
-    const generateRevisionPlan = async (examDate, studyHours, focusAreas) => {
+    const generateRevisionPlan = async (examDate: string, studyHours: string, focusAreas: string) => {
         // Ensure document is available before manipulating it
         if (typeof document === 'undefined') return;
 
@@ -575,11 +597,11 @@ const App = () => {
         const examDay = new Date(examDate);
         examDay.setHours(0, 0, 0, 0);
 
-        const diffTime = Math.abs(examDay - today);
+        const diffTime = Math.abs(examDay.getTime() - today.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         const weeksUntilExam = Math.max(1, Math.ceil(diffDays / 7));
 
-        let prompt = `Create a ${weeksUntilExam}-week revision plan for ${getSubjectDisplayName(currentSubject)} with approximately ${studyHours} study hours per week`;
+        let prompt = `Create a ${weeksUntilExam}-week revision plan for ${getSubjectDisplayName((currentSubject || '') as string)} with approximately ${studyHours} study hours per week`;
         if (focusAreas) {
             prompt += `, focusing on these areas: ${focusAreas}`;
         }
@@ -603,7 +625,7 @@ const App = () => {
             } else {
                 throw new Error(data.error || 'Failed to generate revision plan');
             }
-        } catch (error) {
+        } catch (error: any) {
             if (revisionContentEl) {
                 revisionContentEl.innerHTML = `
                     <div class="text-center py-8">
@@ -617,8 +639,9 @@ const App = () => {
                         </button>
                     </div>
                 `;
-                if (document.getElementById('retry-plan-btn')) {
-                    document.getElementById('retry-plan-btn').onclick = () => {
+                const retryPlanBtn = document.getElementById('retry-plan-btn');
+                if (retryPlanBtn) {
+                    retryPlanBtn.onclick = () => {
                         setRevisionModalOpen(false);
                         setTimeout(() => setRevisionModalOpen(true), 300);
                     };
@@ -627,7 +650,7 @@ const App = () => {
         }
     };
 
-    const displayRevisionPlan = (planText, examDate, studyHours, focusAreas) => {
+    const displayRevisionPlan = (planText: string, examDate: string, studyHours: string, focusAreas: string) => {
         // Ensure document is available before manipulating it
         if (typeof document === 'undefined') return;
 
@@ -636,7 +659,7 @@ const App = () => {
             revisionContentEl.innerHTML = `
                 <div class="p-4">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-semibold text-gray-800">Revision Plan: ${getSubjectDisplayName(currentSubject)}</h3>
+                        <h3 class="text-xl font-semibold text-gray-800">Revision Plan: ${getSubjectDisplayName((currentSubject || '') as string)}</h3>
                         <div class="text-sm text-gray-500">Exam date: ${new Date(examDate).toLocaleDateString()}</div>
                     </div>
                     
@@ -654,20 +677,25 @@ const App = () => {
                     </div>
                 </div>
             `;
-            if (document.getElementById('new-plan-btn')) {
-                document.getElementById('new-plan-btn').onclick = () => {
+            const newPlanBtn = document.getElementById('new-plan-btn');
+            if (newPlanBtn) {
+                newPlanBtn.onclick = () => {
                     const defaultDate = new Date();
                     defaultDate.setDate(defaultDate.getDate() + 30);
-                    if (document.getElementById('revision-exam-date')) document.getElementById('revision-exam-date').valueAsDate = defaultDate;
-                    if (document.getElementById('revision-hours')) document.getElementById('revision-hours').value = '10';
-                    if (document.getElementById('revision-focus')) document.getElementById('revision-focus').value = '';
+                    const examDateInput = document.getElementById('revision-exam-date') as HTMLInputElement | null;
+                    if (examDateInput) (examDateInput as HTMLInputElement).valueAsDate = defaultDate;
+                    const hoursSelect = document.getElementById('revision-hours') as HTMLSelectElement | null;
+                    if (hoursSelect) hoursSelect.value = '10';
+                    const focusArea = document.getElementById('revision-focus') as HTMLTextAreaElement | null;
+                    if (focusArea) focusArea.value = '';
                     setRevisionModalOpen(false);
                     setTimeout(() => setRevisionModalOpen(true), 300);
                 };
             }
-            if (document.getElementById('save-plan-btn')) {
-                document.getElementById('save-plan-btn').onclick = () => {
-                    const userPrompt = `Generate a revision plan for ${getSubjectDisplayName(currentSubject)} (Exam: ${new Date(examDate).toLocaleDateString()}, ${studyHours} hours/week${focusAreas ? `, Focus: ${focusAreas}` : ''})`;
+            const savePlanBtn = document.getElementById('save-plan-btn');
+            if (savePlanBtn) {
+                savePlanBtn.onclick = () => {
+                    const userPrompt = `Generate a revision plan for ${getSubjectDisplayName((currentSubject || '') as string)} (Exam: ${new Date(examDate).toLocaleDateString()}, ${studyHours} hours/week${focusAreas ? `, Focus: ${focusAreas}` : ''})`;
 
                     const subjectKey = typeof currentSubject === 'string' ? currentSubject : '';
                     let currentSubjectHistory = chatHistory[subjectKey] || [];
@@ -705,7 +733,7 @@ const App = () => {
             textarea.style.height = Math.min(textarea.scrollHeight, 300) + 'px';
             const container = textarea.parentElement;
             if (container) {
-                container.style.height = textarea.style.height;
+                (container as HTMLElement).style.height = textarea.style.height;
             }
         }
     }, [messageInput]);
@@ -742,14 +770,14 @@ const App = () => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background-color: #f0f0f0;
+                    background-color: white;
                 }
 
                 #eduai-container {
+            
                     width: 100%;
-                    max-width: 1000px;
+                
                     height: 90vh;
-                    margin: 0 auto;
                 }
 
                 .blur-container {
@@ -799,10 +827,12 @@ const App = () => {
                     animation: slideIn 0.3s ease-out;
                     align-self: flex-start;
                     background-color: var(--card-bg);
+                    border: 1px solid #00000020;
                     color: var(--text-primary);
                     max-width: 80%;
                     margin-right: auto;
                     width: fit-content;
+               
                 }
 
                 .typing-indicator {
@@ -1000,7 +1030,9 @@ const App = () => {
                 }
                 `}
             </style>
-            <div id="eduai-container" className="w-full h-[90vh] rounded-xl overflow-hidden border m-0 border-gray-200 relative transition-all duration-300 ease-in-out flex flex-col md:flex-row">
+            <div id="eduai-container" className="rounded-xl overflow-hidden border border-gray-200 relative transition-all duration-300 ease-in-out flex flex-col md:flex-row"
+                style={{ position: 'fixed', top: '50px', left: 0, right: 0, bottom: 0, width: '100vw', height: 'calc(100vh - 50px)', marginTop: 0, zIndex: 10 }}
+            >
                 {/* Sidebar Menu */}
                 <div ref={sidebarMenuRef} id="sidebar-menu" className="absolute left-0 top-0 h-full w-64 bg-[#ffffff95] blur-container transform -translate-x-full z-40 border-r border-gray-200 overflow-y-auto transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:bg-white md:z-auto md:flex-shrink-0 md:flex-grow-0 md:rounded-l-xl">
                     <div className="p-4 h-[60px] border-b border-b-[#00000020]">
@@ -1063,7 +1095,7 @@ const App = () => {
                                 <i className="fas fa-bars text-gray-600"></i>
                             </button>
                             <div>
-                                <h1 id="current-subject-header" className="text-xl font-bold text-gray-800 break-words overflow-hidden line-clamp-2" style={{ marginBottom: 0, paddingBottom: 0 }}>{currentSubject ? getSubjectDisplayName(currentSubject) : 'AI Teach'}</h1>
+                                <h1 id="current-subject-header" className="text-xl font-bold text-gray-800 break-words overflow-hidden line-clamp-2" style={{ marginBottom: 0, paddingBottom: 0 }}>{currentSubject ? getSubjectDisplayName((currentSubject || '') as string) : 'AI Teach'}</h1>
                                 <p className="text-xs text-gray-500 mt-0">Gemini 2.5 Flash</p>
                             </div>
                         </div>
@@ -1087,14 +1119,103 @@ const App = () => {
 
                     {/* Chat Container */}
                     <div ref={chatContainerRef} id="chat-container" className="flex-grow overflow-y-auto text-[12px] p-4 space-y-4 bg-gray-50 pb-20 flex flex-col">
+                        <div className="mx-auto w-full" style={{ maxWidth: 700 }}>
                         {activeChat?.messages.map((msg: ChatMessage, index: number) => (
-                            <MessageBubble key={index} message={msg.text} sender={msg.sender} />
+                            <React.Fragment key={index}>
+                                <MessageBubble message={msg.text} sender={msg.sender} />
+                                {/* If this is the first AI message (welcome), show suggested prompts */}
+                                {index === 0 && msg.sender === 'ai' && (
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {(() => {
+                                            const subject = currentSubject || '';
+                                            const promptMap: Record<string, string[]> = {
+                                                biology: [
+                                                    'Explain photosynthesis simply',
+                                                    'What is the function of mitochondria?',
+                                                    'Summarize the nitrogen cycle',
+                                                    'How do enzymes work?'
+                                                ],
+                                                chemistry: [
+                                                    'What is a covalent bond?',
+                                                    'Explain Le Chatelier’s principle',
+                                                    'How to balance redox equations?',
+                                                    'What is the periodic trend for electronegativity?'
+                                                ],
+                                                physics: [
+                                                    'Explain Newton’s 2nd law',
+                                                    'What is the photoelectric effect?',
+                                                    'Describe simple harmonic motion',
+                                                    'How does a transformer work?'
+                                                ],
+                                                math: [
+                                                    'How to solve quadratic equations?',
+                                                    'Explain differentiation rules',
+                                                    'What is a geometric sequence?',
+                                                    'How to use the binomial theorem?'
+                                                ],
+                                                chinese: [
+                                                    'How to write a good essay opening?',
+                                                    'Translate: "I like to learn Chinese"',
+                                                    'Tips for Chinese reading comprehension',
+                                                    'Explain a common Chinese idiom'
+                                                ],
+                                                'ielts-speaking': [
+                                                    'Give me a sample Part 2 answer',
+                                                    'How to improve fluency?',
+                                                    'Common topics in IELTS Speaking',
+                                                    'How to extend answers?'
+                                                ],
+                                                'ielts-writing': [
+                                                    'Sample Task 2 essay',
+                                                    'How to structure Task 1?',
+                                                    'Useful phrases for writing',
+                                                    'How to improve coherence?'
+                                                ],
+                                                'ielts-reading': [
+                                                    'Skimming vs scanning',
+                                                    'How to find keywords?',
+                                                    'Tips for True/False/Not Given',
+                                                    'How to manage time?'
+                                                ],
+                                                'ielts-listening': [
+                                                    'How to take notes?',
+                                                    'Tips for multiple choice',
+                                                    'How to avoid missing answers?',
+                                                    'Practice listening to accents'
+                                                ],
+                                                General: [
+                                                    'What can you do?',
+                                                    'How do I use this AI?',
+                                                    'Give me a study tip',
+                                                    'Suggest a learning plan'
+                                                ]
+                                            };
+                                            const prompts = promptMap[subject as string] || promptMap['General'];
+                                            return prompts.map((prompt, i) => (
+                                                <button
+                                                    key={i}
+                                                    className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs hover:bg-blue-200 transition"
+                                                    onClick={() => {
+                                                        setMessageInput(prompt);
+                                                        if (messageInputRef.current) {
+                                                            (messageInputRef.current as HTMLTextAreaElement).focus();
+                                                        }
+                                                    }}
+                                                >
+                                                    {prompt}
+                                                </button>
+                                            ));
+                                        })()}
+                                    </div>
+                                )}
+                            </React.Fragment>
                         ))}
                         {isSending && (
                             <div className="typing-indicator ai-message p-3 rounded-lg">
                                 <span></span><span></span><span></span>
                             </div>
                         )}
+                        </div>
                     </div>
 
                     {/* Input Area */}
@@ -1114,7 +1235,7 @@ const App = () => {
                                 <textarea
                                     ref={messageInputRef}
                                     id="message-input"
-                                    rows="1"
+                                    rows={1}
                                     placeholder="Type a message..."
                                     value={messageInput}
                                     onChange={(e) => setMessageInput(e.target.value)}
@@ -1197,7 +1318,12 @@ const App = () => {
                                         <input type="text" id="quiz-topic" placeholder="Leave blank for mixed topics" className="w-full p-2 border rounded-lg bg-white text-gray-800" />
                                     </div>
 
-                                    <button onClick={() => generateQuiz(document.getElementById('quiz-num-questions').value, document.getElementById('quiz-difficulty').value, document.getElementById('quiz-topic').value)} id="start-quiz-btn" className="w-full py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition">
+                                    <button onClick={() => {
+                                        const numQ = document.getElementById('quiz-num-questions') as HTMLSelectElement | null;
+                                        const diff = document.getElementById('quiz-difficulty') as HTMLSelectElement | null;
+                                        const topic = document.getElementById('quiz-topic') as HTMLInputElement | null;
+                                        generateQuiz(numQ ? numQ.value : '10', diff ? diff.value : 'medium', topic ? topic.value : '');
+                                    }} id="start-quiz-btn" className="w-full py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition">
                                         Start Quiz
                                     </button>
                                 </div>
@@ -1242,10 +1368,19 @@ const App = () => {
 
                                     <div className="mb-6">
                                         <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Focus areas (optional)</label>
-                                        <textarea id="revision-focus" rows="3" placeholder="Any specific topics you want to focus on?" className="w-full p-2 border rounded-lg bg-white text-gray-800 resize-none"></textarea>
+                                        <textarea id="revision-focus" rows={3} placeholder="Any specific topics you want to focus on?" className="w-full p-2 border rounded-lg bg-white text-gray-800 resize-none"></textarea>
                                     </div>
 
-                                    <button onClick={() => generateRevisionPlan(document.getElementById('revision-exam-date').value, document.getElementById('revision-hours').value, document.getElementById('revision-focus').value)} id="create-plan-btn" className="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
+                                    <button onClick={() => {
+                                        const examDateInput = document.getElementById('revision-exam-date') as HTMLInputElement | null;
+                                        const hoursSelect = document.getElementById('revision-hours') as HTMLSelectElement | null;
+                                        const focusArea = document.getElementById('revision-focus') as HTMLTextAreaElement | null;
+                                        generateRevisionPlan(
+                                            examDateInput ? examDateInput.value : '',
+                                            hoursSelect ? hoursSelect.value : '10',
+                                            focusArea ? focusArea.value : ''
+                                        );
+                                    }} id="create-plan-btn" className="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition">
                                         Create Plan
                                     </button>
                                 </div>

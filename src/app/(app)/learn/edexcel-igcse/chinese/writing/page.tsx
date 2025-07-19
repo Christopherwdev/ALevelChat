@@ -371,40 +371,31 @@ const App: React.FC = () => {
             <style>
                 {`
                 /* General Reset and Body Styling */
-               body {
-                    font-family: 'Inter', sans-serif;
-                    background-color: #f0f4f8;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    min-height: 100vh;
-                    margin: 0;
-                    padding: 20px;
-                    box-sizing: border-box;
-                }
-
-                /* Container styling */
                 .igcse-tool-container {
-                    width: 100%;
-                    max-width: 900px;
+                    width: 80%;
+                    height: 90vh; /* Adjust as needed */
+                
                     margin: 0px auto;
-                    border: 2px solid black;
-                    border-radius: 12px;
-                    background-color: white;
+                    border: 1.5px solid #00000020;
+                    border-radius: 12px; /* Equivalent to rounded-xl */
+                    overflow: hidden;
+                    background-color: white; /* White background for the tool */
                     color: #333;
                     display: flex;
                     flex-direction: column;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    margin-top: 60px;
+                    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); /* Equivalent to shadow-lg */
                 }
 
                 /* Header Styling */
                 .tool-header {
-                    background-color: #FF3b30; /* Primary color */
-                    color: white;
+                    background-color: white; /* Primary color */
+                    color: #ff3b30;
                     padding: 1rem;
                     text-align: center;
                     font-weight: 700; /* Equivalent to font-bold */
                     font-size: 1.5rem; /* Equivalent to text-2xl */
+                    border-bottom: 2px solid #00000010;
                     border-top-left-radius: 10px;
                     border-top-right-radius: 10px;
                 }
@@ -424,14 +415,14 @@ const App: React.FC = () => {
                     justify-content: center;
                     gap: 1rem; /* Equivalent to gap-4 */
                     background-color: #f9f9f9; /* Light gray */
-                    border-top: 1px solid #eee;
+                    border-top: 1.5px solid #00000020;
                     border-bottom-left-radius: 10px;
                     border-bottom-right-radius: 10px;
                 }
 
                 /* Button Styling */
                 .btn-primary {
-                    background-color: #FF3b30;
+                    background-color: #ff3b30;
                     color: white;
                     padding: 0.75rem 1.5rem; /* Equivalent to px-6 py-3 */
                     border-radius: 9999px; /* Fully rounded, equivalent to rounded-full */
@@ -439,14 +430,15 @@ const App: React.FC = () => {
                     transition: background-color 0.2s ease-in-out;
                     border: none;
                     cursor: pointer;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                   
                     display: flex; /* To align SVG and text */
                     align-items: center;
                     justify-content: center;
+                    transition: all 0.3s;
                 }
 
                 .btn-primary:hover {
-                    background-color: #E6352C; /* Slightly darker red */
+                     box-shadow: 0px 0px 0px 7.5px  #ff3b3030;
                 }
 
                 .btn-primary svg {
@@ -455,25 +447,25 @@ const App: React.FC = () => {
                     margin-right: 0.5rem; /* Equivalent to mr-2 */
                 }
 
-                .btn-secondary {
-                    background-color: #4a5568; /* Dark gray */
+              .btn-secondary {
+                    background-color: black;
                     color: white;
-                    padding: 0.75rem 1.5rem;
-                    border-radius: 9999px;
-                    font-weight: 600;
+                    padding: 0.75rem 1.5rem; /* Equivalent to px-6 py-3 */
+                    border-radius: 9999px; /* Fully rounded, equivalent to rounded-full */
+                    font-weight: 600; /* Equivalent to font-semibold */
                     transition: background-color 0.2s ease-in-out;
                     border: none;
                     cursor: pointer;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                    display: flex;
+                   
+                    display: flex; /* To align SVG and text */
                     align-items: center;
                     justify-content: center;
+                    transition: all 0.3s;
                 }
 
                 .btn-secondary:hover {
-                    background-color: #2d3748; /* Even darker gray on hover */
+                     box-shadow: 0px 0px 0px 7.5px rgba(0, 0, 0, 0.19);
                 }
-
                 /* Input Styling */
                 .text-input,
                 .textarea-input {

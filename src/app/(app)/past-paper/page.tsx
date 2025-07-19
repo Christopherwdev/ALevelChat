@@ -269,7 +269,7 @@ const App: React.FC = () => {
         const examLevelParam = urlParams.get('examLevel');
         const subjectParam = urlParams.get('subject');
         const paperParam = urlParams.get('paper');
-        
+
         if (examBoardParam) setExamBoard(examBoardParam);
         if (examLevelParam) setExamLevel(examLevelParam);
         if (subjectParam) setSubject(normalizeSubject(subjectParam));
@@ -336,7 +336,7 @@ const App: React.FC = () => {
         if (subjectsForCurrentSelection && Object.keys(subjectsForCurrentSelection).length > 0) {
             defaultSubject = Object.keys(subjectsForCurrentSelection)[0];
         }
-        
+
         // Only set default subject if no subject is currently selected or if the current subject is not available for the new exam level/board
         if (!subject || !subjectsForCurrentSelection?.[subject]) {
             setSubject(defaultSubject);
@@ -351,7 +351,7 @@ const App: React.FC = () => {
         if (unitsForSubject && unitsForSubject.length > 0) {
             defaultUnit = unitsForSubject[0];
         }
-        
+
         // Only set default unit if no unit is currently selected or if the current unit is not available for the new subject
         if (!unit || !unitsForSubject?.includes(unit)) {
             setUnit(defaultUnit);
@@ -367,13 +367,13 @@ const App: React.FC = () => {
     // Effect to update URL when filters change
     useEffect(() => {
         if (typeof window === 'undefined') return;
-        
+
         const params = new URLSearchParams();
         if (examBoard) params.set('examBoard', examBoard);
         if (examLevel) params.set('examLevel', examLevel);
         if (subject) params.set('subject', subject);
         if (unit) params.set('paper', unit);
-        
+
         const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
         window.history.replaceState({}, '', newUrl);
     }, [examBoard, examLevel, subject, unit]);
@@ -386,7 +386,7 @@ const App: React.FC = () => {
             const newExamLevel = urlParams.get('examLevel');
             const newSubject = urlParams.get('subject');
             const newPaper = urlParams.get('paper');
-            
+
             if (newExamBoard && newExamBoard !== examBoard) {
                 setExamBoard(newExamBoard);
             }
@@ -412,7 +412,7 @@ const App: React.FC = () => {
         const year = urlParams.get('year');
         const subjectParam = urlParams.get('subject');
         const paperParam = urlParams.get('paper');
-        
+
         if (series && year) {
             // If we have series and year parameters, create a search term to find the specific paper
             const searchQuery = `${subjectParam || ''} ${paperParam || ''} ${series} ${year}`.trim();
@@ -484,7 +484,7 @@ const App: React.FC = () => {
                 year: paper.year.toString()
             }).toString();
             const shareableUrl = `${window.location.origin}${window.location.pathname}?${shareParams}`;
-            
+
             const shareText = `${paper.examBoard} ${paper.examLevel} ${paper.subject} ${paper.paper} ${getFullMonthName(paper.series)} ${paper.year}`;
             if (navigator.share) {
                 navigator.share({
@@ -623,15 +623,8 @@ const App: React.FC = () => {
                     -ms-overflow-style: none;
                     scrollbar-width: none;
                 }
-                .unit-button.active {
-                    background-color: var(--primary-color);
-                    color: white;
-                }
-                .unit-button {
-                    border: none;
-                }
                 select {
-                    border-radius: 20px;
+                    border-radius: 7.5px;
                 }inset
                 .filter-disabled {
                     pointer-events: none;
@@ -651,46 +644,56 @@ const App: React.FC = () => {
                 `}
             </style>
 
-            <div className="w-full h-screen flex flex-col antialiased bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200">
+            <div className="w-full h-screen flex flex-col antialiased bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200 pt-[50px]">
                 {/* Header */}
-                <header className="flex justify-between items-center p-4 bg-white border-b border-b-[#00000020] dark:bg-gray-800 dark:border-gray-700 h-[80px]">
-                    <div className="flex items-center space-x-4">
-                        {/* Mobile menu button */}
-                        <button
-                            onClick={toggleMobileSidebar}
-                            className="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
-                            aria-label="Toggle sidebar"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Past Papers</h1>
-                            <p className="text-xs text-gray-500 mt-1">Search and access past papers</p>
-                        </div>
-                    </div>
-                </header>
+
 
                 {/* Main Content */}
                 <div className="flex flex-1 overflow-hidden relative">
                     {/* Mobile overlay backdrop */}
                     {mobileSidebarOpen && (
-                        <div 
+                        <div
                             className="lg:hidden fixed inset-0 bg-[#00000050] transition duration-300 backdrop-blur bg-opacity-50 z-40"
                             onClick={toggleMobileSidebar}
                         />
                     )}
-                    
+
                     {/* Left Sidebar - Search and Filters */}
-                    <div 
-                        id="left-sidebar" 
-                        className={`${
-                            mobileSidebarOpen 
-                                ? 'fixed left-0 top-0 h-full w-80 z-50 transform translate-x-0 lg:relative lg:translate-x-0' 
+                    <div
+                        id="left-sidebar"
+                        className={`${mobileSidebarOpen
+                                ? 'fixed left-0 top-0 h-full w-80 z-50 transform translate-x-0 lg:relative lg:translate-x-0'
                                 : 'fixed left-0 top-0 h-full w-80 z-50 transform -translate-x-full lg:relative lg:translate-x-0'
-                        } w-80 bg-white border-r border-r-[#00000020] flex flex-col dark:bg-gray-800 dark:border-gray-700 overflow-auto no-scrollbar transition-transform duration-300 ease-in-out`}
+                            } w-80 bg-white border-r border-r-[#00000020] flex flex-col dark:bg-gray-800 dark:border-gray-700 overflow-auto no-scrollbar transition-transform duration-300 ease-in-out`}
                     >
+
+
+                        <div className="flex items-center space-x-4 p-4 pb-0">
+                            {/* Mobile menu button */}
+                            <button
+                                onClick={toggleMobileSidebar}
+                                className="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
+                                aria-label="Toggle sidebar"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            </button>
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Past Papers</h1>
+                                <p className="text-xs text-gray-500 mt-1">Search and access past papers</p>
+                            </div>
+                        </div>
+
+
+
+
+
+
+
+
+
+
                         {/* Mobile sidebar header */}
                         <div className="flex items-center justify-between p-4 border-b border-b-[#00000020] dark:border-gray-700 lg:hidden">
                             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Filters</h2>
@@ -704,7 +707,7 @@ const App: React.FC = () => {
                                 </svg>
                             </button>
                         </div>
-                        
+
                         <div className="p-4 border-b border-b-[#00000020] dark:border-gray-700">
                             <div className="relative">
                                 <input
@@ -723,21 +726,19 @@ const App: React.FC = () => {
                                     className={`absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600 ${searchTerm.length > 0 ? '' : 'hidden'}`}
                                     onClick={handleClearSearch}
                                 >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
                             </div>
-                            <div className="mt-2 text-xs text-gray-500">
-                                Search by subject, paper, year, or series
-                            </div>
+
                         </div>
 
                         {/* Exam Board Selector */}
                         <div id="exam-board-filter-section" className={`p-4 border-b border-b-[#00000020] dark:border-gray-700 ${isKeywordSearchActive ? 'filter-disabled' : ''}`}>
-                            <label htmlFor="examBoardSelect" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Select Exam Board</label>
+                            <label htmlFor="examBoardSelect" className="hidden block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Select Exam Board</label>
                             <div className="relative">
                                 <select
                                     id="examBoardSelect"
-                                    className="w-full p-2 text-base bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                                    className="hidden w-full p-2 text-base bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
                                     value={examBoard}
                                     onChange={(e) => setExamBoard(e.target.value)}
                                     disabled={isKeywordSearchActive}
@@ -746,7 +747,7 @@ const App: React.FC = () => {
                                     <option value="Cambridge">Cambridge</option>
                                 </select>
                             </div>
-                            <div className="relative mt-3">
+                            <div className="relative">
                                 <label htmlFor="exam-level-select" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Select Level</label>
                                 <select
                                     id="exam-level-select"
@@ -784,28 +785,32 @@ const App: React.FC = () => {
                         </div>
 
                         {/* Unit Selector */}
-                        <div id="unit-filter-section" className={`p-4 border-b  border-b-[#00000020] dark:border-gray-700 ${isKeywordSearchActive ? 'filter-disabled' : ''}`}>
-                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">Select Unit</label>
-                            <div className="flex flex-wrap gap-2 unit-buttons bg-gray-100 dark:bg-gray-700 p-2 rounded-lg">
-                                {unitsForCurrentSubject.length > 0 ? (
-                                    unitsForCurrentSubject.map(unitOption => (
-                                        <button
-                                            key={unitOption}
-                                            className={`unit-button px-0 py-1 w-[30%] grow rounded-md text-sm font-medium transition ${unit === unitOption ? 'active bg-primary text-white dark:bg-primary' : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-200'}`}
-                                            onClick={() => { if (!isKeywordSearchActive) setUnit(unitOption); }}
-                                            disabled={isKeywordSearchActive}
-                                        >
-                                            {unitOption}
-                                        </button>
-                                    ))
-                                ) : (
-                                    <div className="text-sm text-gray-500 dark:text-gray-400">No specific units</div>
-                                )}
+                        <div id="unit-filter-section" className={`p-4 dark:border-gray-700 ${isKeywordSearchActive ? 'filter-disabled' : ''}`}>
+
+                            <div className="flex flex-col gap-2 unit-buttons bg-gray-100 dark:bg-gray-700 p-4 pt-3 rounded-2xl">
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-200">Select Unit</label>
+                                <div className="flex flex-wrap gap-2 unit-buttons bg-gray-100 dark:bg-gray-700">
+                                    {unitsForCurrentSubject.length > 0 ? (
+                                        unitsForCurrentSubject.map(unitOption => (
+                                            <button
+                                                key={unitOption}
+                                                className={`unit-button px-0 py-[6px] w-[30%] grow rounded-xl text-sm font-medium transition cursor-pointer ${unit === unitOption ? 'active bg-black text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                                onClick={() => { if (!isKeywordSearchActive) setUnit(unitOption); }}
+                                                disabled={isKeywordSearchActive}
+                                            >
+                                                {unitOption}
+                                            </button>
+                                        ))
+                                    ) : (
+                                        <div className="text-sm text-gray-500 dark:text-gray-400">No specific units</div>
+                                    )}
+
+                                </div>
                             </div>
                         </div>
 
                         {/* Quick Filters */}
-                        <div id="quick-filters-section" className={`p-4 border-b border-b-[#00000020] dark:border-gray-700 ${isKeywordSearchActive ? 'filter-disabled' : ''}`}>
+                        <div id="quick-filters-section" className={`hidden p-4 dark:border-gray-700 ${isKeywordSearchActive ? 'filter-disabled' : ''}`}>
                             <h3 className="font-semibold text-gray-700 mb-3 dark:text-gray-200">Quick Filters</h3>
                             <div className="space-y-2">
                                 {years.slice(0, 1).map(yearOption => ( // Only show 2023 for now, as in original HTML
@@ -822,18 +827,33 @@ const App: React.FC = () => {
                         </div>
 
                         {/* Search Results Count */}
-                        <div className="p-4">
-                            <div id="results-count" className="text-sm text-gray-600 dark:text-gray-400">
+                        <div className="p-4 pt-0">
+                            <div id="results-count" className="text-sm text-gray-600 dark:text-gray-400 border-l-2 border-l-[#ff3b30] pl-2">
                                 Showing {filteredPapers.length} paper{filteredPapers.length !== 1 ? 's' : ''}
                             </div>
                         </div>
                     </div>
 
                     {/* Right Content Area - Papers List */}
-                    <div className="flex-1 overflow-auto p-4 pb-12 bg-gray-50 dark:bg-gray-900 flex justify-center">
-                        <div id="papers-container" className="space-y-6 max-w-[600px] mx-auto w-full">
-                            {renderPapers(filteredPapers)}
-                            <div style={{ height: '3rem' }} />
+                    <div className="flex-1 overflow-auto p-5 pb-12 bg-white dark:bg-gray-900 flex justify-center">
+                        <div className="max-w-[600px] mx-auto w-full">
+                            <div className="text-3xl lg:text-4xl font-bold text-gray-800 dark:text-gray-200 flex flex-col gap-1 mb-6 ml-2">
+                              <span className='text-lg lg:text-2xl'>
+                              {examBoard ? ` ${examBoard}` : ''}
+                             
+                              {examLevel ? ` ${examLevel}` : ''}
+                              </span>
+                              <span className='de'>
+                              {subject ? ` ${subject}` : ''}
+                              {unit ? ` ${unit}` : ''}
+              
+                              <span className='font-medium'> Past Papers</span>  </span>
+                              <div className='font-medium text-[#00000070] text-3xl'>All with AI grading.</div>
+                            </div>
+                            <div id="papers-container" className="space-y-6 w-full">
+                                {renderPapers(filteredPapers)}
+                                <div style={{ height: '3rem' }} />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -864,10 +884,10 @@ const PaperCard: React.FC<PaperCardProps> = ({ paper, getSubjectColor, getFullMo
                     <span className="text-gray-500 dark:text-gray-400">Coming Soon for {paper.examBoard} {paper.examLevel}</span>
                 </div>
             ) : (
-                <div className="flex items-center space-x-2">
-                    <div className="flex flex-col space-x-2 md:flex-row">
-                    <span className="font-semibold" style={{ color: getSubjectColor(paper.subject) }}>{paper.subject}</span>
-                    <span className="text-gray-700 dark:text-gray-300 font-semibold">{paperPartDisplay}</span>
+                <div className="flex items-center space-x-1">
+                    <div className="flex flex-col space-x-1 md:flex-row">
+                        <span className="font-semibold" style={{ color: getSubjectColor(paper.subject) }}>{paper.subject}</span>
+                        <span className="text-gray-700 dark:text-gray-300 font-semibold">{paperPartDisplay}</span>
                     </div>
                     <span className="text-gray-500 dark:text-gray-400">{seriesDisplay}{yearDisplay}</span>
                 </div>
@@ -896,7 +916,7 @@ const PaperCard: React.FC<PaperCardProps> = ({ paper, getSubjectColor, getFullMo
                 disabled={paper.isComingSoon}
             >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
                 </svg>
             </button>
         </div>

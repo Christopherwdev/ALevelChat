@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import AppHeader from '@/components/app/header';
-import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle, Atom } from 'lucide-react';
+import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle, FlaskConical } from 'lucide-react';
 import { marked } from 'marked'; // Import marked library
 
 // Import content from separate JS files
@@ -37,7 +37,7 @@ const revisionTools = [
 
 // --- CONFIGURATION FOR EASY ADAPTATION ---
 const CURRENT_SUBJECT = 'Physics';
-const SUBJECT_COLOR = '#4081ff'; // Corresponds to primary color in Tailwind config
+const SUBJECT_COLOR = '#007aff'; // Corresponds to primary color in Tailwind config
 const SUBJECT_ICON_CLASS = 'fas fa-flask'; // Font Awesome icon for Physics
 const UNIT_PREFIX = 'Unit'; // For units like "Unit 1", "Unit 2"
 const TOTAL_UNITS = 6; // Number of units for the subject
@@ -417,7 +417,7 @@ const App: React.FC = () => {
     const ContinueLessonButton: React.FC = () => {
         return (
             <div id="continue-lesson-button" className="continue-lesson-card flex items-center justify-center" style={{ width: 150, height: 150 }}>
-                <Atom size={90} color="#fff" />
+                <FlaskConical size={90} color="#fff" />
             </div>
         );
     };
@@ -476,8 +476,8 @@ const App: React.FC = () => {
                     theme: {
                         extend: {
                             colors: {
-                                primary: '#4081ff', /* Custom primary color for Physics, matches #4081ff */
-                                subjectColor: '#4081ff', /* Dynamic subject color */
+                                primary: '#007aff', /* Custom primary color for Physics, matches #007aff */
+                                subjectColor: '#007aff', /* Dynamic subject color */
                             },
                         },
                     },
@@ -486,8 +486,8 @@ const App: React.FC = () => {
                 /* Custom styles for the app */
                 :root {
                     /* This variable will be dynamically updated by JavaScript based on the subject */
-                    --subject-primary-color: #4081ff;
-                    --subject-primary-color-trans: #4081ff70;
+                    --subject-primary-color: #007aff;
+                    --subject-primary-color-trans: #007aff70;
                     /* Default for Physics */
                     --subject-primary-color-rgb: 255, 107, 107;
                     /* RGB equivalent for rgba usage */
@@ -1069,11 +1069,11 @@ const App: React.FC = () => {
                         </button>
                     </div>
                 </header> */}
-   <AppHeader isAuthenticated={true} />
+   {/* <AppHeader isAuthenticated={true} /> */}
                 {/* Main Content Area */}
                 <div className="flex flex-1 overflow-hidden">
                     {/* Left Sidebar - Navigation */}
-                    <div id="left-sidebar" className="w-72 pt-6 bg-white flex flex-col dark:bg-white dark:border-gray-700 overflow-y-auto p-4">
+                    <div id="left-sidebar" className="w-72 pt-6 bg-white flex flex-col dark:bg-white dark:border-gray-700 overflow-y-scroll h-[full] p-4 pt-[70px]">
                         {/* Subject Home Button */}
                         <button
                             id="home-subject-button"
@@ -1158,7 +1158,7 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Right Content Area - Notes Display */}
-                    <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900 max-4xl">
+                    <div className="flex-1 pt-[60px] overflow-y-auto p-6 bg-white dark:bg-gray-900 max-4xl">
                         <div
                             className="max-w-4xl mx-auto markdown-content"
                             contentEditable={activeUnitIndex !== null} // Only editable when a unit is displayed
@@ -1192,7 +1192,11 @@ const App: React.FC = () => {
                                                 className="bg-white p-4 mt-0 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[5px] transition duration-200"
                                                 style={{
                                                     borderColor: "#00000010",
-                                                    // Optionally, you can add a boxShadow or borderColor on hover using a custom CSS class or inline event
+                                                }}
+                                                onClick={() => {
+                                                    if (tool.id === 'past-papers') navigate('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Physics&paper=Unit+1');
+                                                    else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
+                                                    else if (tool.id === 'ask-help') navigate('/social');
                                                 }}
                                                 onMouseEnter={e => {
                                                     e.currentTarget.style.borderColor = SUBJECT_COLOR;
@@ -1201,11 +1205,6 @@ const App: React.FC = () => {
                                                 onMouseLeave={e => {
                                                     e.currentTarget.style.borderColor = "#00000010";
                                                     e.currentTarget.style.boxShadow = "none";
-                                                }}
-                                                onClick={() => {
-                                                    if (tool.id === 'past-papers') navigate('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Physics&paper=Unit+1');
-                                                    else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
-                                                    else if (tool.id === 'ask-help') navigate('/social');
                                                 }}
                                             >
                                                 <div className="border-2 p-3 rounded-full" style={{ borderColor: SUBJECT_COLOR }}>

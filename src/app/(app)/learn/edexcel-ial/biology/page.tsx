@@ -1073,7 +1073,7 @@ const App: React.FC = () => {
                 {/* Main Content Area */}
                 <div className="flex flex-1 overflow-hidden">
                     {/* Left Sidebar - Navigation */}
-                    <div id="left-sidebar" className="w-72 pt-6 bg-white flex flex-col dark:bg-white dark:border-gray-700 overflow-y-auto p-4">
+                    <div id="left-sidebar" className="w-72 pt-6 bg-white flex flex-col dark:bg-white dark:border-gray-700 overflow-y-scroll h-[full] p-4 pt-[70px]">
                         {/* Subject Home Button */}
                         <button
                             id="home-subject-button"
@@ -1158,7 +1158,7 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Right Content Area - Notes Display */}
-                    <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900 max-4xl">
+                    <div className="flex-1 pt-[60px] overflow-y-auto p-6 bg-white dark:bg-gray-900 max-4xl">
                         <div
                             className="max-w-4xl mx-auto markdown-content"
                             contentEditable={activeUnitIndex !== null} // Only editable when a unit is displayed

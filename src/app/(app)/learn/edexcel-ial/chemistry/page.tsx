@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 // Removed AppHeader import as we are creating a custom header within App
-import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle, FlaskConical } from 'lucide-react';
+import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle, FlaskConical, Icon } from 'lucide-react';
 import { marked } from 'marked'; // Import marked library
 import Link from 'next/link';
 // Import content from separate JS files
@@ -411,7 +411,7 @@ const App: React.FC = () => {
 
     // --- New Section Components ---
     const HomePageContent: React.FC = () => (
-        <div className="rounded-2xl p-6 items-center flex justify-center">
+        <div className="rounded-2xl p-6 pt-20 items-center flex justify-center">
             <div className='max-w-4xl'>
                 <nav className="inline-block self-start text-gray-500 text-sm mb-8 font-light border-[1px] bg-[#00000005] border-[#00000010] px-3 py-1 rounded-lg">
                     <a href="#" onClick={() => navigate('/learn')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
@@ -437,7 +437,7 @@ const App: React.FC = () => {
                 <p className="text-gray-700 text-lg max-w-3xl block md:hidden">Welcome to the Chemistry Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-3 gap-6 mt-10">
-                    {/* {revisionTools.map((tool) => (
+                    {revisionTools.map((tool) => (
                         <div
                             key={tool.id}
                             className="bg-white p-4 mt-0 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[4px] transition duration-200"
@@ -466,7 +466,7 @@ const App: React.FC = () => {
                                 <span className="text-lg font-semibold text-gray-900">{tool.titleBottom}</span>
                             </div>
                         </div>
-                    ))} */}
+                    ))}
                 </div>
 
             {/* Additional Features Section */}
@@ -495,15 +495,15 @@ const App: React.FC = () => {
     );
 
     const RevisionNotesContent: React.FC = () => (
-        <div className="flex flex-1 overflow-hidden relative">
+        <div className="flex flex-1 overflow-hidden relative pt-[50px]">
             {/* Chevron button for desktop (always visible, docked to left of content) */}
             <button
-                className="hidden md:flex items-center justify-center z-40 bg-white border border-gray-200 rounded-full shadow-xl p-1 absolute top-2 transition-all duration-300"
+                className="hidden md:flex items-center justify-center z-40 bg-white rounded-full p-1 absolute top-14 transition-all duration-300"
                 style={{ width: 50, height: 50, marginLeft: sidebarCollapsed ? 0 : 265, left: sidebarCollapsed? 8 : 0 }}
                 onClick={() => setSidebarCollapsed((prev) => !prev)}
                 aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-                <i className={`fas fa-chevron-${sidebarCollapsed ? 'right' : 'left'} text-gray-600 text-2xl`}></i>
+                <i className={`fas fa-chevron-${sidebarCollapsed ? 'right' : 'left'} text-gray-400 text-2xl`}></i>
             </button>
             {/* Sidebar overlay for mobile */}
             <div
@@ -726,7 +726,7 @@ const App: React.FC = () => {
 
                 body {
                     font-family: 'Inter', sans-serif;
-                    background-color: #f8f9fa;
+                    background-color: #f8f9fa;f
                     color: #333;
                 }
 
@@ -1299,25 +1299,26 @@ const App: React.FC = () => {
                 `}
             </style>
 
-            <div className="w-full flex flex-col bg-[#00000005]">
+            <div className="w-full h-[calc(100vh-50px)] flex flex-col mt-[50px]">
                 {/* Header */}
-                <header className="fixed h-[64px] w-full bg-white border-b border-[#00000020] shadow-xl shadow-[#00000005] px-4 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 relative">
-                    <div className="flex flex-row items-center justify-between w-full lg:w-auto">
+                <header className="fixed h-[50px] w-full bg-[rgba(255,255,255,0.9)] backdrop-blur-[25px] border-b border-[#00000020] shadow-xl shadow-[#00000005] px-4 py-2 flex flex-col lg:flex-row items-center justify-start gap-2 absolute z-50">
+                    <div className="flex flex-row items-start justify-between lg:justify-start w-full lg:w-auto">
                         <div className="flex flex-row items-center">
-                            <h1 className="text-xl font-bold text-gray-800 dark:text-gray-200 flex items-center">
-                                <Link href="/" className="flex items-center space-x-2">
-                                    <Image
-                                        src="/logo-300x300.png"
-                                        alt="AIToLearn Logo"
-                                        width={32}
-                                        height={32}
-                                        className="object-contain"
-                                    />
-
-                                </Link>
-                                <span id="subject-title" className='ml-2 hidden sm:block'>AIToLearn</span><span className='font-light ml-2'>/ Chemistry</span>
+                            {/* Back Button */}
+                            <button
+                                className="mr-3 p-1 h-[30px] w-[30px] rounded-full hover:bg-gray-200 "
+                                aria-label="Back"
+                                onClick={() => navigate('/learn/edexcel-ial')}
+                                style={{ outline: 'none' }}
+                            >
+                                <i className="fas fa-arrow-left text-lg"></i>
+                            </button>
+                            {/* Chemistry Icon */}
+                            <i className={`${SUBJECT_ICON_CLASS} text-xl text-[#FF6B6B] mr-2`}></i>
+                            <h1 className="text-xl font-medium text-gray-800 dark:text-gray-200 flex items-center">
+                                Chemistry <span className='ml-5 text-gray-500 font-medium'> /</span>
                                 {/* Mobile: show current page label between Chemistry and menu button */}
-                                <div className="ml-2 lg:hidden flex items-center px-3 py-1 rounded-full bg-gray-100 border border-gray-300 text-gray-700 text-sm font-semibold select-none">
+                                <div className="ml-2 lg:hidden flex items-center px-3 py-1 rounded-lg bg-gray-100 border border-gray-300 text-gray-700 text-sm font-semibold select-none">
                                     {(() => {
                                         switch (activeHeaderSection) {
                                             case 'home': return 'Home';
@@ -1356,17 +1357,17 @@ const App: React.FC = () => {
                             ].map(btn => (
                                 <button
                                     key={btn.key}
-                                    className={`relative w-full flex flex-col hover:bg-[#00000010] rounded-full justify-center items-center text-center md:w-auto px-5 py-2 text-base transition-colors duration-200
+                                    className={`relative w-full flex flex-col hover:bg-[#00000010] rounded-lg justify-center items-center text-center md:w-auto px-4 py-2 text-base transition-colors duration-200
                                         ${activeHeaderSection === btn.key
-                                            ? 'font-bold'
-                                            : ' text-[#00000070] font-medium'}
+                                            ? ''
+                                            : ' text-[#00000070]'}
                                     `}
-                                    style={{ outline: 'none', fontWeight: 700 }}
+                                    style={{ outline: 'none', fontWeight: 500 }}
                                     onClick={() => { setActiveHeaderSection(btn.key as any); setShowMobileNav(false); }}
                                 >
                                     <span className="relative z-10">{btn.label}</span>
                                     {activeHeaderSection === btn.key && (
-                                        <span className="absolute -bottom-[1px] w-[50px] h-[4px] px-2 bg-black rounded-full transition-all duration-300"></span>
+                                        <span className="absolute -bottom-[1px] w-[50px] h-[3px] px-2 bg-black rounded-full transition-all duration-300"></span>
                                     )}
                                 </button>
                             ))}
