@@ -117,13 +117,13 @@ export default function AccountForm({ user, profile, schools }: {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-red-600 text-sm">{error}</p>
         </div>
       )}
       
       {success && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
           <p className="text-green-600 text-sm">{success}</p>
         </div>
       )}
@@ -158,7 +158,7 @@ export default function AccountForm({ user, profile, schools }: {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="absolute bottom-0 right-0 bg-black text-white p-2 rounded-full hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -188,7 +188,7 @@ export default function AccountForm({ user, profile, schools }: {
             type="text"
             value={user?.email}
             disabled
-            className="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm text-gray-500"
+            className="mt-1 block w-full px-3 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-500"
           />
         </div>
         
@@ -204,7 +204,7 @@ export default function AccountForm({ user, profile, schools }: {
             value={fullname || ''}
             onChange={(e) => setFullname(e.target.value)}
             disabled={isPending}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
         </div>
 
@@ -212,8 +212,8 @@ export default function AccountForm({ user, profile, schools }: {
           <label htmlFor="username" className="block text-sm font-medium text-gray-700">
             Username
           </label>
-          <div className="mt-1 flex rounded-md shadow-sm">
-            <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+          <div className="mt-1 flex rounded-lg">
+            <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
               @
             </span>
             <input
@@ -223,7 +223,7 @@ export default function AccountForm({ user, profile, schools }: {
               value={username || ''}
               onChange={(e) => setUsername(e.target.value)}
               disabled={isPending}
-              className="flex-1 block w-full px-3 py-2 rounded-none rounded-r-md border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed sm:text-sm"
+              className="flex-1 block w-full px-3 py-3 rounded-none rounded-r-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed sm:text-sm"
               placeholder="johndoe"
             />
           </div>
@@ -243,7 +243,7 @@ export default function AccountForm({ user, profile, schools }: {
             value={bio || ''}
             onChange={(e) => setBio(e.target.value)}
             disabled={isPending}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             maxLength={500}
             placeholder="Tell us about yourself..."
           />
@@ -264,7 +264,7 @@ export default function AccountForm({ user, profile, schools }: {
             value={school || ''}
             onChange={(e) => setSchool(e.target.value)}
             disabled={isPending}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
           <datalist id="schools">
             {schools.map((school) => (
@@ -284,7 +284,7 @@ export default function AccountForm({ user, profile, schools }: {
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               disabled={isPending}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="mt-1 block w-full pl-3 pr-10 py-3 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               <option value="en-us">English (US)</option>
               <option value="en-gb">English (UK)</option>
@@ -303,7 +303,7 @@ export default function AccountForm({ user, profile, schools }: {
               checked={isSocialEnabled}
               onChange={(e) => setIsSocialEnabled(e.target.checked)}
               disabled={isPending}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
         </div>
@@ -312,7 +312,7 @@ export default function AccountForm({ user, profile, schools }: {
           <button
             type="submit"
             disabled={isPending}
-            className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed"
+            className="flex-1 py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
             {isPending ? (
               <div className="flex items-center justify-center">
@@ -331,7 +331,8 @@ export default function AccountForm({ user, profile, schools }: {
           type="button"
           onClick={handleSignOut}
           disabled={isSigningOut}
-          className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-400 disabled:cursor-not-allowed"
+          className="flex-1 py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-400 disabled:cursor-not-allowed transition-colors"
+          style={{ backgroundColor: '#ff3b30' }}
         >
           {isSigningOut ? 'Signing out...' : 'Sign Out'}
         </button>

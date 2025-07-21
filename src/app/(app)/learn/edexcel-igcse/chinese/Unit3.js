@@ -1,114 +1,81 @@
 export const CHINESE_UNIT_3_CONTENT = `
-# Unit 3: Practical Skills in Physics I  
 
-## A. Basic Definitions
+# Unit 3: Writing
 
-Error: the difference between measured value and the actual value   
-Uncertainty: the range in which the true value is considered to lie  
-Accuracy: the closeness of measured value to the actual value  
-Precision: the consistency / spread of values obtained by repeated measurements 
+## 3.1 Writing Task 1: Details
 
-### Random error: anomalies in the values 
+You are given 4 Chinese keywords. You are required to write a paragraph of 60-75 words based on a topic, using all 4 keywords.   
+If you are a competent native writer, the emphasis to achieve even higher marks is on creativity, fluency, and sophisticated language use.
 
-- Repeat and mean to give a more accurate value  
-- Parallax error   
-- Human reaction time   
-- Overtightening of micrometre / vernier calliper
+## 3.2 Writing Task 1: Strategy
 
-### Systematic error: faulty instruments or flaws in experimental method 
+### *Planning before you start writing*
 
-- All readings differ from the actual value by a fixed amount / affect accuracy of all readings to the same extent  
-- Zero error (of instruments)   
-- Missed out quantities   
-- Contact resistance between contact surfaces   
-- Reversed polarity / connection in a circuit   
-- Colour filters do not give monochromatic light 
+1. Write a point form outline of your paragraph on a blank space.  
+2. Brainstorm the content of your paragraph in bullet point, and how each keyword can be used.  
+3. Think of ways to expand the keywords, not just mentioning them without showing what they mean.
 
-## B. Common Points
+### *During writing*
 
-### Criticise the recording of results in a table
+1. Logical arrangement: Arrange your paragraph into a logical sequence, with identifier words. Choose one of the following:  
+   1. Chronological order: 首先，然後，此外，最後  
+   2. Cause-and-effect: 因為，由於，所以，此外，結果  
+2. Develop each keyword: Don’t just mention the keywords without showing what they mean. Expand on each keyword by applying them into content-rich sentences.  
+   1. For example, if a keyword is "旅行" (travel), don't just say "我去旅行" (I went travel). Elaborate: "去年暑假，我到了风景如画的云南去旅行，飽覽了當地的景色和菜餚。"  
+3. Advanced Language use: Use complex sentence structures and vocabulary to enhance your paragraph, while making sure they are used appropriately (or else it will backfire).  
+   1. 4-character phrases: 風景如畫，名盛一時，etc.  
+   2. Subordinate clauses: 雖然...但是，如果...就，etc.
 
-1. Inconsistent d.p. / s.f.   
-2. Missing units   
-3. No signs of repeat and mean   
-4. Data range (of independent variable) is too small  
-5. Too few readings   
-6. Inconsistent interval between readings (of independent variable)  
-7. Methodology: should have timed more than one oscillation and average
+### *After finishing the paragraph: Proofread*
 
-### Accurate measurement 
+1. Read the paragraph in your brain a few times.   
+   1. Check if it is natural and fluent.  
+   2. Check if it is answering the question, not off-topic.  
+   3. Check if all 4 keywords are being used and expanded.  
+   4. Check if the phrases and sentence structures are used appropriately.  
+   5. Check if your paragraph is within the 60-75 word limit.  
+2. Proofread at least 3 times.
 
-1. Clamp to fix the position of the metre rule   
-2. Use a set square to ensure the metre rule is perfectly vertical / horizontal   
-3. Put the metre rule closely next to the object / Attach a marker to the spring  
-4. Use a set square to take perpendicular reading to the scale to avoid parallax error  
-5. Check zero error (systematic error)   
-- ensure the zero on the metre rule is aligned with the floor)   
-- ensure reading of ohmmeter is 0 when the switch is open  
-- zero the electronic balance every time before measurement   
-6. Choose better instrument   
-     
-High-speed video camera \> stopwatch  
-- allow rewind / repeated readings  
-- can play frame by frame / count the number of frames  
-- eliminate human reaction time  
-  Light gate connected to a data logger \> stopwatch   
-- eliminate human reaction time / reduce random error  
-- high sampling rate  
-- reduce % uncertainty  
-  Digital voltmeter   
-- higher resolution / reduce % uncertainty  
-- avoid parallax error / reduce random error   
-- does not require interpolation of values  
-  Ohmmeter \> voltmeter & ammeter   
-- give a value of resistance without further calculation  
-- lower uncertainties by reading from one device   
-- no need for additional power supply  
-    
-7. Ensure correct connection (polarity / ammeter in series / voltmeter in parallel) 
+## 3.3 Writing Task 2: Details
 
-8. Repeat the measurement at different positions AND orientations, then calculate a mean (random error)   
-9. Micrometre: use ratchet to close up the micrometre to avoid overtightening / Vernier calliper: do not use excessive force when tightening the jaws → which will deform the object to be measured (random error) 
+You are given a situation with a few points. You are required to write a paragraph of 125-150 based on the situation, answering all the points.  
+There are 3 questions, you just need to choose one.  
+This is the longer, more demanding writing task, requiring sustained expression and detailed development of ideas.
 
-10. Control background information (random error)   
-- Control temperature by water bath  
-- Control light by performing in a dark room  
-- Control sound level   
-- Control current across a circuit (I↑ temp↑ R↑ ρ↑) 
+## 3.4 Writing Task 2: Strategy
 
-### Safety precautions
+### *Choosing the question*
 
-1. Topple → use a heavy counterweight to avoid toppling / clamp the set up  
-2. Fall → put a soft cushion below the masses / reduce height / keep feet out of fall zone  
-3. Break / snap under high tension → wear safety goggles / be aware of sharp edges   
-4. Brittle glass → (break / sharp edges could cause injury by cuts) wear protective gloves  
-5. High temp → (risk of scalding / burns) wear protective gloves / clamp hot apparatus   
-6. Short circuit → (electric shock from power supply / circuit damage / overheating) use a fixed resistor to protect the circuit by limiting the max. current / use lower voltage  
-7. Loud sound → (damage hearing/ears) wear ear plugs / limit the volume and duration of exposure / do not stand too closely to the source of sound   
-8. Laser → (high-frequency light may cause irritation to the eye) do not look directly at the beam / remove any reflective surface nearby / wear dark lens safety glasses
+1. Read all three available questions carefully.   
+2. Select the one you feel most confident about in terms of vocabulary, ideas, and ability to address all bullet points comprehensively.   
+3. Don't just pick the easiest\! Pick the one where you can demonstrate the most advanced Chinese.
 
-### Diffraction grating
+### *Planning before you start writing*
 
-- Grating is at right angle to the light from laser   
-- Grating is parallel to the screen of projection  
-- Use larger distance between the grating and screen to increase fringe separation   
-- Measure distance between same-order maxima on both sides of the central maximum and divide by 2 to find a mean   
-- Measure distance between the centres of maxima → consistent measurement
+1. Write a point form outline of your paragraph on a blank space.  
+2. Brainstorm the content of your paragraph in bullet point, and how each point is answered.  
+3. Think of ways to answer the points comprehensively, expanding on just a simple yes/no answer.
 
-### Measuring volume of solid
+### *During writing*
 
-- Use a measuring cylinder filled with water   
-- Add 10 identical coins and measure the change in volume of water   
-- Volume of displaced water divided by the number of coins  
-- Coins added slowly to prevent splashing of water   
-- Measuring cylinder read at eye level to avoid parallax error   
-- Ensure the measuring cylinder is vertical
+4. Logical arrangement: Arrange your paragraph into a logical sequence, with identifier words. Choose one of the following:  
+   1. Chronological order: 首先，然後，此外，最後  
+   2. Cause-and-effect: 因為，由於，所以，此外，結果  
+5. Expand on each point: Answer each point required with content-rich sentences.  
+   1. For example, if a keyword is "旅行" (travel), don't just say "我去旅行" (I went travel). Elaborate: "去年暑假，我到了风景如画的云南去旅行，飽覽了當地的景色和菜餚。"  
+   2. For example, if a point is 你想試試什麽運動, don’t just list out the sports events, justify them with reasons too. (我也想嘗試打籃球，因為這項運動能鍛煉我的手脚協調和戰略思維。)  
+6. Advanced Language use: Use complex sentence structures and vocabulary to enhance your paragraph, while making sure they are used appropriately (or else it will backfire).  
+   1. 4-character phrases: 風景如畫，名盛一時，etc.  
+   2. Subordinate clauses: 雖然...但是，如果...就，etc.
 
-### Plotting graphs 
+After finishing the paragraph: Proofread
 
-- More pairs of values used   
-- Drawing a best-fit line (where all the points lie on) act as an averaging method  
-- Easy to identify anomalous values   
-- Identify any systematic error (check if y-intercept is 0 for directly proportional relationship)
+3. Read the paragraph in your brain a few times.   
+   1. Check if it is natural and fluent.  
+   2. Check if it is answering the question, not off-topic.  
+   3. Check if all points are being answered and expanded.  
+   4. Check if the phrases and sentence structures are used appropriately.  
+   5. Check if your paragraph is within the 125-150 word limit.  
+4. Proofread at least 3 times.
 
 `;

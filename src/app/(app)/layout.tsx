@@ -4,17 +4,21 @@ import AppNavigation from "@/components/app/navigation";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
-  const currentPath = headersList.get('x-current-path');
+  const currentPath = headersList.get('x-current-path') || '/';
+  const hideHeader =
+    currentPath.startsWith('/past-paper/viewer') ||
+    currentPath.startsWith('/learn/edexcel-igcse/chinese/listening') ||
+    currentPath.startsWith('/learn/edexcel-igcse/chinese/reading') ||
+    currentPath.startsWith('/learn/edexcel-igcse/chinese/translating') ||
+    currentPath.startsWith('/learn/edexcel-igcse/chinese/writing');
+
+    
+    // currentPath.startsWith('/learn/edexcel-ial/chemistry');
 
   return (
-    <ProtectedRoute currentPath={currentPath || '/'}>
-      {/* The new top header navigation bar */}
-      <AppNavigation />
-
-      {/* Main Content */}
-      {/* Add padding-top to the main content to prevent it from being hidden behind the fixed header.
-          The header has a height of h-16 (64px). */}
-      <main className="flex-1"> {/* Tailwind's pt-16 corresponds to 64px */}
+    <ProtectedRoute currentPath={currentPath}>
+      {!hideHeader && <AppNavigation />}
+      <main className="flex-1">
         {children}
       </main>
     </ProtectedRoute>
