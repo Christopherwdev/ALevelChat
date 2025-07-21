@@ -28,7 +28,7 @@ export default function AiTeacherLayout({
         },
         body: JSON.stringify({
           includeConversations: true,
-          limit: 10,
+          limit: 20, // Increased to show more conversations in sidebar
         }),
       });
 
@@ -57,6 +57,11 @@ export default function AiTeacherLayout({
     // Navigate to new conversation page
     const url = teacherId ? `/ai-teacher/chat/new?teacherId=${teacherId}` : '/ai-teacher/chat/new';
     router.push(url);
+  };
+
+  const handleExploreConversations = (teacherId: string) => {
+    // Navigate to explore conversations page for the teacher
+    router.push(`/ai-teacher/conversations/${teacherId}`);
   };
 
   // Extract current state from pathname and search params
@@ -129,6 +134,7 @@ export default function AiTeacherLayout({
         onTeacherSelect={handleTeacherSelect}
         onConversationSelect={handleConversationSelect}
         onNewConversation={handleNewConversation}
+        onExploreConversations={handleExploreConversations}
       />
       
       <div className="flex-1 flex flex-col">

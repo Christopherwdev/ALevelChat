@@ -9,6 +9,7 @@ interface TeacherSidebarProps {
   onTeacherSelect: (teacher: AiTeacher) => void;
   onConversationSelect: (conversation: AiConversation) => void;
   onNewConversation: (teacherId?: string) => void;
+  onExploreConversations: (teacherId: string) => void;
 }
 
 export function TeacherSidebar({
@@ -18,6 +19,7 @@ export function TeacherSidebar({
   onTeacherSelect,
   onConversationSelect,
   onNewConversation,
+  onExploreConversations,
 }: TeacherSidebarProps) {
   return (
     <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
@@ -52,70 +54,103 @@ export function TeacherSidebar({
                     {teacher.subject}
                   </p>
                 </div>
+                <div className="text-xs text-gray-400">
+                  {teacher.conversations?.length || 0} chats
+                </div>
               </div>
             </button>
 
-            {/* Conversations for selected teacher */}
-            {selectedTeacher?.id === teacher.id && (
-              <div className="bg-gray-50">
-                {/* New Conversation Button */}
-                <button
-                  onClick={() => onNewConversation(teacher.id)}
-                  className={`w-full p-3 text-left text-sm hover:bg-gray-100 transition-colors border-l-4 ${
-                    !selectedConversation ? 'border-blue-500 bg-blue-50' : 'border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
-                      <span className="text-green-600 text-xs">+</span>
-                    </div>
-                    <span className={selectedConversation ? 'text-gray-600' : 'text-blue-600 font-medium'}>
-                      New Conversation
-                    </span>
+            {/* Always show recent conversations for each teacher */}
+            <div className="bg-gray-50">
+              {/* New Conversation Button */}
+              <button
+                onClick={() => onNewConversation(teacher.id)}
+                className={`w-full p-3 text-left text-sm hover:bg-gray-100 transition-colors border-l-4 ${
+                  selectedTeacher?.id === teacher.id && !selectedConversation 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : 'border-transparent'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
+                    <span className="text-green-600 text-xs">+</span>
                   </div>
-                </button>
+                  <span className={
+                    selectedTeacher?.id === teacher.id && !selectedConversation 
+                      ? 'text-blue-600 font-medium' 
+                      : 'text-gray-600'
+                  }>
+                    New Conversation
+                  </span>
+                </div>
+              </button>
 
-                {/* Recent Conversations */}
-                {teacher.conversations && teacher.conversations.length > 0 && (
-                  <div>
-                    <div className="px-3 py-2">
-                      <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        Recent Conversations
-                      </h3>
-                    </div>
-                    {teacher.conversations.map((conversation) => (
+              {/* Recent Conversations */}
+              {teacher.conversations && teacher.conversations.length > 0 && (
+                <div>
+                  <div className="px-3 py-2 flex items-center justify-between">
+                    <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Recent Conversations
+                    </h3>
+                    {teacher.conversations.length > 3 && (
                       <button
-                        key={conversation.id}
-                        onClick={() => onConversationSelect(conversation)}
-                        className={`w-full p-3 text-left text-sm hover:bg-gray-100 transition-colors border-l-4 ${
-                          selectedConversation?.id === conversation.id
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-transparent'
-                        }`}
+                        onClick={() => onExploreConversations(teacher.id)}
+                        className="text-xs text-blue-600 hover:text-blue-800"
                       >
-                        <div className="flex items-center space-x-2">
-                          <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center">
-                            <span className="text-gray-600 text-xs">💬</span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className={`truncate ${
-                              selectedConversation?.id === conversation.id
-                                ? 'text-blue-700 font-medium'
-                                : 'text-gray-700'
-                            }`}>
-                              {conversation.title || 'Untitled Chat'}
-                            </p>
-                            <p className="text-xs text-gray-500 truncate">
-                              {new Date(conversation.updated_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
+                        View All
                       </button>
-                    ))}
+                    )}
                   </div>
-                )}
-              </div>
-            )}
+                  {/* Show up to 3 recent conversations */}
+                  {teacher.conversations.slice(0, 3).map((conversation) => (
+                    <button
+                      key={conversation.id}
+                      onClick={() => onConversationSelect(conversation)}
+                      className={`w-full p-3 text-left text-sm hover:bg-gray-100 transition-colors border-l-4 ${
+                        selectedConversation?.id === conversation.id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-transparent'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center">
+                          <span className="text-gray-600 text-xs">💬</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`truncate ${
+                            selectedConversation?.id === conversation.id
+                              ? 'text-blue-700 font-medium'
+                              : 'text-gray-700'
+                          }`}>
+                            {conversation.title || 'Untitled Chat'}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {new Date(conversation.updated_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                  
+                  {/* Explore all conversations button if there are more than 3 */}
+                  {teacher.conversations.length > 3 && (
+                    <button
+                      onClick={() => onExploreConversations(teacher.id)}
+                      className="w-full p-3 text-left text-sm hover:bg-gray-100 transition-colors border-l-4 border-transparent"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
+                          <span className="text-blue-600 text-xs">📚</span>
+                        </div>
+                        <span className="text-blue-600 font-medium">
+                          Explore All Conversations ({teacher.conversations.length})
+                        </span>
+                      </div>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         ))}
 
