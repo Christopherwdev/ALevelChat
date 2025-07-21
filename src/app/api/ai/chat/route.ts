@@ -116,22 +116,7 @@ export async function POST(request: NextRequest) {
       console.error('Error fetching message history:', historyError);
     }
 
-    // Send user message
-    const { error: userMessageError } = await serviceRoleSupabase
-      .from('ai_chat_messages')
-      .insert({
-        conversation_id: conversation.id,
-        role: 'user',
-        content: message,
-      });
-
-    if (userMessageError) {
-      console.error('Error sending user message:', userMessageError);
-      return NextResponse.json(
-        { error: 'Failed to send user message' },
-        { status: 500 }
-      );
-    }
+    // NOTE: For better UX, we should only add user message to the history if AI response is generated successfully.
 
     // Prepare messages for AI
     const messages = [
@@ -163,6 +148,23 @@ export async function POST(request: NextRequest) {
     if (!aiResponse.success) {
       return NextResponse.json(
         { error: 'Failed to get AI response' },
+        { status: 500 }
+      );
+    }
+
+    // Send user message
+    const { error: userMessageError } = await serviceRoleSupabase
+      .from('ai_chat_messages')
+      .insert({
+        conversation_id: conversation.id,
+        role: 'user',
+        content: message,
+      });
+
+    if (userMessageError) {
+      console.error('Error sending user message:', userMessageError);
+      return NextResponse.json(
+        { error: 'Failed to send user message' },
         { status: 500 }
       );
     }
