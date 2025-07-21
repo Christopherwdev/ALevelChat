@@ -1,13 +1,11 @@
+// The nav bar for the old version landing page
+
 "use client";
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { signOut } from '@/app/auth/actions';
 import Image from 'next/image';
-
-interface NavigationProps {
-  isAuthenticated: boolean;
-}
 
 const exams = [
   {
@@ -37,187 +35,112 @@ const exams = [
       { name: 'Listening', path: '/learn/ielts/listening' },
     ],
   },
-  {
-    name: 'University',
-    path: '/learn/university',
-    subjects: [
-        { name: 'Application', path: '/learn/university/application' },
-      { name: 'Interview Practice', path: '/learn/university/interview-practice' },
-      { name: 'Personal Statement', path: '/learn/university/personal-statement' },
-     
-    ],
-  },
 ];
 
-export default function Navigation({ isAuthenticated }: NavigationProps) {
+export default function PublicNavigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   const pathname = usePathname();
-  const [isSigningOut, startSignOutTransition] = useTransition();
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const [hoveredExam, setHoveredExam] = useState<string | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedExam, setExpandedExam] = useState<string | null>(null);
-
-  async function handleSignOut() {
-    startSignOutTransition(async () => {
-      await signOut();
-    });
-  }
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isSigningOut, startSignOutTransition] = useTransition();
 
   return (
-    <div
-      style={{
-      
-        zIndex: 50,
-      }}
-    >
-      <nav className="bg-white border-b border-gray-200 shadow-xl shadow-[#00000005]">
-        <div className="mx-auto px-4">
-          <div className="flex items-center h-16 justify-between w-full">
-            {/* Logo left */}
-            <div className="flex items-center min-w-[100px]">
-              <Link href="/" className="flex items-center space-x-2">
-                <Image
-                  src="/logo-300x300.png"
-                  alt="AIToLearn Logo"
-                  width={32}
-                  height={32}
-                  className="object-contain"
-                />
-                <span className="text-xl font-bold text-gray-900">AIToLearn</span>
-              </Link>
-            </div>
-            {/* Exams center */}
-            <div className="hidden lg:flex justify-center items-center space-x-0 py-2 px-3 bg-gray-100 rounded-full">
-              {exams.map((exam) => (
-                <div
-                  key={exam.name}
-                  className="relative"
-                  onMouseEnter={() => setHoveredExam(exam.name)}
-                  onMouseLeave={() => setHoveredExam(null)}
-                >
+    <header className="fixed top-0 left-0 w-full z-1000 bg-[rgba(0,0,0,0.8)] backdrop-blur border-b border-[#23232a] shadow-xl shadow-[#00000020] flex items-center justify-between px-4" style={{ height: 50, minHeight: 50, maxHeight: 50, marginBottom: 0 }}>
+      {/* Logo and Title */}
+      <div className="flex items-center min-w-[100px]">
+        <Image
+          src="/logo-300x300.png"
+          alt="AIToLearn Logo"
+          width={32}
+          height={32}
+          className="object-contain"
+        />
+        <Link href="/" className="text-xl ml-2 font-bold text-white flex items-center gap-2">
+          AIToLearn
+        </Link>
+      </div>
+      {/* Exams Dropdown and Home/Dashboard */}
+      <div className="hidden lg:flex justify-center items-center gap-1 py-1 px-1 bg-[#00000050] rounded-full relative">
+        <Link href="/learn" className={`px-4 py-0 text-md font-medium transition-all rounded-full ${pathname === '/learn' ? 'text-white bg-[#ff3b30] shadow-sm shadow-[0_0_0_7px_#ff3b3030]' : 'text-white hover:bg-[#ffffff30] '}`}>Home</Link>
+        {exams.map((exam) => (
+          <div
+            key={exam.name}
+            className="relative"
+            onMouseEnter={() => setHoveredExam(exam.name)}
+            onMouseLeave={() => setHoveredExam(null)}
+          >
+            <Link
+              href={exam.path}
+              className={`px-3 py-1 text-md h-[40px] font-medium transition-all rounded-full ${pathname.startsWith(exam.path) ? 'text-white bg-[#ff3b30] shadow-sm shadow-[0_0_0_7px_#ff3b3030]' : 'text-white hover:bg-[#ffffff30] '}`}
+            >
+              {exam.name}
+            </Link> 
+            {/* Dropdown for subjects */}
+            {hoveredExam === exam.name && (
+              <div className="absolute left-0 mt-0 w-48 bg-[#000000] rounded-xl shadow-lg py-2 z-20 border border-[#33334a] flex flex-col">
+                {exam.subjects.map((subject) => (
                   <Link
-                    href={exam.path}
-                    className={`px-4 py-2 text-md font-medium transition-colors rounded-md ${
-                      pathname.startsWith(exam.path)
-                        ? 'text-[#ff3b30] bg-white shadow-sm'
-                        : 'text-gray-700 hover:text-[#ff3b30] hover:bg-white'
-                    }`}
+                    key={subject.name}
+                    href={subject.path}
+                    className="px-3 py-2 text-sm text-white font-semibold hover:text-white hover:bg-[#ffffff40] transition-colors"
                   >
-                    {exam.name}
+                    {subject.name}
                   </Link>
-                  {/* Dropdown for subjects */}
-                  {hoveredExam === exam.name && (
-                    <div className="absolute left-0 mt-1 w-48 bg-white rounded-xl shadow-lg py-2 z-20 border border-gray-200 flex flex-col">
-                      {exam.subjects.map((subject) => (
-                        <Link
-                          key={subject.name}
-                          href={subject.path}
-                          className="px-4 py-2 text-sm text-gray-700 font-semibold hover:bg-gray-50 hover:text-[#ff3b30] rounded transition-colors"
-                        >
-                          {subject.name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            {/* Account button right */}
-            <div className="flex items-center space-x-4 min-w-[100px] justify-end">
-              {isAuthenticated ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
-                  >
-                    <span>Account</span>
-                    <svg className={`ml-1 h-4 w-4 transform transition-transform ${showUserMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10 border border-gray-200">
-                      <Link
-                        href="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        onClick={() => setShowUserMenu(false)}
-                      >
-                        Profile
-                      </Link>
-                      <button
-                        onClick={handleSignOut}
-                        disabled={isSigningOut}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-                      >
-                        {isSigningOut ? 'Signing out...' : 'Sign Out'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex space-x-3">
-                  <Link
-                    href="/login"
-                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
-                  >
-                    Log in
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="px-6 py-2 bg-[#ff3b30] hover:bg-[#ff1a1a] text-white text-sm font-medium rounded-lg transition-colors"
-                  >
-                    Sign up
-                  </Link>
-                </div>
-              )}
-            </div>
-            {/* Hamburger for mobile */}
-            <div className="flex lg:hidden">
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-md text-gray-700 hover:bg-gray-100"
-                aria-label="Open menu"
-              >
-                {/* Hamburger icon */}
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      </nav>
-      {mobileMenuOpen && (
-        <div className="lg:hidden absolute left-0 right-0 bg-white shadow-lg rounded-b-xl z-40 mt-0 px-4 py-2 border-b border-gray-200">
-          {exams.map((exam) => (
-            <div key={exam.name} className="mb-2">
-              <button
-                onClick={() => setExpandedExam(expandedExam === exam.name ? null : exam.name)}
-                className="w-full text-left px-2 py-2 font-semibold text-gray-700 hover:text-[#ff3b30] flex justify-between items-center"
-              >
-                {exam.name}
-                <svg className={`h-4 w-4 ml-2 transition-transform ${expandedExam === exam.name ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-              {expandedExam === exam.name && (
-                <div className="pl-4">
-                  {exam.subjects.map((subject) => (
-                    <Link
-                      key={subject.name}
-                      href={subject.path}
-                      className="block px-2 py-1 text-gray-600 hover:text-[#ff3b30]"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {subject.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+        ))}
+        <Link href="/dashboard" className={`px-3 py-0 text-md font-medium transition-all rounded-full ${pathname.startsWith('/dashboard') ? 'text-white bg-[#ff3b30] shadow-sm shadow-[0_0_0_7px_#ff3b3030]' : 'text-white hover:bg-[#ffffff30] '}`}>Dashboard</Link>
+      </div>
+      {/* Profile/Account Link */}
+      <div className="flex items-center">
+        {isAuthenticated ? (
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center gap-2 py-1 px-3 rounded-full transition-all duration-300 font-bold text-gray-300 hover:text-[#ff3b30] hover:bg-[#23232a]"
+            >
+              <span className="hidden sm:inline text-sm">Account</span>
+              <svg className={`ml-1 h-4 w-4 transform transition-transform ${showUserMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-[#18181b] rounded-lg shadow-lg py-1 z-10 border border-[#33334a]">
+                <Link
+                  href="/profile"
+                  className="block px-4 py-2 text-sm text-white hover:bg-[#23232a] transition-colors"
+                  onClick={() => setShowUserMenu(false)}
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={() => startSignOutTransition(() => {/* sign out logic here */})}
+                  disabled={isSigningOut}
+                  className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-[#23232a] disabled:opacity-50 transition-colors"
+                >
+                  {isSigningOut ? 'Signing out...' : 'Sign Out'}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex space-x-3">
+            <Link
+              href="/login"
+              className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-[#23232a] transition-colors"
+            >
+              Log in
+            </Link>
+            <Link
+              href="/signup"
+              className="px-6 py-2 bg-[#ff3b30] hover:bg-[#ff3b30cc] text-white text-sm font-medium rounded-full transition-colors"
+            >
+              Sign up
+            </Link>
+          </div>
+        )}
+      </div>
+    </header>
   );
 }
