@@ -1,16 +1,17 @@
 "use client"
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Image from 'next/image';
-// Removed AppHeader import as we are creating a custom header within App
-import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle, Languages, Icon } from 'lucide-react';
+
+import AppHeader from '@/components/app/header';
+import { BookText, Settings, MessageCircle, FileText, Lightbulb, HelpCircle, Languages } from 'lucide-react';
 import { marked } from 'marked'; // Import marked library
-import Link from 'next/link';
+
 // Import content from separate JS files
 import { CHINESE_UNIT_1_CONTENT } from './Unit1.js';
 import { CHINESE_UNIT_2_CONTENT } from './Unit2.js';
 import { CHINESE_UNIT_3_CONTENT } from './Unit3.js';
 import { CHINESE_UNIT_4_CONTENT } from './Unit4.js';
 import { CHINESE_UNIT_5_CONTENT } from './Unit5.js';
+import { CHINESE_UNIT_6_CONTENT } from './Unit6.js';
 
 
 interface UnitContent {
@@ -23,6 +24,7 @@ const UNIT_NOTES_CONTENT: UnitContent = {
     3: CHINESE_UNIT_3_CONTENT,
     4: CHINESE_UNIT_4_CONTENT,
     5: CHINESE_UNIT_5_CONTENT,
+    6: CHINESE_UNIT_6_CONTENT,
 };
 
 
@@ -36,9 +38,9 @@ const revisionTools = [
 // --- CONFIGURATION FOR EASY ADAPTATION ---
 const CURRENT_SUBJECT = 'Chinese';
 const SUBJECT_COLOR = '#ff3b30'; // Corresponds to primary color in Tailwind config
-const SUBJECT_ICON = Languages; // Lucide-react Languages icon for Chinese
+const SUBJECT_ICON_CLASS = 'fas fa-flask'; // Font Awesome icon for Chinese
 const UNIT_PREFIX = 'Unit'; // For units like "Unit 1", "Unit 2"
-const TOTAL_UNITS = 5; // Only 5 units for revision notes
+const TOTAL_UNITS = 6; // Number of units for the subject
 // Key prefix for local storage. Now includes unit and section.
 const LOCAL_STORAGE_KEY_PREFIX = 'completed_notes_section_';
 const LAST_VIEWED_LESSON_KEY = 'last_viewed_lesson';
@@ -56,14 +58,19 @@ function isTextToken(token: any): token is { text: string } {
     return typeof token.text === 'string';
 }
 
-// Navigation buttons config
-const navButtons: { key: string; label: string }[] = [
-    { key: 'home', label: 'Home' },
-    { key: 'revision-notes', label: 'Revision Notes' },
-    { key: 'past-papers', label: 'Past Papers' },
-    { key: 'ai-teacher', label: 'AI Teacher' },
-    { key: 'tutor', label: 'Tutor' },
+const PRACTICE_TESTS = [
+  { key: 'listening', label: 'AI Mock Test / Listening' },
+  { key: 'reading', label: 'AI Mock Test / Reading' },
+  { key: 'translating', label: 'AI Mock Test / Translating' },
+  { key: 'writing', label: 'AI Mock Test / Writing' },
 ];
+
+const PRACTICE_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
+  listening: React.lazy(() => import('./listening/page')),
+  reading: React.lazy(() => import('./reading/page')),
+  translating: React.lazy(() => import('./translating/page')),
+  writing: React.lazy(() => import('./writing/page')),
+};
 
 const App: React.FC = () => {
     const [activeUnitIndex, setActiveUnitIndex] = useState<number | null>(null); // null for home page
@@ -71,23 +78,78 @@ const App: React.FC = () => {
     const [notesContent, setNotesContent] = useState<string>('');
     const [currentNotesTitle, setCurrentNotesTitle] = useState<string>('');
     const [currentNotesDuration, setCurrentNotesDuration] = useState<string>('');
-    // Remove all mark as complete/section completion state and logic
-    // Remove sectionCompletionStatus, getLocalStorageKey, loadCompletionStatus, saveCompletionStatus, saveLastViewedLessonToLocalStorage, loadLastViewedLessonFromLocalStorage, and all related useEffects and UI
+    const [sectionCompletionStatus, setSectionCompletionStatus] = useState<{ [key: string]: boolean }>({});
     const [lastViewedLesson, setLastViewedLesson] = useState<{ unitIndex: number; sectionId: string } | null>(null);
-
-    // New state for header navigation
-    const [activeHeaderSection, setActiveHeaderSection] = useState<'home' | 'revision-notes' | 'past-papers' | 'ai-teacher' | 'tutor'>('home');
-    const [showMobileNav, setShowMobileNav] = useState(false);
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [activeTab, setActiveTab] = useState('details'); // 'details', 'timetable', 'find-tutor'
+    const [activePractice, setActivePractice] = useState<string | null>(null);
 
     const markdownDisplayRef = useRef<HTMLDivElement>(null);
 
 
-    // Function to handle navigation (for breadcrumbs and other links) - now internal to the app
+    // Function to handle navigation (for breadcrumbs and other links)
     const navigate = (path: string) => {
         window.location.href = `/${path.replace(/^\//, '')}`;
     };
 
+    // Content for the "Details" tab
+    const DetailsContent = () => (
+        <div className="p-6 bg-white rounded-xl shadow-sm">
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Chinese IAL Details</h3>
+            <p className="text-gray-700 leading-relaxed mb-4">
+                The Edexcel International Advanced Level (IAL) Chinese is a globally recognized qualification, equivalent to A-levels in the UK. It's designed for students who wish to progress to higher education. For Chinese, there are comprehensive revision notes, factsheets, questions from past exam papers separated by topic, and other worksheets to aid your learning.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+                Our platform provides a structured approach to your Chinese IAL revision, offering AI-powered mock tests, detailed solutions, and access to AI teachers and private tutors for personalized support. Prepare effectively and achieve your best results!
+            </p>
+        </div>
+    );
+
+    // Content for the "Timetable" tab
+    const TimetableContent = () => (
+        <div className="p-6 bg-white rounded-xl shadow-sm">
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Exam Timetable</h3>
+            <p className="text-gray-700 mb-4">
+                Here you can find the provisional and final timetables for upcoming Edexcel IAL Chinese examinations. Please check regularly for updates.
+            </p>
+            <ul className="list-disc list-inside text-gray-700 space-y-2">
+                <li>Summer 2025 Exam Series: Provisional Timetable (Available Now)</li>
+                <li>Winter 2025 Exam Series: Provisional Timetable (Expected September 2025)</li>
+                <li>January 2026 Exam Series: Provisional Timetable (Expected November 2025)</li>
+            </ul>
+            <p className="mt-4 text-sm text-gray-500">
+                *Dates are subject to change. Always refer to the official Edexcel website for the most accurate and up-to-date information.
+            </p>
+        </div>
+    );
+
+    // Content for the "Find a Tutor" tab
+    const FindTutorContent = () => (
+        <div className="p-6 bg-white rounded-xl shadow-sm">
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Find a Private Tutor</h3>
+            <p className="text-gray-700 mb-4">
+                Need personalized help? Our platform connects you with experienced private tutors specializing in Edexcel IAL Chinese.
+            </p>
+            <form className="space-y-4">
+                <div>
+                    <label htmlFor="subject" className="block text-gray-700 text-sm font-semibold mb-2">Subject:</label>
+                    <select id="subject" name="subject" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <option value="chinese">Chinese</option>
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="level" className="block text-gray-700 text-sm font-semibold mb-2">Level:</label>
+                    <input type="text" id="level" name="level" value="Edexcel IAL" readOnly className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" />
+                </div>
+                <div>
+                    <label htmlFor="message" className="block text-gray-700 text-sm font-semibold mb-2">Your Message:</label>
+                    <textarea id="message" name="message" rows={4} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Describe your learning needs..."></textarea>
+                </div>
+                <button type="submit" className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200">
+                    Request a Tutor
+                </button>
+            </form>
+        </div>
+    );
 
     // Set CSS variables for dynamic coloring
     useEffect(() => {
@@ -111,8 +173,21 @@ const App: React.FC = () => {
     }, []);
 
     // --- Local Storage Functions ---
-    // Remove all mark as complete/section completion state and logic
-    // Remove sectionCompletionStatus, getLocalStorageKey, loadCompletionStatus, saveCompletionStatus, saveLastViewedLessonToLocalStorage, loadLastViewedLessonFromLocalStorage, and all related useEffects and UI
+    const getLocalStorageKey = useCallback((unitIndex: number, sectionId: string): string => {
+        return `${LOCAL_STORAGE_KEY_PREFIX}${CURRENT_SUBJECT}_${unitIndex}_${sectionId}`;
+    }, []);
+
+    const loadCompletionStatus = useCallback((unitIndex: number, sectionId: string): boolean => {
+        const key = getLocalStorageKey(unitIndex, sectionId);
+        return localStorage.getItem(key) === 'true';
+    }, [getLocalStorageKey]);
+
+    const saveCompletionStatus = useCallback((unitIndex: number, sectionId: string, status: boolean) => {
+        const key = getLocalStorageKey(unitIndex, sectionId);
+        localStorage.setItem(key, status ? 'true' : 'false');
+        setSectionCompletionStatus(prev => ({ ...prev, [key]: status }));
+    }, [getLocalStorageKey]);
+
     const saveLastViewedLessonToLocalStorage = useCallback((unitIndex: number, sectionId: string) => {
         const lesson = { unitIndex, sectionId };
         localStorage.setItem(LAST_VIEWED_LESSON_KEY, JSON.stringify(lesson));
@@ -149,33 +224,35 @@ const App: React.FC = () => {
             if (token.type === 'heading' && token.depth === 2) {
                 totalSections++;
                 const sectionId = `unit-${unitIndex}-section-${++sectionCounter}`;
-                // Remove all mark as complete/section completion state and logic
-                // Remove sectionCompletionStatus, getLocalStorageKey, loadCompletionStatus, saveCompletionStatus, saveLastViewedLessonToLocalStorage, loadLastViewedLessonFromLocalStorage, and all related useEffects and UI
+                if (loadCompletionStatus(unitIndex, sectionId)) {
+                    completedSections++;
+                }
             }
         });
 
         const percentage = totalSections > 0 ? Math.round((completedSections / totalSections) * 100) : 0;
         return { completedSections, totalSections, percentage, unitTitle };
-    }, []);
+    }, [loadCompletionStatus]);
 
     // --- Display Functions ---
     const fetchAndDisplayNote = useCallback((unitIndex: number, sectionIdToScrollTo: string | null = null) => {
         setActiveUnitIndex(unitIndex);
         setActiveSectionId(sectionIdToScrollTo);
-        setActiveHeaderSection('revision-notes');
-        const markdownText = UNIT_NOTES_CONTENT[unitIndex];
+
+        // Always extract and set the heading from the markdown
+        const unitName = `${UNIT_PREFIX} ${unitIndex}`;
         let headingTitle = '';
+        const markdownText = UNIT_NOTES_CONTENT[unitIndex];
         if (markdownText) {
             const tokens = marked.lexer(markdownText);
             const h1Token = tokens.find(token => token.type === 'heading' && token.depth === 1 && isTextToken(token));
             if (h1Token && isTextToken(h1Token)) {
-                // Remove 'Unit x:' prefix if present
-                headingTitle = h1Token.text.replace(/^Unit \d+:\s*/, '');
+                headingTitle = h1Token.text;
             } else {
-                headingTitle = 'Chinese Notes';
+                headingTitle = `${unitName}: Chinese Notes`;
             }
         } else {
-            headingTitle = 'Chinese Notes';
+            headingTitle = `${unitName}: Chinese Notes`;
         }
         setCurrentNotesTitle(headingTitle);
         setCurrentNotesDuration('');
@@ -185,41 +262,139 @@ const App: React.FC = () => {
                 <div class="text-lg">Loading notes...</div>
             </div>
         `);
+
         if (!markdownText) {
-            setCurrentNotesTitle('Error Loading Notes');
+            setCurrentNotesTitle(`${unitName}: Error Loading Notes`);
             setNotesContent(`
                 <div class="text-center py-12 text-red-500 dark:text-red-400">
                     <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
-                    <div class="text-lg">Notes not found.</div>
+                    <div class="text-lg">Notes for ${unitName} not found.</div>
                     <div class="text-sm">Please ensure content is defined for this unit.</div>
                 </div>
             `);
             return;
         }
+
         try {
             const tokens = marked.lexer(markdownText);
+            // Refactored section rendering
             let renderedHtml = '';
-            tokens.forEach(token => {
+            const sectionsInUnit: { id: string; text: string }[] = [];
+            let sectionCounter = 0;
+            let currentSection = '';
+            let currentSectionId = '';
+            let inSection = false;
+
+            for (let i = 0; i < tokens.length; i++) {
+                const token = tokens[i];
                 if (token.type === 'heading' && token.depth === 2) {
-                    renderedHtml += `<div class="section-header-container"><h2>${token.text}</h2></div>`;
-                } else if (token.type !== 'heading' || token.depth !== 1) {
-                    renderedHtml += marked.parse(token.raw);
+                    // If we were in a section, render its content and buttons
+                    if (inSection) {
+                        // Render markdown for the section
+                        let sectionHtml = marked.parse(currentSection) as string;
+                        // Replace strategy blocks in this section
+                        sectionHtml = sectionHtml.replace(/<h3[^>]*>Strategy<\/h3>([\s\S]*?)(<h[1-3][^>]*>|$)/gi, (match: string, strategyContent: string, nextHeader: string) => {
+                            // Convert the strategy content into table rows
+                            const rows = strategyContent
+                                .split(/<br\s*\/?>(?:\s*|\n*)/)
+                                .filter((line: string) => line.trim())
+                                .map((line: string) => `<tr><td style='padding: 0.5rem 1rem;'>${line.trim()}</td></tr>`) // Each line as a row
+                                .join('');
+                            return `
+                                <h3>Strategy</h3>
+                                <table style="background: #ff3b3030; border-radius: 10px; margin: 1rem 0; width: 100%; border-collapse: separate;">
+                                    <tbody>${rows}</tbody>
+                                </table>
+                                ${nextHeader || ''}
+                            `;
+                        });
+                        // Add the section content
+                        renderedHtml += sectionHtml;
+                        // Add action buttons after the section content
+                        renderedHtml += `
+                            <div class="section-action-buttons" style="margin: 1.5rem 0 2.5rem 0; display: flex; gap: 1rem;">
+                                <button class="btn-primary" onclick="window.location.href='/learn/edexcel-igcse/chinese/listening'">Do Mock Test</button>
+                                <button class="btn-secondary" onclick="window.location.href='/past-paper'">Past Papers</button>
+                                <button class="btn-secondary" onclick="window.location.href='/ai-teacher'">AI Teacher</button>
+                            </div>
+                        `;
+                    }
+                    // Start a new section
+                    sectionCounter++;
+                    currentSectionId = `unit-${unitIndex}-section-${sectionCounter}`;
+                    sectionsInUnit.push({ id: currentSectionId, text: token.text });
+                    currentSection = `## ${token.text}\n`;
+                    inSection = true;
+                } else if (inSection) {
+                    // Add token raw to current section
+                    currentSection += token.raw || '';
                 }
-            });
+            }
+            // Render the last section if any
+            if (inSection) {
+                let sectionHtml = marked.parse(currentSection) as string;
+                sectionHtml = sectionHtml.replace(/<h3[^>]*>Strategy<\/h3>([\s\S]*?)(<h[1-3][^>]*>|$)/gi, (match: string, strategyContent: string, nextHeader: string) => {
+                    const rows = strategyContent
+                        .split(/<br\s*\/?>(?:\s*|\n*)/)
+                        .filter((line: string) => line.trim())
+                        .map((line: string) => `<tr><td style='padding: 0.5rem 1rem;'>${line.trim()}</td></tr>`)
+                        .join('');
+                    return `
+                        <h3>Strategy</h3>
+                        <table style="background: #ff3b3030; border-radius: 10px; margin: 1rem 0; width: 100%; border-collapse: separate;">
+                            <tbody>${rows}</tbody>
+                        </table>
+                        ${nextHeader || ''}
+                    `;
+                });
+                renderedHtml += sectionHtml;
+                renderedHtml += `
+                    <div class="section-action-buttons" style="margin: 1.5rem 0 2.5rem 0; display: flex; gap: 1rem;">
+                        <button class="btn-primary" onclick="window.location.href='/learn/edexcel-igcse/chinese/listening'">Do Mock Test</button>
+                        <button class="btn-secondary" onclick="window.location.href='/past-paper'">Past Papers</button>
+                        <button class="btn-secondary" onclick="window.location.href='/ai-teacher'">AI Teacher</button>
+                    </div>
+                `;
+            }
+
             setNotesContent(renderedHtml);
             setCurrentNotesDuration(`Approx ${Math.ceil(markdownText.length / 1000)} min read`);
+
+            // Store sections for sidebar rendering
+            // This is a bit tricky with React's state. We need to pass these sections to the sidebar component.
+            // For now, let's keep the logic for rendering sections within the main component's state or props.
+            // A better way would be to have a `sectionsData` state that gets updated here and passed to a `Sidebar` component.
+            // For this conversion, I'll update the `sectionsInUnit` array and use it in the JSX.
+            // This means `sectionsInUnit` needs to be part of the component's state.
+            const newSectionsData = sectionsInUnit.map(sec => ({
+                ...sec,
+                unitIndex: unitIndex,
+                isCompleted: loadCompletionStatus(unitIndex, sec.id)
+            }));
+            // This will be handled by the `sectionsForSidebar` state.
+            // setSectionsForSidebar(newSectionsData); // This state will be used to render sidebar sections
+
+            // Save last viewed lesson
+            if (sectionIdToScrollTo) {
+                saveLastViewedLessonToLocalStorage(unitIndex, sectionIdToScrollTo);
+            } else if (sectionsInUnit.length > 0) {
+                // If no specific section, default to the first one
+                saveLastViewedLessonToLocalStorage(unitIndex, sectionsInUnit[0].id);
+            }
+
+
         } catch (error) {
             console.error('Error parsing markdown:', error);
-            setCurrentNotesTitle('Error Displaying Notes');
+            setCurrentNotesTitle(`${unitName}: Error Displaying Notes`);
             setCurrentNotesDuration('');
             setNotesContent(`
                 <div class="text-center py-12 text-red-500 dark:text-red-400">
                     <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
-                    <div class="text-lg">An error occurred while displaying notes.</div>
+                    <div class="text-lg">An error occurred while displaying notes for ${unitName}.</div>
                 </div>
             `);
         }
-    }, []);
+    }, [currentNotesTitle, loadCompletionStatus, saveLastViewedLessonToLocalStorage]);
 
     const displayHomePage = useCallback(() => {
         setActiveUnitIndex(null);
@@ -227,26 +402,32 @@ const App: React.FC = () => {
         setCurrentNotesTitle('');
         setCurrentNotesDuration('');
         setNotesContent(''); // Clear markdown content for home page
-        setActiveHeaderSection('home'); // Ensure header is set to home
     }, []);
 
     // --- Effects ---
     useEffect(() => {
         // Initial load of completion status and last viewed lesson
-        // Remove all mark as complete/section completion state and logic
-        // Remove sectionCompletionStatus, getLocalStorageKey, loadCompletionStatus, saveCompletionStatus, saveLastViewedLessonToLocalStorage, loadLastViewedLessonFromLocalStorage, and all related useEffects and UI
+        const initialCompletionStatus: { [key: string]: boolean } = {};
+        for (let i = 1; i <= TOTAL_UNITS; i++) {
+            const markdown = UNIT_NOTES_CONTENT[i];
+            if (markdown) {
+                const tokens = marked.lexer(markdown);
+                let sectionCounter = 0;
+                tokens.forEach(token => {
+                    if (token.type === 'heading' && token.depth === 2) {
+                        sectionCounter++;
+                        const sectionId = `unit-${i}-section-${sectionCounter}`;
+                        const key = getLocalStorageKey(i, sectionId);
+                        initialCompletionStatus[key] = localStorage.getItem(key) === 'true';
+                    }
+                });
+            }
+        }
+        setSectionCompletionStatus(initialCompletionStatus);
         setLastViewedLesson(loadLastViewedLessonFromLocalStorage());
 
-        // Show home page by default
-        displayHomePage();
-    }, [displayHomePage, loadLastViewedLessonFromLocalStorage]);
-
-    // Select Unit 1 by default when entering revision notes
-    useEffect(() => {
-        if (activeHeaderSection === 'revision-notes' && activeUnitIndex === null) {
-            fetchAndDisplayNote(1);
-        }
-    }, [activeHeaderSection, activeUnitIndex, fetchAndDisplayNote]);
+        displayHomePage(); // Show home page by default
+    }, [displayHomePage, getLocalStorageKey, loadLastViewedLessonFromLocalStorage]);
 
     // Effect to scroll to section after content updates
     useEffect(() => {
@@ -259,8 +440,33 @@ const App: React.FC = () => {
     }, [notesContent, activeSectionId]); // Re-run when notesContent or activeSectionId changes
 
     // Effect to handle click on section completion buttons (delegation)
-    // Remove all useEffects and logic related to sectionCompletionStatus, lastViewedLesson, and completion buttons
-    // ... existing code ...
+    useEffect(() => {
+        const handleCompletionButtonClick = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+            const button = target.closest('.section-completion-button') as HTMLButtonElement;
+
+            if (button) {
+                const unitIndex = parseInt(button.dataset.unitIndex || '0');
+                const sectionId = button.dataset.sectionId || '';
+
+                if (unitIndex && sectionId) {
+                    const isCompleted = loadCompletionStatus(unitIndex, sectionId);
+                    saveCompletionStatus(unitIndex, sectionId, !isCompleted);
+                }
+            }
+        };
+
+        const currentRef = markdownDisplayRef.current;
+        if (currentRef) {
+            currentRef.addEventListener('click', handleCompletionButtonClick);
+        }
+
+        return () => {
+            if (currentRef) {
+                currentRef.removeEventListener('click', handleCompletionButtonClick);
+            }
+        };
+    }, [loadCompletionStatus, saveCompletionStatus]);
 
 
     // --- Editor Toolbar Functions ---
@@ -274,7 +480,7 @@ const App: React.FC = () => {
     // --- Components for Home Page ---
     const ContinueLessonButton: React.FC = () => {
         return (
-            <div id="continue-lesson-button" className="continue-lesson-card flex items-center justify-center w-[75px] h-[75px] md:w-[115px] md:h-[115px]">
+            <div id="continue-lesson-button" className="continue-lesson-card flex items-center justify-center" style={{ width: 150, height: 150 }}>
                 <Languages size={90} color="#fff" />
             </div>
         );
@@ -318,250 +524,15 @@ const App: React.FC = () => {
         </div>
     );
 
-    // --- New Section Components ---
-    const HomePageContent: React.FC = () => (
-        <div className="rounded-2xl p-6 pt-20 items-center flex justify-center">
-            <div className='max-w-4xl'>
-                <nav className="inline-block self-start text-gray-500 text-sm mb-8 font-light border-[1px] bg-[#00000005] border-[#00000010] px-3 py-1 rounded-lg">
-                    <a href="#" onClick={() => navigate('/learn')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
-                    <span className="mx-2">/</span>
-                    <a href="#" onClick={() => navigate('/learn/edexcel-igcse')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Edexcel IGCSE</a>
-                    <span className="mx-2">/</span>
-                    <span className='font-semibold'>Chinese</span>
-                </nav>
-                <div className="flex flex-row items-stretch md:items-start gap-4 md:gap-6 mb-6">
-                    <ContinueLessonButton />
-                    <div className="flex flex-col flex-grow title-buttons-container">
-
-                        {/* Page Title */}
-                        <div className="text-4xl md:text-5xl font-bold text-black md:mb-6">
-                            Edexcel IGCSE <br className="block md:hidden" />
-                            <span className="font-medium" style={{ color: 'var(--subject-primary-color)' }}>{CURRENT_SUBJECT}</span>
-
-                        </div>
-                        <p className="text-gray-700 text-lg max-w-3xl hidden md:block">Welcome to the Chinese Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
-                    </div>
-
-                </div>
-                <p className="text-gray-700 text-lg max-w-3xl block md:hidden">Welcome to the Chinese Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-3 gap-6 mt-10">
-                    {revisionTools.map((tool) => (
-                        <div
-                            key={tool.id}
-                            className="bg-white p-4 mt-0 hover:cursor-pointer rounded-4xl flex items-center space-x-2 border-[4px] transition duration-200"
-                            style={{
-                                borderColor: "#00000010",
-                            }}
-                            onClick={() => {
-                                if (tool.id === 'past-papers') setActiveHeaderSection('past-papers');
-                                else if (tool.id === 'ai-teacher') setActiveHeaderSection('ai-teacher');
-                                else if (tool.id === 'ask-help') navigate('/social');
-                            }}
-                            onMouseEnter={e => {
-                                e.currentTarget.style.borderColor = SUBJECT_COLOR;
-                                e.currentTarget.style.boxShadow = `0 0 0 10px ${SUBJECT_COLOR}20`;
-                            }}
-                            onMouseLeave={e => {
-                                e.currentTarget.style.borderColor = "#00000010";
-                                e.currentTarget.style.boxShadow = "none";
-                            }}
-                        >
-                            <div className="border-2 p-3 rounded-full" style={{ borderColor: SUBJECT_COLOR }}>
-                                <tool.icon className="w-6 h-6" style={{ color: SUBJECT_COLOR }} />
-                            </div>
-                            <div className="flex flex-col leading-tight">
-                                <span className="text-xl font-bold" style={{ color: SUBJECT_COLOR }}>{tool.titleTop}</span>
-                                <span className="text-lg font-semibold text-gray-900">{tool.titleBottom}</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-            {/* Additional Features Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-                 <div className="bg-white border-2 border-[#00000020] rounded-2xl p-6 flex flex-col transition">
-                    <h3 className="text-2xl font-normal text-black mb-2">Study Notes</h3>
-                    <p className="text-gray-700 text-base">Master every topic with concise, examiner-focused notes. Our study materials are tailored to the latest marking schemes, ensuring you know exactly how to earn top marks.</p>
-                </div>
-                <div className="bg-white border-2 border-[#00000020] rounded-2xl p-6 flex flex-col transition">
-                    <h3 className="text-2xl font-normal text-black mb-2">By-Topic Questions</h3>
-                    <p className="text-gray-700 text-base">Accelerate your progress with targeted practice questions, expertly organized by topic. Build confidence and pinpoint your strengths and weaknesses with every session.</p>
-                </div>
-               
-                <div className="bg-white border-2 border-[#00000020] rounded-2xl p-6 flex flex-col transition">
-                    <h3 className="text-2xl font-normal text-black mb-2">Past Papers</h3>
-                    <p className="text-gray-700 text-base">Practice real exam papers anytime, anywhere, and get instant AI-powered grading. Track your scores and unlock powerful analytics to maximize your exam performance.</p>
-                </div>
-                <div className="bg-white border-2 border-[#00000020] rounded-2xl p-6 flex flex-col transition">
-                    <h3 className="text-2xl font-normal text-black mb-2">AI Teacher</h3>
-                    <p className="text-gray-700 text-base">Get instant help, explanations, and personalized feedback from our AI Teacher. Ask questions, get quizzes, and receive revision plans tailored to your needs.</p>
-                </div>
-            </div>
-
-            </div>
-        </div>
-    );
-
-    const RevisionNotesContent: React.FC = () => (
-        <div className="flex flex-1 overflow-hidden relative pt-[50px]">
-            {/* Chevron button for desktop (always visible, docked to left of content) */}
-            <button
-                className="hidden md:flex items-center justify-center z-40 bg-white rounded-full p-1 absolute top-18 transition-all duration-300"
-                style={{ width: 40, height: 40, marginLeft: sidebarCollapsed ? 0 : 265, left: sidebarCollapsed? 8 : 0 }}
-                onClick={() => setSidebarCollapsed((prev) => !prev)}
-                aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-                <i className={`fas fa-chevron-${sidebarCollapsed ? 'right' : 'left'} text-gray-400 text-2xl`}></i>
-            </button>
-            {/* Sidebar overlay for mobile */}
-            <div
-                id="left-sidebar"
-                className={`fixed top-0 left-0 h-full z-30 bg-white overflow-x-visible dark:bg-white dark:border-gray-700 overflow-y-auto p-4 transition-transform duration-300 ease-in-out w-64 md:static md:translate-x-0 ${activeHeaderSection === 'revision-notes' && !sidebarCollapsed ? 'translate-x-0' : '-translate-x-full'} md:relative md:h-auto md:w-72 md:block ${sidebarCollapsed ? 'md:-ml-72' : ''} ${!sidebarCollapsed && activeHeaderSection === 'revision-notes' ? 'md:pt-5' : ''} ${activeHeaderSection === 'revision-notes' && !sidebarCollapsed ? 'pt-[120px] md:pt-0' : ''}`}
-            // style={{ boxShadow: '0 2px 20px rgba(0,0,0,0.08)' }}
-            >
-                {/* No Home button here, as it's in the main header */}
-                {/* Learning Notes Section */}
-                <div className="mb-4">
-                    <h3 className='mb-4 font-bold'>Revision Notes</h3>
-                    <div id="unit-buttons-container" className="space-y-4">
-                        {Array.from({ length: TOTAL_UNITS }, (_, i) => i + 1).map(unitIndex => {
-                            const unitName = `${UNIT_PREFIX} ${unitIndex}`;
-                            const markdownContent = UNIT_NOTES_CONTENT[unitIndex];
-                            let unitTitleWithoutPrefix = unitName;
-
-                            if (markdownContent) {
-                                const tokens = marked.lexer(markdownContent);
-                                const h1Token = tokens.find(token => token.type === 'heading' && token.depth === 1 && isTextToken(token));
-                                if (h1Token && isTextToken(h1Token)) {
-                                    unitTitleWithoutPrefix = h1Token.text;
-                                    if (unitTitleWithoutPrefix.startsWith(`${unitName}:`)) {
-                                        unitTitleWithoutPrefix = unitTitleWithoutPrefix.substring(`${unitName}:`.length).trim();
-                                    }
-                                }
-                            }
-
-                            const sectionsInUnit: { id: string; text: string }[] = [];
-                            if (markdownContent) {
-                                let sectionCounter = 0;
-                                marked.lexer(markdownContent).forEach(token => {
-                                    if (token.type === 'heading' && token.depth === 2) {
-                                        sectionCounter++;
-                                        sectionsInUnit.push({ id: `unit-${unitIndex}-section-${sectionCounter}`, text: token.text });
-                                    }
-                                });
-                            }
-
-                            return (
-                                <div key={unitIndex}>
-                                    <button
-                                        className={`unit-button w-full text-left px-3 py-2 rounded-[15px] text-sm font-medium flex items-center justify-between ${activeUnitIndex === unitIndex ? 'active' : ''}`}
-                                        onClick={() => fetchAndDisplayNote(unitIndex)}
-                                    >
-                                        <span><span style={{ fontWeight: 'bold' }}>{unitName}:</span> {unitTitleWithoutPrefix}</span>
-                                    </button>
-                                    {activeUnitIndex === unitIndex && sectionsInUnit.length > 0 && (
-                                        <div className="unit-sections-container space-y-1 mt-2 mb-2 ml-4 border-l border-l-[2px] border-gray-200 dark:border-gray-600">
-                                            {sectionsInUnit.map(section => {
-                                                // Remove all mark as complete/section completion state and logic
-                                                // Remove sectionCompletionStatus, getLocalStorageKey, loadCompletionStatus, saveCompletionStatus, saveLastViewedLessonToLocalStorage, loadLastViewedLessonFromLocalStorage, and all related useEffects and UI
-                                                return (
-                                                    <a
-                                                        key={section.id}
-                                                        href={`#${section.id}`}
-                                                        className={`section-link ${activeSectionId === section.id ? 'active-section' : ''}`}
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            setActiveSectionId(section.id);
-                                                            saveLastViewedLessonToLocalStorage(unitIndex, section.id);
-                                                            // Scroll handled by useEffect based on activeSectionId
-                                                        }}
-                                                    >
-                                                        <span className="section-link-text">{section.text}</span>
-                                                        {/* Remove all mark as complete/section completion state and logic
-                                                        Remove sectionCompletionStatus, getLocalStorageKey, loadCompletionStatus, saveCompletionStatus, saveLastViewedLessonToLocalStorage, loadLastViewedLessonFromLocalStorage, and all related useEffects and UI */}
-                                                    </a>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-
-            {/* Overlay for mobile when sidebar is open */}
-            {activeHeaderSection === 'revision-notes' && !sidebarCollapsed && (
-                <div
-                    className="fixed inset-0 bg-black bg-opacity-30 z-20 md:hidden"
-                    onClick={() => setSidebarCollapsed(true)}
-                ></div>
-            )}
-
-            {/* Right Content Area - Notes Display */}
-            <div
-                className={`flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900 max-4xl transition-all duration-300`}
-            >
-                <div className="max-w-4xl mx-auto markdown-content" style={{ fontSize: '14px', outline: 'none' }} ref={markdownDisplayRef}>
-                    {/* Mobile chevron above heading in revision notes */}
-                    {activeHeaderSection === 'revision-notes' && (
-                        <button
-                            className="md:hidden flex items-center justify-center bg-white border border-gray-200 rounded-full shadow p-1 mb-4"
-                            style={{ width: 50, height: 50 }}
-                            onClick={() => setSidebarCollapsed((prev) => !prev)}
-                            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                        >
-                            <i className={`fas fa-chevron-${sidebarCollapsed ? 'right' : 'left'} text-gray-600 text-2xl`}></i>
-                        </button>
-                    )}
-                    <div className="flex items-start flex-col justify-between h-auto gap-0 mb-2">
-                        {/* <h6 className='m-0  font-medium text-[20px] md:text-[30px] text-black pb-0'>Edexcel IGCSE Chinese</h6><br></br> */}
-                        <h1 id="notes-title" className="text-5xl font-bold text-black">
-                           
-                                <span className="text-black]">Unit {activeUnitIndex}: </span>
-                           
-                            <span>{currentNotesTitle}</span>
-                        </h1>
-                    </div>
-                    <p id="notes-info-text" className="text-gray-600 dark:text-gray-400 mb-6">
-                        Learning Notes | <span id="notes-duration">{currentNotesDuration}</span> | AI powered
-                    </p>
-                    <hr id="notes-divider" className="border-t-[4px] border-t-[00000010] dark:border-gray-700 my-6" />
-                    <div id="markdown-display" className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: notesContent }}></div>
-                </div>
-            </div>
-        </div>
-    );
-
-    // Dynamic imports for heavy pages
-    const PastPaperPage = React.lazy(() => import('../../../past-paper/page'));
-    const AiTeacherPage = React.lazy(() => import('../../../ai-teacher/page'));
-
-    const TutorContent: React.FC = () => (
-        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900">
-            <div className="max-w-4xl mx-auto text-center py-12">
-                <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-4">Find a Tutor</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-                    Connect with experienced tutors for personalized one-on-one support.
-                </p>
-                <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md" role="alert">
-                    <p className="font-bold">Expert Help at Your Fingertips!</p>
-                    <p>Browse tutor profiles and book sessions tailored to your needs.</p>
-                </div>
-                <div className="mt-8">
-                    <button
-                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
-                        onClick={() => console.log('Simulate finding a tutor')}
-                    >
-                        Browse Tutors
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-
+    // Dynamic import for practice test components
+    // const PracticeComponent = React.useMemo(() => {
+    //     if (!activePractice) return null;
+    //     const test = PRACTICE_TESTS.find(t => t.key === activePractice);
+    //     if (!test) return null;
+    //     // Dynamic import using React.lazy
+    //     const Comp = React.lazy(() => import(`${test.importPath}`));
+    //     return <React.Suspense fallback={<div className="p-8 text-center">Loading...</div>}><Comp /></React.Suspense>;
+    // }, [activePractice]);
 
     // --- Main Render ---
     return (
@@ -598,27 +569,48 @@ const App: React.FC = () => {
 
                 body {
                     font-family: 'Inter', sans-serif;
-                    background-color: #f8f9fa;f
+                    background-color: #f8f9fa;
                     color: #333;
                 }
 
                 .btn-primary {
-                    background-color: var(--subject-primary-color);
+                    background-color: #ff3b30;
                     color: white;
-                    padding: 0.5rem 1rem;
-                    border-radius: 0.375rem;
-                    font-weight: 500;
-                    transition: background-color 0.2s;
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 9999px;
+                    font-weight: 600;
+                    transition: background-color 0.2s ease-in-out;
+                    border: none;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.3s;
                 }
-
                 .btn-primary:hover {
-                    background-color: color-mix(in srgb, var(--subject-primary-color) 80%, black);
-                    /* Darken on hover */
+                    box-shadow: 0px 0px 0px 7.5px  #ff3b3030;
+                }
+                .btn-secondary {
+                    background-color: black;
+                    color: white;
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 9999px;
+                    font-weight: 600;
+                    transition: background-color 0.2s ease-in-out;
+                    border: none;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.3s;
+                }
+                .btn-secondary:hover {
+                    box-shadow: 0px 0px 0px 7.5px rgba(0, 0, 0, 0.19);
                 }
 
                 /* Styles for the active unit button and active home/subject button */
                 .unit-button.active,
-                .header-nav-button.active { /* Changed from .home-subject-button.active */
+                .home-subject-button.active {
                     background-color: var(--subject-primary-color);
                     color: white;
                     border: 2px solid black;
@@ -627,7 +619,7 @@ const App: React.FC = () => {
 
                 /* Styles for inactive unit button and inactive home/subject button */
                 .unit-button:not(.active),
-                .header-nav-button:not(.active) { /* Changed from .home-subject-button:not(.active) */
+                .home-subject-button:not(.active) {
                     background-color: #00000005;
                     /* gray-100 */
                     color: #4b5563;
@@ -636,10 +628,19 @@ const App: React.FC = () => {
                     /* Light border for inactive */
                 }
 
-               
+                .dark .unit-button:not(.active),
+                .dark .home-subject-button:not(.active) {
+                    background-color: #374151;
+                    /* gray-700 */
+                    color: #d1d5db;
+                    /* gray-300 */
+                    border: 2px solid #4b5563;
+                    /* Darker border for inactive in dark mode */
+                }
 
                 .unit-button,
-                .header-nav-button { /* Changed from .home-subject-button */
+                .home-subject-button {
+                
                     
                 }
 
@@ -707,26 +708,25 @@ const App: React.FC = () => {
                 }
                 /* Markdown rendering styles */
                 .markdown-content h1 {
-                   
+                    font-size: 2rem;
                     /* text-4xl */
                     font-weight: 700;
                     /* font-bold */
-                    line-height: 1;
                     margin-bottom: 10px;
                     /* color: var(--subject-primary-color); */
-              
+                    color: black;
                     /* Apply subject color to H1 */
                 }
 
                 .markdown-content h2 {
-                    font-size: 2rem;
+                    font-size: 1.8rem;
                     /* text-3xl */
-                    font-weight: 700;
+                    font-weight: 600;
                     /* font-semibold */
                     margin-top: 1.5rem;
                     margin-bottom: 0.75rem;
-                    color: #ff3b30
-                    
+                    color: var(--subject-primary-color);
+                    /* Apply subject color to H2 */
                 }
 
                 .markdown-content h3 {
@@ -736,10 +736,10 @@ const App: React.FC = () => {
                     /* font-semibold */
                     margin-top: 1.25rem;
                     margin-bottom: 0.5rem;
-                }
+                
 
                 .markdown-content p {
-                    margin-bottom: 10px;
+                    margin-bottom: 0px;
                     line-height: 1.5rem;
                     
                 }
@@ -761,31 +761,17 @@ const App: React.FC = () => {
                 }
 
                 .markdown-content pre {
-                    background-color: #ff3b3010;
+                    background-color: #e2e8f0;
+                    /* gray-200 */
                     padding: 1rem;
-                    border: 2px solid #ff3b30;
                     border-radius: 0.5rem;
+                    overflow-x: auto;
                     margin-bottom: 1rem;
-                    white-space: pre-wrap;
-                    word-break: break-word;
-                    text-indent: 0;
-                    margin-left: 0;
-                }
-                .markdown-content pre b,
-                .markdown-content pre strong {
-                    font-weight: bold;
-                }
-                .markdown-content pre i,
-                .markdown-content pre em {
-                    font-style: italic;
-                }
-                .markdown-content pre u {
-                    text-decoration: underline;
                 }
 
                 .markdown-content code {
-                    font-family: 'Inter', sans-serif;
-               
+                    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+                    background-color: #e2e8f0;
                     /* gray-200 */
                     padding: 0.2rem 0.4rem;
                     border-radius: 0.25rem;
@@ -1038,7 +1024,8 @@ const App: React.FC = () => {
                 }
                 /* Continue Lesson Element Style */
                 .continue-lesson-card {
-                   
+                    width: 150px; /* Fixed width as per image */
+                    height: 150px; /* Fixed height to match title/buttons div */
                     background-color: rgba(var(--subject-primary-color-rgb),1); /* White background */
                     /* border: 1px solid #e2e8f0; */
                     /* border: 3px solid var(--subject-primary-color); */
@@ -1146,117 +1133,20 @@ const App: React.FC = () => {
                     flex-direction: column;
                     justify-content: space-between; 
                 }
-
-                /* Header Navigation Styles */
-                .header-nav-button {
-                    padding: 0.3rem 0.7rem;
-                    border-radius: 0;
-                    font-weight: 500;
-                    font-size: 0.97rem;
-                    background: none;
-                    border: none;
-                    color: #4b5563;
-                    transition: color 0.15s, border-bottom 0.15s;
-                    box-shadow: none;
-                    margin: 0 0.1rem;
-                     font-weight: 700;
-                }
-                .header-nav-button.active {
-                    color: var(--subject-primary-color);
-                    border-bottom: 2px solid var(--subject-primary-color);
-                    background: none;
-                    font-weight: 700;
-                }
-                .header-nav-button:not(.active):hover {
-                    color: #222;
-                    background: none;
-                    border-bottom: 2px solid #e5e7eb;
-                }
-                .dark .header-nav-button {
-                    color: #d1d5db;
-                }
-                .dark .header-nav-button.active {
-                    color: var(--subject-primary-color);
-                    border-bottom: 2px solid var(--subject-primary-color);
-                }
-                .dark .header-nav-button:not(.active):hover {
-                    color: #fff;
-                    border-bottom: 2px solid #374151;
-                }
                 `}
             </style>
 
-            <div className="w-full h-[calc(100vh-50px)] flex flex-col mt-[50px]">
+            <div className="w-full h-screen flex flex-col">
                 {/* Header */}
-                <header className="fixed h-[50px] w-full bg-[rgba(255,255,255,0.9)] backdrop-blur-[25px] border-b border-[#00000020] shadow-xl shadow-[#00000005] px-4 py-2 flex flex-col lg:flex-row items-center justify-start gap-2 position-sticky z-200">
-                    <div className="flex flex-row items-start justify-between lg:justify-start w-full lg:w-auto">
-                        <div className="flex flex-row items-center">
-                            {/* Back Button */}
-                            <button
-                                className="mr-3 p-1 h-[30px] w-[30px] rounded-full hover:bg-gray-200 "
-                                aria-label="Back"
-                                onClick={() => navigate('/learn/edexcel-igcse')}
-                                style={{ outline: 'none' }}
-                            >
-                                <i className="fas fa-arrow-left text-lg"></i>
-                            </button>
-                            {/* Chinese Icon */}
-                            {/* <i className={`${SUBJECT_ICON_CLASS} text-xl text-[#ff3b30] mr-2`}></i> */}
-                            <SUBJECT_ICON className="w-6 h-6 text-[#ff3b30] mr-2" />
-                            <h1 className="text-xl font-medium text-gray-800 dark:text-gray-200 flex items-center">
-                                Chinese <span className='ml-5 text-gray-500 font-medium'> /</span>
-                                {/* Mobile: show current page label between Chinese and menu button */}
-                                <div className="ml-2 lg:hidden flex items-center px-3 py-1 rounded-lg bg-gray-100 border border-gray-300 text-gray-700 text-sm font-semibold select-none">
-                                    {(() => {
-                                        switch (activeHeaderSection) {
-                                            case 'home': return 'Home';
-                                            case 'revision-notes': return 'Revision Notes';
-                                            case 'past-papers': return 'Past Papers';
-                                            case 'ai-teacher': return 'AI Teacher';
-                                            case 'tutor': return 'Tutor';
-                                            default: return '';
-                                        }
-                                    })()}
-                                </div>
-                            </h1>
-                            {/* If you have a dropdown menu button for unit changing, it would go here */}
-                        </div>
-                        {/* Hamburger menu for mobile */}
-                        <button
-                            className="lg:hidden p-2 ml-2 text-gray-700 dark:text-gray-200 focus:outline-none"
-                            aria-label="Open navigation menu"
-                            onClick={() => setShowMobileNav(prev => !prev)}
-                        >
-                            <i className="fas fa-bars text-xl"></i>
-                        </button>
+                {/* <header className="flex justify-between items-center p-4 bg-white border-b border-[#00000020] dark:bg-gray-800 dark:border-gray-700 h-[80px]">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                            <a href="../../Revision.html" className="hover:underline">Revision Notes</a> / <span id="subject-title">{CURRENT_SUBJECT}</span>
+                        </h1>
+                        <p className="text-xs text-gray-500 mt-1">Your comprehensive revision guide</p>
                     </div>
-                    {/* Navigation Buttons */}
-                    <nav
-                        className={`flex-col lg:flex-row flex w-full h-full lg:w-auto ${showMobileNav ? 'flex' : 'hidden'} lg:flex bg-white dark:bg-gray-800 md:bg-transparent p-2 md:p-0 rounded-lg smd:rounded-none shadow lg:shadow-none z-20 absolute lg:static top-full left-0`}
-                        style={{ minWidth: '180px' }}
-                    >
-                        <div className="flex w-full lg:w-auto  relative">
-                            {navButtons.map((btn: { key: string; label: string }) => (
-                                <button
-                                    key={btn.key}
-                                    className={`relative w-full flex flex-col hover:bg-[#00000010] rounded-lg justify-center items-center text-center md:w-auto px-4 py-2 text-base transition-colors duration-200
-                                        ${activeHeaderSection === btn.key
-                                            ? ''
-                                            : ' text-[#00000070]'}
-                                    `}
-                                    style={{ outline: 'none', fontWeight: 500 }}
-                                    onClick={() => { setActiveHeaderSection(btn.key as any); setShowMobileNav(false); }}
-                                >
-                                    <span className="relative z-10">{btn.label}</span>
-                                    {activeHeaderSection === btn.key && (
-                                        <span className="absolute -bottom-[1px] w-[50px] h-[3px] px-2 bg-black rounded-full transition-all duration-300"></span>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                    </nav>
-                    {/* Editor Toolbar - hidden on mobile */}
-                    {/* <div className="hidden md:flex items-center space-x-2 mt-4 md:mt-0 invisible">
+               
+                    <div className="flex items-center space-x-2">
                         <button id="bold-button" className="editor-button" title="Bold" onClick={() => applyTextEffect('bold')}>
                             <i className="fas fa-bold"></i>
                         </button>
@@ -1272,39 +1162,127 @@ const App: React.FC = () => {
                         <button id="clear-effects-button" className="editor-button" title="Clear All Effects" onClick={() => applyTextEffect('removeFormat')}>
                             <i className="fas fa-eraser"></i>
                         </button>
-                    </div> */}
-                </header>
+                    </div>
+                </header> */}
+   {/* <AppHeader isAuthenticated={true} /> */}
+                {/* Main Content Area */}
+                <div className="flex flex-1 overflow-hidden">
+                    {/* Sidebar */}
+                    <div id="left-sidebar" className="w-72 pt-6 bg-white flex flex-col dark:bg-white dark:border-gray-700 overflow-y-scroll h-[full] p-4 pt-[70px] border-r-2 border-r-[#00000020]">
+                        {/* Home Button */}
+                        <button
+                            id="home-subject-button"
+                            className={`home-subject-button w-full text-left px-4 py-3 rounded-[15px] text-lg font-semibold mb-4 flex items-center justify-center transition duration-200 ${activeUnitIndex === null && !activePractice ? 'active' : ''}`}
+                            onClick={() => { setActiveUnitIndex(null); setActivePractice(null); }}
+                        >
+                            <i id="sidebar-subject-icon" className={`fas fa-home mr-3 text-md`}></i>
+                            <span id="sidebar-subject-name" style={{ fontWeight: 'bold' }}>Home</span>
+                            <i className="fas fa-chevron-right ml-auto text-sm"></i>
+                        </button>
+                        {/* Revision Notes */}
+                        <button
+                            className={`unit-button w-full text-left px-3 py-2 rounded-[15px] text-sm font-medium flex items-center justify-between ${activeUnitIndex === 1 && !activePractice ? 'active' : ''}`}
+                            onClick={() => { fetchAndDisplayNote(1); setActivePractice(null); }}
+                        >
+                            <span><span style={{ fontWeight: 'bold' }}>Revision Notes</span></span>
+                        </button>
+                        {/* Practice Tests */}
+                        <div className="mt-4">
+                            {PRACTICE_TESTS.map(test => (
+                                <button
+                                    key={test.key}
+                                    className={`unit-button w-full text-left px-3 py-2 mb-4 rounded-[15px] text-sm font-medium flex items-center justify-between hover:bg-[#00000050]`}
+                                    onClick={() => navigate(`/learn/edexcel-igcse/chinese/${test.key}`)}
+                                >
+                                    <span><span style={{ fontWeight: 'bold' }}>{test.label}</span></span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    {/* Main Content */}
+                    <div className="flex-1 pt-[60px] overflow-y-auto p-6 bg-white dark:bg-gray-900 max-4xl">
+                        <div className="max-w-4xl mx-auto markdown-content" style={{ fontSize: '14px', outline: 'none' }} ref={markdownDisplayRef}>
+                            {activeUnitIndex === null && !activePractice ? (
+                                // Home Page Content
+                                <div className="rounded-2xl p-2">
+                                    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-6">
+                                        {/* <ContinueLessonButton /> */}
+                                        <div className="flex flex-col flex-grow title-buttons-container">
+                                            <nav className="inline-block self-start text-gray-500 text-sm mb-6 font-light border-[1px] bg-[#00000005] border-[#00000010] px-3 py-1 rounded-lg">
+                                                <a href="#" onClick={() => navigate('/learn')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</a>
+                                                <span className="mx-2">/</span>
+                                                <a href="#" onClick={() => navigate('/learn/edexcel-ial')} className="transition duration-300 hover:underline hover:text-[#ff3b30]">Edexcel IAL</a>
+                                                <span className="mx-2">/</span>
+                                                <span className='font-semibold'>Chinese</span>
+                                            </nav>
+                                            {/* Page Title */}
+                                            <div className="text-5xl font-bold text-black mb-8">
+                                                Edexcel IAL <span className="font-medium" style={{ color: 'var(--subject-primary-color)'}}>{CURRENT_SUBJECT}</span>
+                                            </div>
+                                            {/* <p  className="text-gray-700 text-lg mb-10 max-w-3xl">Welcome to the Chinese Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p> */}
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {revisionTools.map((tool) => (
+                                            <div
+                                                key={tool.id}
+                                                className="bg-white p-4 mt-0 hover:cursor-pointer rounded-3xl flex items-center space-x-2 border-[3px] transition duration-200"
+                                                style={{
+                                                    borderColor: "#00000010",
+                                                }}
+                                                onClick={() => {
+                                                    if (tool.id === 'past-papers') navigate('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Chinese&paper=Unit+1');
+                                                    else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
+                                                    else if (tool.id === 'ask-help') navigate('/social');
+                                                }}
+                                                onMouseEnter={e => {
+                                                    e.currentTarget.style.borderColor = SUBJECT_COLOR;
+                                                    e.currentTarget.style.boxShadow = `0 5px 20px 0px ${SUBJECT_COLOR}50`;
+                                                }}
+                                                onMouseLeave={e => {
+                                                    e.currentTarget.style.borderColor = "#00000010";
+                                                    e.currentTarget.style.boxShadow = "0 5px 20px 0px #00000010";
+                                                }}
+                                            >
+                                                <div className="border-2 p-3 rounded-full" style={{ borderColor: SUBJECT_COLOR }}>
+                                                    <tool.icon className="w-6 h-6" style={{ color: SUBJECT_COLOR }} />
+                                                </div>
+                                                <div className="flex flex-col leading-tight">
+                                                    <span className="text-xl font-bold" style={{ color: SUBJECT_COLOR }}>{tool.titleTop}</span>
+                                                    <span className="text-lg font-semibold text-gray-900">{tool.titleBottom}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+<div className='mt-8'>
+    <h3>Practice is key for acing your Chinese papers.</h3>
 
-                {/* Main Content Area - Conditional Rendering */}
-                {activeHeaderSection === 'home' && <HomePageContent />}
-                {activeHeaderSection === 'revision-notes' && <RevisionNotesContent />}
-                {activeHeaderSection === 'past-papers' && (
-                    <React.Suspense fallback={
-                        <div className="flex items-center justify-center min-h-[60vh] w-full">
-                            <div className="flex flex-col items-center justify-center">
-                                <div className="animate-spin rounded-full border-4 border-[#ff3b30] border-t-transparent h-16 w-16 mb-4"></div>
-                                <div className="text-xl font-semibold text-[#ff3b30]">Loading Past Papers...</div>
-                                <div className="text-gray-500 mt-2">Please wait while we load the full past paper experience.</div>
-                            </div>
+                                    <p>The difficulty of the Chinese paper for native speakers is avoiding careless mistakes throughout the exam. Therefore, you should keep practising to train your mind to be accurate. Your revision should be divided into two parts: use Golden Notes and AI Teacher to grasp all the necessary knowledge within the exam scope, and utilize Past Papers along with our AI-verified Questions By Topic to master the exam’s framework and thinking patterns.</p>
+                                 
+                                    </div>
+                                    
+                                 
+                                </div>
+                            ) : activePractice && PRACTICE_COMPONENTS[activePractice] ? (
+                                <React.Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+                                    {React.createElement(PRACTICE_COMPONENTS[activePractice])}
+                                </React.Suspense>
+                            ) : (
+                                // Notes Display Content (only one notes file)
+                                <>
+                                    <div className="flex items-center mt-4 justify-between mb-2">
+                                        <h1 id="notes-title" className="text-5xl font-bold text-black">{currentNotesTitle}</h1>
+                                    </div>
+                                    <p id="notes-info-text" className="text-gray-600 dark:text-gray-400 mb-6">
+                                        Learning Notes | <span id="notes-duration">{currentNotesDuration}</span> | AI powered
+                                    </p>
+                                    <hr id="notes-divider" className="border-t border-gray-300 dark:border-gray-700 my-6" />
+                                    <div id="markdown-display" className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: notesContent }}></div>
+                                </>
+                            )}
                         </div>
-                    }>
-                        <PastPaperPage />
-                    </React.Suspense>
-                )}
-                {activeHeaderSection === 'ai-teacher' && (
-                    <React.Suspense fallback={
-                        <div className="flex items-center justify-center min-h-[60vh] w-full">
-                            <div className="flex flex-col items-center justify-center">
-                                <div className="animate-spin rounded-full border-4 border-[#ff3b30] border-t-transparent h-16 w-16 mb-4"></div>
-                                <div className="text-xl font-semibold text-[#ff3b30]">Loading AI Teacher...</div>
-                                <div className="text-gray-500 mt-2">Launching your AI-powered tutor. This may take a few seconds.</div>
-                            </div>
-                        </div>
-                    }>
-                        <AiTeacherPage />
-                    </React.Suspense>
-                )}
-                {activeHeaderSection === 'tutor' && <TutorContent />}
+                    </div>
+                </div>
             </div>
         </React.Fragment>
     );

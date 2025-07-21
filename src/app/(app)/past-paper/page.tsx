@@ -668,7 +668,7 @@ const App: React.FC = () => {
                     >
 
 
-                        <div className="flex items-center space-x-4 p-4 pb-0">
+                        <div className="flex items-center gap-4 p-4 pb-0">
                             {/* Mobile menu button */}
                             <button
                                 onClick={toggleMobileSidebar}
@@ -679,9 +679,9 @@ const App: React.FC = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                                 </svg>
                             </button>
-                            <div>
+                            <div className='ml-[0px]'>
                                 <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Past Papers</h1>
-                                <p className="text-xs text-gray-500 mt-1">Search and access past papers</p>
+                                <span className='font-medium text-[#00000070] text-2xl'>All with AI grading.</span>
                             </div>
                         </div>
 
@@ -848,7 +848,7 @@ const App: React.FC = () => {
                               {unit ? ` ${unit}` : ''}
               
                               <span className='font-medium'> Past Papers</span>  </span>
-                              <div className='font-medium text-[#00000070] text-3xl'>All with AI grading.</div>
+                              
                             </div>
                             <div id="papers-container" className="space-y-6 w-full">
                                 {renderPapers(filteredPapers)}

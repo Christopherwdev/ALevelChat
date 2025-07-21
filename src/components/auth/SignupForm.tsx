@@ -96,11 +96,11 @@ export default function SignupForm() {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-md p-4 sm:p-6 md:p-8">
+    <div className="w-full max-w-md mx-auto bg-white rounded-lg p-4 sm:p-6 md:p-8">
       <h2 className="text-xl sm:text-2xl font-bold text-center mb-6">Create an Account</h2>
       
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-red-600 text-sm">{error}</p>
         </div>
       )}
@@ -119,11 +119,11 @@ export default function SignupForm() {
               value={formData.email}
               onChange={handleInputChange}
               disabled={isPending}
-              className="mt-1 block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="mt-1 block w-full px-3 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
             {isCheckingEmail && (
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-500"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
               </div>
             )}
           </div>
@@ -145,14 +145,14 @@ export default function SignupForm() {
             onChange={handleInputChange}
             disabled={isPending}
             onFocus={() => setShowPasswordRequirements(true)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
           {fieldErrors.password && (
             <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
           )}
           
           {showPasswordRequirements && (
-            <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm font-medium text-blue-800 mb-1">Password requirements:</p>
               <ul className="text-xs text-blue-700 space-y-1">
                 <li>• At least 8 characters long</li>
@@ -177,7 +177,7 @@ export default function SignupForm() {
             value={formData.confirmPassword}
             onChange={handleInputChange}
             disabled={isPending}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
           {fieldErrors.confirmPassword && (
             <p className="mt-1 text-sm text-red-600">{fieldErrors.confirmPassword}</p>
@@ -187,7 +187,7 @@ export default function SignupForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed transition-colors"
+          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
         >
           {isPending ? (
             <div className="flex items-center">
@@ -203,7 +203,7 @@ export default function SignupForm() {
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
           Already have an account?{' '}
-          <Link href="/login" className="text-indigo-600 hover:text-indigo-500 font-medium">
+          <Link href="/login" className="text-blue-600 hover:text-blue-500 font-medium">
             Sign in
           </Link>
         </p>

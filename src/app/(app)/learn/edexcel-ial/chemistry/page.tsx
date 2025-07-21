@@ -58,6 +58,15 @@ function isTextToken(token: any): token is { text: string } {
     return typeof token.text === 'string';
 }
 
+// Navigation buttons config
+const navButtons: { key: string; label: string }[] = [
+    { key: 'home', label: 'Home' },
+    { key: 'revision-notes', label: 'Revision Notes' },
+    { key: 'past-papers', label: 'Past Papers' },
+    { key: 'ai-teacher', label: 'AI Teacher' },
+    { key: 'tutor', label: 'Tutor' },
+];
+
 const App: React.FC = () => {
     const [activeUnitIndex, setActiveUnitIndex] = useState<number | null>(null); // null for home page
     const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
@@ -68,7 +77,7 @@ const App: React.FC = () => {
     const [lastViewedLesson, setLastViewedLesson] = useState<{ unitIndex: number; sectionId: string } | null>(null);
 
     // New state for header navigation
-    const [activeHeaderSection, setActiveHeaderSection] = useState<'home' | 'revision-notes' | 'past-papers' | 'battle-mode' | 'tutor'>('home');
+    const [activeHeaderSection, setActiveHeaderSection] = useState<'home' | 'revision-notes' | 'past-papers' | 'ai-teacher' | 'tutor'>('home');
     const [showMobileNav, setShowMobileNav] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -445,8 +454,8 @@ const App: React.FC = () => {
                                 borderColor: "#00000010",
                             }}
                             onClick={() => {
-                                if (tool.id === 'past-papers') navigate('/past-paper?examBoard=Edexcel&examLevel=IAL&subject=Chemistry&paper=Unit+1');
-                                else if (tool.id === 'ai-teacher') navigate('/ai-teacher');
+                                if (tool.id === 'past-papers') setActiveHeaderSection('past-papers');
+                                else if (tool.id === 'ai-teacher') setActiveHeaderSection('ai-teacher');
                                 else if (tool.id === 'ask-help') navigate('/social');
                             }}
                             onMouseEnter={e => {
@@ -485,8 +494,8 @@ const App: React.FC = () => {
                     <p className="text-gray-700 text-base">Practice real exam papers anytime, anywhere, and get instant AI-powered grading. Track your scores and unlock powerful analytics to maximize your exam performance.</p>
                 </div>
                 <div className="bg-white border-2 border-[#00000020] rounded-2xl p-6 flex flex-col transition">
-                    <h3 className="text-2xl font-normal text-black mb-2">Battle Mode</h3>
-                    <p className="text-gray-700 text-base">Challenge students worldwide in real-time quizzes. Climb the leaderboard, sharpen your skills, and make revision exciting with competitive Battle Mode.</p>
+                    <h3 className="text-2xl font-normal text-black mb-2">AI Teacher</h3>
+                    <p className="text-gray-700 text-base">Get instant help, explanations, and personalized feedback from our AI Teacher. Ask questions, get quizzes, and receive revision plans tailored to your needs.</p>
                 </div>
             </div>
 
@@ -621,51 +630,9 @@ const App: React.FC = () => {
         </div>
     );
 
-    const PastPapersContent: React.FC = () => (
-        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900">
-            <div className="max-w-4xl mx-auto text-center py-12">
-                <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-4">Past Papers Section</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-                    This section would display past exam papers and mark schemes for {CURRENT_SUBJECT}.
-                </p>
-                <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-md" role="alert">
-                    <p className="font-bold">Coming Soon!</p>
-                    <p>Integration with the full past paper functionality from `/past-paper/page.tsx` will be available here.</p>
-                </div>
-                <div className="mt-8">
-                    <button
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
-                        onClick={() => console.log('Simulate browsing past papers')}
-                    >
-                        Browse Sample Papers
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-
-    const BattleModeContent: React.FC = () => (
-        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900">
-            <div className="max-w-4xl mx-auto text-center py-12">
-                <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-4">Battle Mode</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-                    Challenge your friends or AI in a fun, interactive quiz battle!
-                </p>
-                <div className="bg-purple-100 border-l-4 border-purple-500 text-purple-700 p-4 rounded-md" role="alert">
-                    <p className="font-bold">Get Ready to Compete!</p>
-                    <p>This exciting feature is currently under development.</p>
-                </div>
-                <div className="mt-8">
-                    <button
-                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
-                        onClick={() => console.log('Simulate Battle Mode')}
-                    >
-                        Learn More
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
+    // Dynamic imports for heavy pages
+    const PastPaperPage = React.lazy(() => import('../../../past-paper/page'));
+    const AiTeacherPage = React.lazy(() => import('../../../ai-teacher/page'));
 
     const TutorContent: React.FC = () => (
         <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900">
@@ -1301,7 +1268,7 @@ const App: React.FC = () => {
 
             <div className="w-full h-[calc(100vh-50px)] flex flex-col mt-[50px]">
                 {/* Header */}
-                <header className="fixed h-[50px] w-full bg-[rgba(255,255,255,0.9)] backdrop-blur-[25px] border-b border-[#00000020] shadow-xl shadow-[#00000005] px-4 py-2 flex flex-col lg:flex-row items-center justify-start gap-2 absolute z-50">
+                <header className="fixed h-[50px] w-full bg-[rgba(255,255,255,0.9)] backdrop-blur-[25px] border-b border-[#00000020] shadow-xl shadow-[#00000005] px-4 py-2 flex flex-col lg:flex-row items-center justify-start gap-2 position-sticky z-200">
                     <div className="flex flex-row items-start justify-between lg:justify-start w-full lg:w-auto">
                         <div className="flex flex-row items-center">
                             {/* Back Button */}
@@ -1324,7 +1291,7 @@ const App: React.FC = () => {
                                             case 'home': return 'Home';
                                             case 'revision-notes': return 'Revision Notes';
                                             case 'past-papers': return 'Past Papers';
-                                            case 'battle-mode': return 'Battle Mode';
+                                            case 'ai-teacher': return 'AI Teacher';
                                             case 'tutor': return 'Tutor';
                                             default: return '';
                                         }
@@ -1348,13 +1315,7 @@ const App: React.FC = () => {
                         style={{ minWidth: '180px' }}
                     >
                         <div className="flex w-full lg:w-auto  relative">
-                            {[
-                                { key: 'home', label: 'Home' },
-                                { key: 'revision-notes', label: 'Revision Notes' },
-                                { key: 'past-papers', label: 'Past Papers' },
-                                { key: 'battle-mode', label: 'Battle Mode' },
-                                { key: 'tutor', label: 'Tutor' },
-                            ].map(btn => (
+                            {navButtons.map((btn: { key: string; label: string }) => (
                                 <button
                                     key={btn.key}
                                     className={`relative w-full flex flex-col hover:bg-[#00000010] rounded-lg justify-center items-center text-center md:w-auto px-4 py-2 text-base transition-colors duration-200
@@ -1396,8 +1357,32 @@ const App: React.FC = () => {
                 {/* Main Content Area - Conditional Rendering */}
                 {activeHeaderSection === 'home' && <HomePageContent />}
                 {activeHeaderSection === 'revision-notes' && <RevisionNotesContent />}
-                {activeHeaderSection === 'past-papers' && <PastPapersContent />}
-                {activeHeaderSection === 'battle-mode' && <BattleModeContent />}
+                {activeHeaderSection === 'past-papers' && (
+                    <React.Suspense fallback={
+                        <div className="flex items-center justify-center min-h-[60vh] w-full">
+                            <div className="flex flex-col items-center justify-center">
+                                <div className="animate-spin rounded-full border-4 border-[#FF6B6B] border-t-transparent h-16 w-16 mb-4"></div>
+                                <div className="text-xl font-semibold text-[#FF6B6B]">Loading Past Papers...</div>
+                                <div className="text-gray-500 mt-2">Please wait while we load the full past paper experience.</div>
+                            </div>
+                        </div>
+                    }>
+                        <PastPaperPage />
+                    </React.Suspense>
+                )}
+                {activeHeaderSection === 'ai-teacher' && (
+                    <React.Suspense fallback={
+                        <div className="flex items-center justify-center min-h-[60vh] w-full">
+                            <div className="flex flex-col items-center justify-center">
+                                <div className="animate-spin rounded-full border-4 border-[#FF6B6B] border-t-transparent h-16 w-16 mb-4"></div>
+                                <div className="text-xl font-semibold text-[#FF6B6B]">Loading AI Teacher...</div>
+                                <div className="text-gray-500 mt-2">Launching your AI-powered tutor. This may take a few seconds.</div>
+                            </div>
+                        </div>
+                    }>
+                        <AiTeacherPage />
+                    </React.Suspense>
+                )}
                 {activeHeaderSection === 'tutor' && <TutorContent />}
             </div>
         </React.Fragment>

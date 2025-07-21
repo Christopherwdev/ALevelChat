@@ -66,8 +66,7 @@ export default function Navigation({ isAuthenticated }: NavigationProps) {
   return (
     <div
       style={{
-        position: 'sticky',
-        top: 0,
+      
         zIndex: 50,
       }}
     >

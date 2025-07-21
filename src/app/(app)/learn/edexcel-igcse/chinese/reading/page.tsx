@@ -51,6 +51,7 @@ const App: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
     const [statusMessage, setStatusMessage] = useState<{ message: string; isError: boolean } | null>(null);
     const [markingResults, setMarkingResults] = useState<MarkingResults | null>(null);
+    const [pendingMarking, setPendingMarking] = useState(false);
 
     // Ref for the form to collect answers
     const formRef = useRef<HTMLFormElement>(null);
@@ -115,8 +116,8 @@ const App: React.FC = () => {
         }
 
         const prompt = `
-            Generate a short IGCSE Chinese reading passage (around 150-200 characters) in **Traditional Chinese characters**.
-            Then, generate 3-4 diverse reading comprehension questions based on the passage. The questions should be in English and cover the types found in IGCSE Chinese reading exams, such as:
+            Generate a short IGCSE Chinese reading passage (around 200-300 characters) in **Traditional Chinese characters**.
+            Then, generate at least 7 diverse reading comprehension questions based on the passage. The questions should be in English and cover the types found in IGCSE Chinese reading exams, such as:
             1.  Multiple-choice (single correct answer from A/B/C/D).
             2.  Matching (a list of statements/questions matched to a common set of single-letter options).
             3.  Checkbox (multiple correct answers from A/B/C/D/E/F/G/H).
@@ -126,7 +127,7 @@ const App: React.FC = () => {
                 b.  Table where rows are labels and columns are options for checkboxes.
                 c.  Table where rows are labels and columns are fields for short text/number answers.
 
-            Provide the output as a single JSON object with the following structure. Note that you should not use the same questions as the sample below. Generate questions from any topic about Chinese life.
+            Provide the output as a single JSON object with the following structure. Note that you should not use the same questions as the sample below. Note that the questions below are samples for each question type, do not use same content of questions. Generate 7 questions that includes each question type. Generate questions from any topic about Chinese life.
             {
                 "reading_test": {
                     "passage": "Your Traditional Chinese passage text here",
@@ -523,9 +524,16 @@ const App: React.FC = () => {
     // Combined function to collect answers and then mark them
     const handleSubmitAnswers = () => {
         collectUserAnswers();
-        // Marking happens after userAnswers state is updated, so we need to call it directly
-        markAnswersAI();
+        setPendingMarking(true);
     };
+
+    useEffect(() => {
+        if (pendingMarking) {
+            markAnswersAI();
+            setPendingMarking(false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userAnswers]);
 
     // --- Lifecycle and Initial Load ---
     useEffect(() => {
@@ -560,7 +568,19 @@ const App: React.FC = () => {
                         {markingResults.results.map(result => (
                             <div key={result.question_id} className={`result-item ${result.correct ? 'correct' : 'incorrect'}`} style={{ marginBottom: '1rem' }}>
                                 <h4 style={{ fontWeight: 600, fontSize: '1.125rem', marginBottom: '0.25rem' }}>Question {result.question_id.toUpperCase()}</h4>
-                                <p><strong>Your Answer:</strong> {Array.isArray(result.user_answer) ? result.user_answer.join(', ') : result.user_answer || 'N/A'}</p>
+                                <p><strong>Your Answer:</strong> {
+                                    Array.isArray(result.user_answer)
+                                        ? result.user_answer.join(', ')
+                                        : typeof result.user_answer === 'object' && result.user_answer !== null
+                                            ? (
+                                                <ul style={{ margin: 0, paddingLeft: '1.25em' }}>
+                                                    {Object.entries(result.user_answer).map(([k, v]) => (
+                                                        <li key={k}><strong>{k.toUpperCase()}:</strong> {Array.isArray(v) ? v.join(', ') : String(v)}</li>
+                                                    ))}
+                                                </ul>
+                                            )
+                                            : result.user_answer || 'N/A'
+                                }</p>
                                 <p><strong>Correct:</strong> <span style={{ fontWeight: 700 }}>{result.correct ? 'Yes' : 'No'}</span></p>
                                 <p><strong>Feedback:</strong> {result.feedback}</p>
                                 <p><strong>Score:</strong> <span className="result-score">{result.score}</span></p>
@@ -589,117 +609,115 @@ const App: React.FC = () => {
 
         // Default start screen
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center' }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Welcome to your IGCSE Chinese Reading Practice!</h2>
-                <p style={{ color: '#374151', marginBottom: '1.5rem' }}>Click 'Start Test' to generate a new reading passage and questions.</p>
-                <button onClick={generateContent} className="btn-primary">Start Test</button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center', background: 'linear-gradient(to bottom, white, #ff3b3030' }} className='p-6'>
+                <h1 className='text-xl md:text-3xl font-bold mb-2'>Edexcel IGCSE Chinese</h1>
+                <h2 className='text-5xl font-regular mb-4'>AI Reading Mock Test</h2>
+                <p style={{ color: '#374151'}} className='mb-6'>Click 'Start Test' to generate a new reading passage and questions.</p>
+                <div className='flex flex-col md:flex-row gap-4'>
+                    <button onClick={generateContent} className="btn-primary w-[300px] ">Start Test</button>
+                    <button onClick={() => window.location.href = '/past-paper'} className="btn-secondary w-[300px]">Past Papers</button>
+                </div>
             </div>
         );
     };
 
     // --- Main Component Render ---
     return (
-        <div id="igcseTool" className="igcse-tool-container">
-            {/* Styles are embedded directly for simplicity, can be externalized if preferred */}
-            <style>
-                {`
-                /* General Reset and Body Styling */
+        <div id="main-center-wrapper">
+            <div id="igcseTool" className="igcse-tool-container">
+                <style>
+                    {`
+                body, #__next, #main-center-wrapper {
+                    min-height: 100vh;
+                    width: 100vw;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: linear-gradient(to bottom, white, #ff3b3030);
+                    margin: 0;
+                    padding: 0;
+                }
                 .igcse-tool-container {
-                    width: 80%;
-                    height: 90vh; /* Adjust as needed */
-                
-                    margin: 0px auto;
-                    border: 1.5px solid #00000020;
-                    border-radius: 12px; /* Equivalent to rounded-xl */
+                    width: 90%;
+                    max-width: 900px;
+                    height: 90vh;
+                    margin: 0 auto;
+                    border: 1.5px solid #ff3b30;
+                    border-radius: 12px;
                     overflow: hidden;
-                    background-color: white; /* White background for the tool */
+                    background-color: white;
                     color: #333;
                     display: flex;
                     flex-direction: column;
-                    margin-top: 60px;
-                    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); /* Equivalent to shadow-lg */
+                    box-shadow: 0 5px 20px #ff3b3030;
                 }
-
-                /* Header Styling */
                 .tool-header {
-                    background-color: white; /* Primary color */
+                    background-color: white;
                     color: #ff3b30;
                     padding: 1rem;
                     text-align: center;
-                    font-weight: 700; /* Equivalent to font-bold */
-                    font-size: 1.5rem; /* Equivalent to text-2xl */
+                    font-weight: 700;
+                    font-size: 1.5rem;
                     border-bottom: 2px solid #00000010;
                     border-top-left-radius: 10px;
                     border-top-right-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-start;
+                    gap: 1rem;
                 }
-
-                /* Content Area Styling */
                 .tool-content {
                     flex-grow: 1;
-                    padding: 1.5rem; /* Equivalent to p-6 or p-4 for inner elements */
-                    overflow-y: auto; /* Make content scrollable */
-                    background-color: white; /* Ensure white background for content */
+                    overflow-y: auto;
+                    background-color: white;
                 }
-
-                /* Footer Styling */
+                .tool-content.padded-content {
+                    padding: 2rem 2.5rem 2.5rem 2.5rem;
+                }
                 .tool-footer {
                     padding: 1rem;
                     display: flex;
                     justify-content: center;
-                    gap: 1rem; /* Equivalent to gap-4 */
-                    background-color: #f9f9f9; /* Light gray */
+                    gap: 1rem;
+                    background-color: #f9f9f9;
                     border-top: 1.5px solid #00000020;
                     border-bottom-left-radius: 10px;
                     border-bottom-right-radius: 10px;
                 }
-
-                /* Button Styling */
                 .btn-primary {
                     background-color: #ff3b30;
                     color: white;
-                    padding: 0.75rem 1.5rem; /* Equivalent to px-6 py-3 */
-                    border-radius: 9999px; /* Fully rounded, equivalent to rounded-full */
-                    font-weight: 600; /* Equivalent to font-semibold */
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 9999px;
+                    font-weight: 600;
                     transition: background-color 0.2s ease-in-out;
                     border: none;
                     cursor: pointer;
-                   
-                    display: flex; /* To align SVG and text */
+                    display: flex;
                     align-items: center;
                     justify-content: center;
                     transition: all 0.3s;
                 }
-
                 .btn-primary:hover {
-                     box-shadow: 0px 0px 0px 7.5px  #ff3b3030;
+                    box-shadow: 0px 0px 0px 7.5px  #ff3b3030;
                 }
-
-                .btn-primary svg {
-                    width: 1.25rem; /* Equivalent to w-5 */
-                    height: 1.25rem; /* Equivalent to h-5 */
-                    margin-right: 0.5rem; /* Equivalent to mr-2 */
-                }
-
-              .btn-secondary {
+                .btn-secondary {
                     background-color: black;
                     color: white;
-                    padding: 0.75rem 1.5rem; /* Equivalent to px-6 py-3 */
-                    border-radius: 9999px; /* Fully rounded, equivalent to rounded-full */
-                    font-weight: 600; /* Equivalent to font-semibold */
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 9999px;
+                    font-weight: 600;
                     transition: background-color 0.2s ease-in-out;
                     border: none;
                     cursor: pointer;
-                   
-                    display: flex; /* To align SVG and text */
+                    display: flex;
                     align-items: center;
                     justify-content: center;
                     transition: all 0.3s;
                 }
-
                 .btn-secondary:hover {
-                     box-shadow: 0px 0px 0px 7.5px rgba(0, 0, 0, 0.19);
+                    box-shadow: 0px 0px 0px 7.5px rgba(0, 0, 0, 0.19);
                 }
-
                 /* Input Styling */
                 .text-input,
                 .textarea-input {
@@ -983,49 +1001,69 @@ const App: React.FC = () => {
                     border-radius: 0.75rem;
                 }
                 `}
-            </style>
-            <div className="tool-header">
-                IGCSE Chinese Reading
-            </div>
-
-            <div id="toolContent" className="tool-content">
-                {statusMessage && (
-                    <div
-                        className={`p-3 rounded-lg text-sm mb-4 ${statusMessage.isError ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}
+                </style>
+                <div className="tool-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '1rem' }}>
+                    <button
+                        onClick={() => window.history.length > 1 ? window.history.back() : (window.location.href = '/app/learn/edexcel-igcse/chinese')}
                         style={{
-                            padding: '0.75rem',
-                            borderRadius: '0.5rem',
-                            fontSize: '0.875rem',
-                            marginBottom: '1rem',
-                            backgroundColor: statusMessage.isError ? '#fee2e2' : '#eff6ff',
-                            color: statusMessage.isError ? '#b91c1c' : '#1e40af'
+                            background: 'none',
+                            border: 'none',
+                            padding: 0,
+                            marginRight: '0.75rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            color: '#ff3b30',
+                            fontSize: '1.5rem',
+                            height: '2.5rem',
+                            width: '2.5rem',
                         }}
+                        aria-label="Back"
                     >
-                        {statusMessage.message}
-                    </div>
-                )}
-                {renderContent()}
-            </div>
-
-            <div className={`tool-footer ${loadingMessage || (!isTestActive && !markingResults) ? 'hidden' : ''}`}>
-                {isTestActive && (
-                    <button onClick={handleSubmitAnswers} className="btn-primary">
-                        Submit Answers
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '2rem', height: '2rem' }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                        </svg>
                     </button>
-                )}
-                {!isTestActive && (markingResults || !loadingMessage) && (
-                    <button onClick={() => {
-                        setGeneratedPassage('');
-                        setGeneratedQuestions([]);
-                        setCorrectAnswers({});
-                        setUserAnswers({});
-                        setMarkingResults(null);
-                        setCurrentChatId(null); // Reset chat ID to start fresh
-                        setIsTestActive(false); // Ensure start screen is shown
-                    }} className="btn-secondary">
-                        Start Again
-                    </button>
-                )}
+                    <span style={{ flex: 1, textAlign: 'center', marginRight: '2.5rem' }}>AI Mock Test</span>
+                </div>
+                <div id="toolContent" className={`tool-content${(!loadingMessage && !isTestActive && !markingResults) ? '' : ' padded-content'}`}>
+                    {statusMessage && statusMessage.message !== 'Connected to AI chat session.' && (
+                        <div
+                            className={`hidden p-3 rounded-lg text-sm mb-4 ${statusMessage.isError ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}
+                            style={{
+                                padding: '0.75rem',
+                                borderRadius: '0.5rem',
+                                fontSize: '0.875rem',
+                                marginBottom: '1rem',
+                                backgroundColor: statusMessage.isError ? '#fee2e2' : '#eff6ff',
+                                color: statusMessage.isError ? '#b91c1c' : '#1e40af'
+                            }}
+                        >
+                            {statusMessage.message}
+                        </div>
+                    )}
+                    {renderContent()}
+                </div>
+                <div className={`tool-footer ${loadingMessage || (!isTestActive && !markingResults) ? 'hidden' : ''}`}>
+                    {isTestActive && (
+                        <button onClick={handleSubmitAnswers} className="btn-primary">
+                            Submit Answers
+                        </button>
+                    )}
+                    {!isTestActive && (markingResults || !loadingMessage) && (
+                        <button onClick={() => {
+                            setGeneratedPassage('');
+                            setGeneratedQuestions([]);
+                            setCorrectAnswers({});
+                            setUserAnswers({});
+                            setMarkingResults(null);
+                            setCurrentChatId(null); // Reset chat ID to start fresh
+                            setIsTestActive(false); // Ensure start screen is shown
+                        }} className="btn-secondary">
+                            Start Again
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );
