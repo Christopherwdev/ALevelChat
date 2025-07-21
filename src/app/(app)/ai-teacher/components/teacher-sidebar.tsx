@@ -8,7 +8,7 @@ interface TeacherSidebarProps {
   selectedConversation: AiConversation | null;
   onTeacherSelect: (teacher: AiTeacher) => void;
   onConversationSelect: (conversation: AiConversation) => void;
-  onNewConversation: () => void;
+  onNewConversation: (teacherId?: string) => void;
 }
 
 export function TeacherSidebar({
@@ -60,7 +60,7 @@ export function TeacherSidebar({
               <div className="bg-gray-50">
                 {/* New Conversation Button */}
                 <button
-                  onClick={onNewConversation}
+                  onClick={() => onNewConversation(teacher.id)}
                   className={`w-full p-3 text-left text-sm hover:bg-gray-100 transition-colors border-l-4 ${
                     !selectedConversation ? 'border-blue-500 bg-blue-50' : 'border-transparent'
                   }`}
