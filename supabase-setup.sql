@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     settings JSONB DEFAULT '{"is_social_enabled": true, "language": "en-us"}'::jsonb,
     profile_picture_url TEXT,
     bio TEXT CHECK (char_length(bio) <= 500),
+    details JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT valid_username CHECK (username IS NULL OR username ~ '^[a-z0-9_.]{1,30}$')
