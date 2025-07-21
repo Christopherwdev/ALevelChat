@@ -3,6 +3,9 @@ import AppHeader from '@/components/app/header';
 import MySubjectsSection from '@/components/app/mysubject';
 import ExamCard, { ExamCardProps } from './exam-card';
 import { createClient } from '@/utils/supabase/server';
+import { Inter } from 'next/font/google';
+
+const interFont = Inter({ subsets: ['latin'] });
 
 const exams: Array<ExamCardProps> = [
   {
