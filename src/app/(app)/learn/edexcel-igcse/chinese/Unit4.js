@@ -2,7 +2,7 @@ export const CHINESE_UNIT_4_CONTENT = `
 
 # Unit 4: Translating
 
-You are required to translate English sentences into Chinese.  
+In the translating exam, you are required to translate English sentences into Chinese.  
 The first few questions are 2 marks, and the last few questions 3 marks, requiring you to translate linguistic structures and vocabulary accurately.  
 It is also easy to miss out some minor words, such as 我的 (my), 是 (is), etc. So make sure to apply the following strategy to eliminate any possibilities of errors.
 

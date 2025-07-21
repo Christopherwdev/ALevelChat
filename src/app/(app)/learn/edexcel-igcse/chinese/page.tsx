@@ -11,6 +11,7 @@ import { CHINESE_UNIT_2_CONTENT } from './Unit2.js';
 import { CHINESE_UNIT_3_CONTENT } from './Unit3.js';
 import { CHINESE_UNIT_4_CONTENT } from './Unit4.js';
 import { CHINESE_UNIT_5_CONTENT } from './Unit5.js';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 
 interface UnitContent {
@@ -61,7 +62,9 @@ const navButtons: { key: string; label: string }[] = [
     { key: 'home', label: 'Home' },
     { key: 'revision-notes', label: 'Revision Notes' },
     { key: 'past-papers', label: 'Past Papers' },
-    { key: 'ai-teacher', label: 'AI Teacher' },
+     { key: 'mock-test', label: 'Mock Test' }, 
+     { key: 'ai-teacher', label: 'AI Teacher' },
+   
     { key: 'tutor', label: 'Tutor' },
 ];
 
@@ -76,7 +79,7 @@ const App: React.FC = () => {
     const [lastViewedLesson, setLastViewedLesson] = useState<{ unitIndex: number; sectionId: string } | null>(null);
 
     // New state for header navigation
-    const [activeHeaderSection, setActiveHeaderSection] = useState<'home' | 'revision-notes' | 'past-papers' | 'ai-teacher' | 'tutor'>('home');
+    const [activeHeaderSection, setActiveHeaderSection] = useState<'home' | 'revision-notes' | 'past-papers' | 'ai-teacher' | 'mock-test' | 'tutor'>('home');
     const [showMobileNav, setShowMobileNav] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -356,7 +359,7 @@ const App: React.FC = () => {
                             onClick={() => {
                                 if (tool.id === 'past-papers') setActiveHeaderSection('past-papers');
                                 else if (tool.id === 'ai-teacher') setActiveHeaderSection('ai-teacher');
-                                else if (tool.id === 'ask-help') navigate('/social');
+                                else if (tool.id === 'ask-help') window.location.href = 'https://aitolearn.xyz/contact/';
                             }}
                             onMouseEnter={e => {
                                 e.currentTarget.style.borderColor = SUBJECT_COLOR;
@@ -381,12 +384,12 @@ const App: React.FC = () => {
             {/* Additional Features Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
                  <div className="bg-white border-2 border-[#00000020] rounded-2xl p-6 flex flex-col transition">
-                    <h3 className="text-2xl font-normal text-black mb-2">Study Notes</h3>
+                    <h3 className="text-2xl font-normal text-black mb-2">Revision Notes</h3>
                     <p className="text-gray-700 text-base">Master every topic with concise, examiner-focused notes. Our study materials are tailored to the latest marking schemes, ensuring you know exactly how to earn top marks.</p>
                 </div>
                 <div className="bg-white border-2 border-[#00000020] rounded-2xl p-6 flex flex-col transition">
-                    <h3 className="text-2xl font-normal text-black mb-2">By-Topic Questions</h3>
-                    <p className="text-gray-700 text-base">Accelerate your progress with targeted practice questions, expertly organized by topic. Build confidence and pinpoint your strengths and weaknesses with every session.</p>
+                    <h3 className="text-2xl font-normal text-black mb-2">AI Mock Tests</h3>
+                    <p className="text-gray-700 text-base">Accelerate your progress with unlimited AI generated questions, expertly close to the actual exam style. Build confidence and pinpoint your strengths and weaknesses with every session.</p>
                 </div>
                
                 <div className="bg-white border-2 border-[#00000020] rounded-2xl p-6 flex flex-col transition">
@@ -528,7 +531,7 @@ const App: React.FC = () => {
                     <p id="notes-info-text" className="text-gray-600 dark:text-gray-400 mb-6">
                         Learning Notes | <span id="notes-duration">{currentNotesDuration}</span> | AI powered
                     </p>
-                    <hr id="notes-divider" className="border-t-[4px] border-t-[00000010] dark:border-gray-700 my-6" />
+                    <hr id="notes-divider" className="border-t-[4px] border-t-[#00000010] dark:border-gray-700 my-6" />
                     <div id="markdown-display" className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: notesContent }}></div>
                 </div>
             </div>
@@ -561,6 +564,45 @@ const App: React.FC = () => {
             </div>
         </div>
     );
+
+    const MockTestContent: React.FC = () => {
+        const router = useRouter();
+        return (
+            <div className="flex flex-col items-center justify-center h-auto w-full p-8 pt-20">
+                <h1 className="text-4xl font-bold mb-8 text-black">Edexcel IGCSE Chinese: AI Mock Tests</h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-3xl">
+                    {/* Listening */}
+                    <div className="bg-white rounded-2xl shadow-2xl shadow-[#00000010] p-6 flex flex-col items-center border-2 border-[#00000020]">
+                        <i className="fas fa-headphones-alt text-5xl mb-4 text-[#ff3b30]"></i>
+                        <h2 className="text-2xl font-semibold mb-2">Listening</h2>
+                        <p className="text-gray-600 mb-4 text-center">Practice AI-powered listening mock tests with instant feedback.</p>
+                        <button className="btn-primary w-full" onClick={() => router.push('/learn/edexcel-igcse/chinese/listening')}>Start</button>
+                    </div>
+                    {/* Reading */}
+                    <div className="bg-white rounded-2xl shadow-2xl shadow-[#00000010] p-6 flex flex-col items-center border-2 border-[#00000020]">
+                        <i className="fas fa-book-open text-5xl mb-4 text-[#ff3b30]"></i>
+                        <h2 className="text-2xl font-semibold mb-2">Reading</h2>
+                        <p className="text-gray-600 mb-4 text-center">Take AI-graded reading mock tests and track your progress.</p>
+                        <button className="btn-primary w-full" onClick={() => router.push('/learn/edexcel-igcse/chinese/reading')}>Start</button>
+                    </div>
+                    {/* Writing */}
+                    <div className="bg-white rounded-2xl shadow-2xl shadow-[#00000010] p-6 flex flex-col items-center border-2 border-[#00000020]">
+                        <i className="fas fa-pen-nib text-5xl mb-4 text-[#ff3b30]"></i>
+                        <h2 className="text-2xl font-semibold mb-2">Writing</h2>
+                        <p className="text-gray-600 mb-4 text-center">Submit writing tasks and get instant AI feedback and grading.</p>
+                        <button className="btn-primary w-full" onClick={() => router.push('/learn/edexcel-igcse/chinese/writing')}>Start</button>
+                    </div>
+                    {/* Speaking */}
+                    <div className="bg-white rounded-2xl shadow-2xl shadow-[#00000010] p-6 flex flex-col items-center border-2 border-[#00000020]">
+                        <i className="fas fa-microphone-alt text-5xl mb-4 text-[#ff3b30]"></i>
+                        <h2 className="text-2xl font-semibold mb-2">Speaking</h2>
+                        <p className="text-gray-600 mb-4 text-center">Try AI-powered speaking mock tests and receive detailed analysis.</p>
+                        <button className="btn-primary w-full" onClick={() => router.push('/learn/edexcel-igcse/chinese/speaking')}>Start</button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
 
     // --- Main Render ---
@@ -602,19 +644,51 @@ const App: React.FC = () => {
                     color: #333;
                 }
 
-                .btn-primary {
-                    background-color: var(--subject-primary-color);
-                    color: white;
-                    padding: 0.5rem 1rem;
-                    border-radius: 0.375rem;
-                    font-weight: 500;
-                    transition: background-color 0.2s;
-                }
+              .btn-primary {
+                        background-color: #ff3b30;
+                        color: white;
+                        padding: 0.75rem 1.5rem; /* Equivalent to px-6 py-3 */
+                        border-radius: 9999px; /* Fully rounded, equivalent to rounded-full */
+                        font-weight: 600; /* Equivalent to font-semibold */
+                        transition: background-color 0.2s ease-in-out;
+                        border: none;
+                        cursor: pointer;
+                       
+                        display: flex; /* To align SVG and text */
+                        align-items: center;
+                        justify-content: center;
+                        transition: all 0.3s;
+                    }
 
-                .btn-primary:hover {
-                    background-color: color-mix(in srgb, var(--subject-primary-color) 80%, black);
-                    /* Darken on hover */
-                }
+                    .btn-primary:hover {
+                         box-shadow: 0px 0px 0px 7.5px  #ff3b3030;
+                    }
+
+                    .btn-primary svg {
+                        width: 1.25rem; /* Equivalent to w-5 */
+                        height: 1.25rem; /* Equivalent to h-5 */
+                        margin-right: 0.5rem; /* Equivalent to mr-2 */
+                    }
+
+                  .btn-secondary {
+                        background-color: black;
+                        color: white;
+                        padding: 0.75rem 1.5rem; /* Equivalent to px-6 py-3 */
+                        border-radius: 9999px; /* Fully rounded, equivalent to rounded-full */
+                        font-weight: 600; /* Equivalent to font-semibold */
+                        transition: background-color 0.2s ease-in-out;
+                        border: none;
+                        cursor: pointer;
+                       
+                        display: flex; /* To align SVG and text */
+                        align-items: center;
+                        justify-content: center;
+                        transition: all 0.3s;
+                    }
+
+                    .btn-secondary:hover {
+                         box-shadow: 0px 0px 0px 7.5px rgba(0, 0, 0, 0.19);
+                    }
 
                 /* Styles for the active unit button and active home/subject button */
                 .unit-button.active,
@@ -1186,9 +1260,9 @@ const App: React.FC = () => {
                 `}
             </style>
 
-            <div className="w-full h-[calc(100vh-50px)] flex flex-col mt-[50px]">
+            <div className="w-full flex flex-col" style={{ paddingTop: 50 }}>
                 {/* Header */}
-                <header className="fixed h-[50px] w-full bg-[rgba(255,255,255,0.9)] backdrop-blur-[25px] border-b border-[#00000020] shadow-xl shadow-[#00000005] px-4 py-2 flex flex-col lg:flex-row items-center justify-start gap-2 position-sticky z-200">
+                <header className="fixed h-[50px] w-full bg-[rgba(255,255,255,0.9)] backdrop-blur-[25px] border-b-2 border-[#ff3b30] shadow-xl shadow-[#ff3b3020] px-4 py-2 flex flex-col lg:flex-row items-center justify-start gap-2 position-sticky z-200">
                     <div className="flex flex-row items-start justify-between lg:justify-start w-full lg:w-auto">
                         <div className="flex flex-row items-center">
                             {/* Back Button */}
@@ -1213,6 +1287,7 @@ const App: React.FC = () => {
                                             case 'revision-notes': return 'Revision Notes';
                                             case 'past-papers': return 'Past Papers';
                                             case 'ai-teacher': return 'AI Teacher';
+                                            case 'mock-test': return 'Mock Test';
                                             case 'tutor': return 'Tutor';
                                             default: return '';
                                         }
@@ -1239,17 +1314,23 @@ const App: React.FC = () => {
                             {navButtons.map((btn: { key: string; label: string }) => (
                                 <button
                                     key={btn.key}
-                                    className={`relative w-full flex flex-col hover:bg-[#00000010] rounded-lg justify-center items-center text-center md:w-auto px-4 py-2 text-base transition-colors duration-200
+                                    // className={`relative w-full flex flex-col hover:bg-[#00000010] rounded-lg justify-center items-center text-center md:w-auto px-4 py-2 text-base transition-colors duration-200
+                                    //     ${activeHeaderSection === btn.key
+                                    //         ? ''
+                                    //         : ' text-[#00000070]'}
+                                    // `}
+
+                                    className={`relative w-full text-[#ff3b30] flex flex-col hover:bg-[#00000010] rounded-lg justify-center items-center text-center md:w-auto px-4 py-2 text-base transition-colors duration-200
                                         ${activeHeaderSection === btn.key
                                             ? ''
-                                            : ' text-[#00000070]'}
+                                            : ' text-black'}
                                     `}
                                     style={{ outline: 'none', fontWeight: 500 }}
                                     onClick={() => { setActiveHeaderSection(btn.key as any); setShowMobileNav(false); }}
                                 >
                                     <span className="relative z-10">{btn.label}</span>
                                     {activeHeaderSection === btn.key && (
-                                        <span className="absolute -bottom-[1px] w-[50px] h-[3px] px-2 bg-black rounded-full transition-all duration-300"></span>
+                                        <span className="absolute -bottom-[1px] w-[50px] h-[3px] px-2 bg-[#ff3b30] rounded-full transition-all duration-300"></span>
                                     )}
                                 </button>
                             ))}
@@ -1276,35 +1357,38 @@ const App: React.FC = () => {
                 </header>
 
                 {/* Main Content Area - Conditional Rendering */}
-                {activeHeaderSection === 'home' && <HomePageContent />}
-                {activeHeaderSection === 'revision-notes' && <RevisionNotesContent />}
-                {activeHeaderSection === 'past-papers' && (
-                    <React.Suspense fallback={
-                        <div className="flex items-center justify-center min-h-[60vh] w-full">
-                            <div className="flex flex-col items-center justify-center">
-                                <div className="animate-spin rounded-full border-4 border-[#ff3b30] border-t-transparent h-16 w-16 mb-4"></div>
-                                <div className="text-xl font-semibold text-[#ff3b30]">Loading Past Papers...</div>
-                                <div className="text-gray-500 mt-2">Please wait while we load the full past paper experience.</div>
+                <div style={{ height: 'calc(100vh - 50px)' }}>
+                    {activeHeaderSection === 'home' && <HomePageContent />}
+                    {activeHeaderSection === 'revision-notes' && <RevisionNotesContent />}
+                    {activeHeaderSection === 'past-papers' && (
+                        <React.Suspense fallback={
+                            <div className="flex items-center justify-center min-h-[60vh] w-full">
+                                <div className="flex flex-col items-center justify-center">
+                                    <div className="animate-spin rounded-full border-4 border-[#ff3b30] border-t-transparent h-16 w-16 mb-4"></div>
+                                    <div className="text-xl font-semibold text-[#ff3b30]">Loading Past Papers...</div>
+                                    <div className="text-gray-500 mt-2">Please wait while we load the full past paper experience.</div>
+                                </div>
                             </div>
-                        </div>
-                    }>
-                        <PastPaperPage />
-                    </React.Suspense>
-                )}
-                {activeHeaderSection === 'ai-teacher' && (
-                    <React.Suspense fallback={
-                        <div className="flex items-center justify-center min-h-[60vh] w-full">
-                            <div className="flex flex-col items-center justify-center">
-                                <div className="animate-spin rounded-full border-4 border-[#ff3b30] border-t-transparent h-16 w-16 mb-4"></div>
-                                <div className="text-xl font-semibold text-[#ff3b30]">Loading AI Teacher...</div>
-                                <div className="text-gray-500 mt-2">Launching your AI-powered tutor. This may take a few seconds.</div>
+                        }>
+                            <PastPaperPage />
+                        </React.Suspense>
+                    )}
+                    {activeHeaderSection === 'ai-teacher' && (
+                        <React.Suspense fallback={
+                            <div className="flex items-center justify-center min-h-[60vh] w-full">
+                                <div className="flex flex-col items-center justify-center">
+                                    <div className="animate-spin rounded-full border-4 border-[#ff3b30] border-t-transparent h-16 w-16 mb-4"></div>
+                                    <div className="text-xl font-semibold text-[#ff3b30]">Loading AI Teacher...</div>
+                                    <div className="text-gray-500 mt-2">Launching your AI-powered tutor. This may take a few seconds.</div>
+                                </div>
                             </div>
-                        </div>
-                    }>
-                        <AiTeacherPage />
-                    </React.Suspense>
-                )}
-                {activeHeaderSection === 'tutor' && <TutorContent />}
+                        }>
+                            <AiTeacherPage defaultSubject="chinese" />
+                        </React.Suspense>
+                    )}
+                    {activeHeaderSection === 'mock-test' && <MockTestContent />}
+                    {activeHeaderSection === 'tutor' && <TutorContent />}
+                </div>
             </div>
         </React.Fragment>
     );

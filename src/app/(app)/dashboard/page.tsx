@@ -7,6 +7,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 // If using a module bundler, you'd typically import it: import ApexCharts from 'apexcharts';
 
 import { usePathname } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 
 // --- CONFIGURATION ---
 // Using a new appId to avoid conflicts with previous localStorage data structure
@@ -276,7 +277,7 @@ const App: React.FC = () => {
             if (saved) {
                 const data: AppStateType = JSON.parse(saved);
                 // Ensure nested properties exist and are valid for each mode
-                ['IAL', 'IGCSE'].forEach(mode => {
+                (['IAL', 'IGCSE'] as Array<keyof typeof data.modes>).forEach(mode => {
                     data.modes[mode].selectedPapers = data.modes[mode].selectedPapers || {};
                     for (const subject in data.modes[mode].selectedPapers) {
                         if (!Array.isArray(data.modes[mode].selectedPapers[subject])) {
@@ -284,7 +285,7 @@ const App: React.FC = () => {
                         }
                     }
                     data.modes[mode].scores = data.modes[mode].scores || {};
-                    if (!data.modes[mode].years || !Array.isArray(data.modes[mode].years) || !data.modes[mode].years.every(y => typeof y === 'object' && y.year && y.series)) {
+                    if (!data.modes[mode].years || !Array.isArray(data.modes[mode].years) || !data.modes[mode].years.every((y: any) => typeof y === 'object' && y.year && y.series)) {
                         console.warn(`Invalid 'years' data for ${mode} mode in localStorage, using default range.`);
                         if (mode === 'IAL') {
                             data.modes.IAL.years = generateYearSeriesRange(2019, 'Jan', 2025, 'Jun', ialSeriesOrder, ialMaxYearSelect, ialMaxSeriesSelect);
@@ -322,6 +323,8 @@ const App: React.FC = () => {
             }
         };
     });
+
+    const [userId, setUserId] = useState<string | null>(null); // <-- Add this line
 
     const currentMode: 'IAL' | 'IGCSE' = appState.currentMode;
 
@@ -402,8 +405,8 @@ const App: React.FC = () => {
 
         Object.keys(currentSubjectsData).forEach(subject => {
             if (currentSelectedPapers[subject] && Array.isArray(currentSelectedPapers[subject])) {
-                const sortedPapers = currentSubjectsData[subject].papers.filter(p => currentSelectedPapers[subject].includes(p));
-                sortedPapers.forEach(paper => {
+                const sortedPapers = (currentSubjectsData as any)[subject].papers.filter((p: string) => currentSelectedPapers[subject].includes(p));
+                sortedPapers.forEach((paper: string) => {
                     list.push({ subject, paper });
                 });
             }
@@ -441,6 +444,56 @@ const App: React.FC = () => {
         }, 500); // Debounce saving
         return () => clearTimeout(handler);
     }, [appState]);
+
+    // Load dashboard state from Supabase on mount
+    useEffect(() => {
+        async function loadDashboardState() {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+            setUserId(user.id);
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('details')
+                .eq('id', user.id)
+                .single();
+            if (profile?.details?.dashboard) {
+                setAppState(profile.details.dashboard.appState || appState);
+                setDashboardMode(profile.details.dashboard.dashboardMode || 'score');
+                setCalendarRange(profile.details.dashboard.calendarRange || calendarRange);
+                setCalendarData(profile.details.dashboard.calendarData || {});
+            }
+        }
+        loadDashboardState();
+        // eslint-disable-next-line
+    }, []);
+
+    // Save dashboard state to Supabase on change (debounced)
+    useEffect(() => {
+        if (!userId) return;
+        const handler = setTimeout(async () => {
+            const supabase = createClient();
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('details')
+                .eq('id', userId)
+                .single();
+            const newDetails = {
+                ...(profile?.details || {}),
+                dashboard: {
+                    appState,
+                    dashboardMode,
+                    calendarRange,
+                    calendarData,
+                },
+            };
+            await supabase
+                .from('profiles')
+                .update({ details: newDetails })
+                .eq('id', userId);
+        }, 1000); // 1s debounce
+        return () => clearTimeout(handler);
+    }, [appState, dashboardMode, calendarRange, calendarData, userId]);
 
     // Update header date on mount
     useEffect(() => {
@@ -592,7 +645,7 @@ const App: React.FC = () => {
         setAppState(prevState => {
             const newState = { ...prevState };
             const currentSubjectsData = prevState.currentMode === 'IAL' ? ialSubjectsData : igcseSubjectsData;
-            const papers = currentSubjectsData[subject]?.papers || [];
+            const papers = (currentSubjectsData as any)[subject]?.papers || [];
 
             if (isChecked) {
                 newState.modes[prevState.currentMode as 'IAL' | 'IGCSE'].selectedPapers[subject] = [...papers];
@@ -655,7 +708,7 @@ const App: React.FC = () => {
             examLevel: examLevel
         }).toString();
 
-        window.open(`paper_viewer.html?${params}&type=${type}`, '_blank');
+        window.open(`/past-paper/viewer?${params}&type=${type}`, '_blank');
     }, [activeCellData]);
 
     const hideBottomActions = useCallback(() => {

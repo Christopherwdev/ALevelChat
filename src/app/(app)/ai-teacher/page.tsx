@@ -8,7 +8,11 @@ interface ChatMessage { sender: string; text: string; timestamp: number; }
 interface ChatSession { id: number; subject: string; messages: ChatMessage[]; }
 type ChatHistory = { [subject: string]: ChatSession[] };
 
-const App = () => {
+interface AppProps {
+    defaultSubject?: string;
+}
+
+const App: React.FC<AppProps> = ({ defaultSubject = 'biology' }) => {
     // State Management
     const [currentSubject, setCurrentSubject] = useState(null);
     const [chatHistory, setChatHistory] = useState<ChatHistory>({}); // { subject: [{ id: timestamp, messages: [{sender, text, timestamp}] }] }
@@ -47,11 +51,10 @@ const App = () => {
                 }
             }
         }
-        // Immediately set up the chat, no loading screen
-        const defaultSubject = 'biology';
+        // Use prop for default subject
         changeSubject(defaultSubject);
         startNewChat();
-    }, []);
+    }, [defaultSubject]);
 
     // Save chat history to localStorage whenever it changes
     useEffect(() => {
@@ -746,7 +749,7 @@ const App = () => {
     }, [activeChat]);
 
     return (
-        <div className="flex h-full items-center justify-center p-0 transition-colors duration-300">
+        <div style={{ paddingTop: 50, height: 'calc(100vh - 50px)' }}>
             <style>
                 {`
                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -774,7 +777,7 @@ const App = () => {
                 }
 
                 #eduai-container {
-            
+            padding-top: 50px;
                     width: 100%;
                 
                     height: 90vh;

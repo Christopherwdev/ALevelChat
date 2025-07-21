@@ -472,7 +472,7 @@ const App: React.FC = () => {
                 examBoard: examBoard,
                 examLevel: examLevel
             }).toString();
-            window.open(`past-paper/viewer?${params}&type=${type}`, '_blank');
+            window.open(`/past-paper/viewer?${params}&type=${type}`, '_blank');
         } else if (type === 'share') {
             // Create a shareable URL for the specific paper
             const shareParams = new URLSearchParams({
@@ -644,7 +644,7 @@ const App: React.FC = () => {
                 `}
             </style>
 
-            <div className="w-full h-screen flex flex-col antialiased bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200 pt-[50px]">
+            <div className="w-full flex flex-col antialiased bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200" style={{ paddingTop: 50, height: 'calc(100vh - 50px)' }}>
                 {/* Header */}
 
 
@@ -681,7 +681,8 @@ const App: React.FC = () => {
                             </button>
                             <div className='ml-[0px]'>
                                 <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Past Papers</h1>
-                                <span className='font-medium text-[#00000070] text-2xl'>All with AI grading.</span>
+                                <span>Search and access past papers.</span>
+                                {/* <span className='font-medium text-[#00000070] text-2xl'>All with AI grading.</span> */}
                             </div>
                         </div>
 
