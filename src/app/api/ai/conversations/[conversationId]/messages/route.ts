@@ -19,7 +19,7 @@ export async function GET(
       );
     }
 
-    const { conversationId } = params;
+    const { conversationId } = await params;
 
     // Verify the conversation belongs to the user
     const { data: conversation, error: convError } = await supabase
