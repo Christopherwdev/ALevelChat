@@ -102,28 +102,28 @@ export default function ExploreConversationsPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-6">
+      <div className="bg-white border-b border-gray-200 p-4 lg:p-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3 lg:space-x-4 min-w-0 flex-1">
             <button
               onClick={() => router.back()}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 flex-shrink-0"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-blue-600 font-medium text-lg">
+            <div className="flex items-center space-x-3 min-w-0 flex-1">
+              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-blue-600 font-medium text-sm lg:text-lg">
                   {teacher.name.charAt(0).toUpperCase()}
                 </span>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg lg:text-2xl font-bold text-gray-900 truncate">
                   {teacher.name}
                 </h1>
-                <p className="text-gray-500">
+                <p className="text-sm text-gray-500 truncate">
                   {teacher.subject} • {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -131,52 +131,53 @@ export default function ExploreConversationsPage() {
           </div>
           <button
             onClick={handleNewConversation}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-3 py-1.5 lg:px-4 lg:py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm flex-shrink-0"
           >
-            New Conversation
+            <span className="hidden sm:inline">New Conversation</span>
+            <span className="sm:hidden">New</span>
           </button>
         </div>
       </div>
 
       {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-4 lg:p-6">
         {conversations.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-gray-400 text-2xl">💬</span>
+          <div className="text-center py-8 lg:py-12">
+            <div className="w-12 h-12 lg:w-16 lg:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-gray-400 text-xl lg:text-2xl">💬</span>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-base lg:text-lg font-medium text-gray-900 mb-2">
               No conversations yet
             </h3>
-            <p className="text-gray-500 mb-6">
+            <p className="text-sm lg:text-base text-gray-500 mb-4 lg:mb-6 px-4">
               Start your first conversation with {teacher.name}
             </p>
             <button
               onClick={handleNewConversation}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm lg:text-base"
             >
               Start New Conversation
             </button>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-3 lg:gap-4">
             {conversations.map((conversation) => (
               <button
                 key={conversation.id}
                 onClick={() => handleConversationSelect(conversation)}
-                className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                className="bg-white rounded-lg border border-gray-200 p-3 lg:p-4 text-left hover:border-blue-300 hover:bg-blue-50 transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-medium text-gray-900 truncate mb-1">
+                    <h3 className="text-sm lg:text-lg font-medium text-gray-900 truncate mb-1">
                       {conversation.title || 'Untitled Chat'}
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs lg:text-sm text-gray-500">
                       Updated {formatDate(conversation.updated_at)}
                     </p>
                   </div>
                   <div className="ml-4 flex-shrink-0">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 lg:w-5 lg:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>
