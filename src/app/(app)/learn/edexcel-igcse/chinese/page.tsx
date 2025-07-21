@@ -606,6 +606,13 @@ const App: React.FC = () => {
 
 
     // --- Main Render ---
+    // Add effect to redirect for Tutor tab
+    useEffect(() => {
+        if (activeHeaderSection === 'tutor') {
+            window.location.href = 'https://aitolearn.xyz/contact';
+        }
+    }, [activeHeaderSection]);
+
     return (
         <React.Fragment>
             {/* Font Awesome for icons */}
@@ -1387,7 +1394,7 @@ const App: React.FC = () => {
                         </React.Suspense>
                     )}
                     {activeHeaderSection === 'mock-test' && <MockTestContent />}
-                    {activeHeaderSection === 'tutor' && <TutorContent />}
+                    {/* Remove TutorContent, as we now redirect */}
                 </div>
             </div>
         </React.Fragment>
