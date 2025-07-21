@@ -10,6 +10,7 @@ interface TeacherSidebarProps {
   onConversationSelect: (conversation: AiConversation) => void;
   onNewConversation: (teacherId?: string) => void;
   onExploreConversations: (teacherId: string) => void;
+  onClose?: () => void;
 }
 
 export function TeacherSidebar({
@@ -20,13 +21,28 @@ export function TeacherSidebar({
   onConversationSelect,
   onNewConversation,
   onExploreConversations,
+  onClose,
 }: TeacherSidebarProps) {
   return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+    <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        <h1 className="text-xl font-semibold text-gray-900">AI Teachers</h1>
-        <p className="text-sm text-gray-500">Choose a teacher to start chatting</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">AI Teachers</h1>
+            <p className="text-sm text-gray-500">Choose a teacher to start chatting</p>
+          </div>
+          {/* Mobile close button */}
+          <button
+            onClick={onClose}
+            className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+            aria-label="Close sidebar"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Teachers List */}
