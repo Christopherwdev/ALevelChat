@@ -3,7 +3,7 @@ export const CHINESE_UNIT_5_CONTENT = `
 
 ## 4.1 Speaking Task 1: Details
 
-You are required to choose a picture and answer the examiner’s questions based on it by speaking Chinese.
+In the first part of the speaking exam, you are required to choose a picture and answer the examiner’s questions based on it by speaking Chinese.
 
 The examiner will ask the following questions exactly once:
 
@@ -47,7 +47,7 @@ The examiner will ask the following questions exactly once:
 
 ## 5.3 Speaking Task 2: Details
 
-There are 2 sections. For each section, the examiner will ask you questions from a topic. You have to answer the questions by speaking Chinese.
+In the second part of the speaking exam, there are 2 Q&A sections. For each section, the examiner will ask you questions from a topic. You have to answer the questions by speaking Chinese.
 
 Notably, the instructors will:
 

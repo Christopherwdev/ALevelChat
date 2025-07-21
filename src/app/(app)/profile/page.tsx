@@ -11,8 +11,8 @@ export default async function ProfilePageWrapper() {
   const { data: profile } = await supabase
     .from('profiles')
     .select(`
-      *, 
-      school:schools(name)
+      *,
+      school:schools(id, name, country, city)
     `)
     .eq('id', user?.id)
     .single();

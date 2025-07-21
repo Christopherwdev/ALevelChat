@@ -2,6 +2,7 @@ import { BookText, Settings, MessageCircle } from 'lucide-react'; // Importing L
 import AppHeader from '@/components/app/header';
 import MySubjectsSection from '@/components/app/mysubject';
 import ExamCard, { ExamCardProps } from './exam-card';
+import { createClient } from '@/utils/supabase/server';
 
 const exams: Array<ExamCardProps> = [
   {
@@ -42,14 +43,33 @@ const exams: Array<ExamCardProps> = [
   },
 ];
 
-const LearnPage = () => {
+const LearnPage = async () => {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  let username = 'User';
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .single();
+    if (profile?.username) {
+      username = profile.username;
+    }
+  }
+
   return (
     <>
       {/* <AppHeader isAuthenticated={true} /> */}
       <div className="min-h-screen bg-white p-0 font-inter pt-[50px]">
         <div className="max-w-5xl mx-auto mt-5 p-4">
-          <h1 className="text-5xl text-black text-left mb-10 font-bold">AIToLearn <span className='font-light'>Revision</span></h1>
-         
+          {/* <h1 className="text-5xl text-black text-left mb-10 font-bold">AIToLearn <span className='font-light'>Revision</span></h1> */}
+          <h1 className="text-5xl text-black text-left mb-10 font-bold">
+            Welcome, <br />
+            <span className='font-light'>{username}</span>
+          </h1>
+            
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 max-w-4xl">
             {exams.map((exam) => (
               <ExamCard
@@ -59,7 +79,7 @@ const LearnPage = () => {
             ))}
           </div>
 
-          <div className="flex flex-col md:flex-row gap-6 items-start w-full">
+          <div className="flex flex-col md:flex-row gap-6 items-start w-full hidden">
             <div className="md:w-5/7 w-full">
               <MySubjectsSection />
             </div>

@@ -23,10 +23,10 @@ export default async function ProfileEditPage() {
     .order('name', { ascending: true });
 
   return (
-    <div className="max-w-4xl mx-auto p-6 ">
+    <div className="max-w-4xl mx-auto p-6 pt-20 ">
       <h1 className="text-3xl font-bold mb-8">Edit Profile</h1>
       
-      <div className="bg-white rounded-lg shadow mb-8">
+      <div className="bg-white rounded-lg mb-8">
         <AccountForm user={user} profile={profile} schools={schools || []} />
       </div>
     </div>

@@ -3,10 +3,27 @@ export const CHINESE_UNIT_1_CONTENT = `
 
 ## 1.1 Exam Details
 
-30 minutes, accounting for 25% of the qualification
-There are around 7 questions.
-You have to listen an audio and answer the questions.  
-We suggest that you do develop a strategy.
+The listening exam lasts for 30 minutes, accounting for 25% of the qualification.
+There are around 7 sets of questions. You have to listen to an audio and answer all the questions.  
+
+### Example Listening Question
+
+~~~
+
+Passage Transcript:
+上個星期六是我十七歲的生日。我七點五十分起床，然後爸爸媽媽和我一起去中國餐館吃了點心。上午，我的好朋友小明和我打了網球。下午，我們去市場買了東西。我 買了一條裙子、一個錢包和一雙鞋子。晚上，我去了哥哥家吃晚飯。他做了我最喜歡吃的烤鴨，還給了我紅包，我非常開心。
+
+Question:
+
+(a) What time she woke up at: ……………………………………………………………… (1)
+
+
+Answer:
+
+7:50 (am) / ten to eight 
+
+~~~
+
 
 
 ## 1.2 Listening Strategy

@@ -2,22 +2,25 @@ export const CHINESE_UNIT_2_CONTENT = `
 # Unit 2: Reading
 
 ## 2.1 Exam Details
-There are 4 questions. You will be given a passage, and you have to answer questions based on it.
+
+The reading exam lconsists of 4 sets of questions. You will be given a passage, and you have to answer questions based on it.
 
 Below is an example of the question:
 
 ~~~
+
 媽媽：   
-我聽電臺說，今天上午有大風。我和妹妹不去游泳了。我們 會在家裏寫作業，看電視。 午飯後，我們先去商店，買練字的毛筆和一些紙，然後去小 吃店給妹妹買新鮮果汁。四點半的時候，我們打算坐公共汽車回 家。到家以後，我會給您發短信。   
+我聽電臺說，今天上午有大風。我和妹妹不去游泳了。我們 會在家裏寫作業，看電視。 午飯後，我們先去商店，買練字的毛筆和一些紙，然後去小吃店給妹妹買新鮮果汁。四點半的時候，我們打算坐公共汽車回 家。到家以後，我會給您發短信。   
 美美
 
-*Meimei found out about the weather forecast on…* 
+Meimei found out about the weather forecast on…
 
-1. *her phone.*   
-2. *the internet.*   
-3. *the television.*   
-4. *the radio.*
+A. her phone.   
+B. the internet.
+C. the television.
+D. the radio.
 
+Answer: D
 ~~~
 
 

@@ -4,7 +4,7 @@ export const CHINESE_UNIT_3_CONTENT = `
 
 ## 3.1 Writing Task 1: Details
 
-You are given 4 Chinese keywords. You are required to write a paragraph of 60-75 words based on a topic, using all 4 keywords.   
+In the first part of the writing exam, you are given 4 Chinese keywords. You are required to write a paragraph of 60-75 words based on a topic, using all 4 keywords.   
 If you are a competent native writer, the emphasis to achieve even higher marks is on creativity, fluency, and sophisticated language use.
 
 ## 3.2 Writing Task 1: Strategy
@@ -38,7 +38,7 @@ If you are a competent native writer, the emphasis to achieve even higher marks 
 
 ## 3.3 Writing Task 2: Details
 
-You are given a situation with a few points. You are required to write a paragraph of 125-150 based on the situation, answering all the points.  
+In the second part of the writing exam, you are given a situation with a few points. You are required to write a paragraph of 125-150 based on the situation, answering all the points.  
 There are 3 questions, you just need to choose one.  
 This is the longer, more demanding writing task, requiring sustained expression and detailed development of ideas.
 

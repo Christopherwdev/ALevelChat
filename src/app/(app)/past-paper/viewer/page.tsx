@@ -362,7 +362,7 @@ const App: React.FC = () => {
         } else {
             setCurrentMode('doPaper');
         }
-        setCurrentLayout('fullScreen'); // Always start in split screen
+        setCurrentLayout('splitScreen'); // Always start in split screen
 
         setDefaultTimerDuration(params);
 

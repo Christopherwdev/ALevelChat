@@ -1,23 +1,11 @@
-import { headers } from "next/headers";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import AppNavigation from "@/components/app/navigation";
+import AppNavigationWrapper from "@/components/app/AppNavigationWrapper";
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const headersList = await headers();
-  const currentPath = headersList.get('x-current-path') || '/';
-  const hideHeader =
-    currentPath.startsWith('/past-paper/viewer') ||
-    currentPath.startsWith('/learn/edexcel-igcse/chinese/listening') ||
-    currentPath.startsWith('/learn/edexcel-igcse/chinese/reading') ||
-    currentPath.startsWith('/learn/edexcel-igcse/chinese/translating') ||
-    currentPath.startsWith('/learn/edexcel-igcse/chinese/writing');
-
-    
-    // currentPath.startsWith('/learn/edexcel-ial/chemistry');
-
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  // currentPath is not needed; header logic is now client-side
   return (
-    <ProtectedRoute currentPath={currentPath}>
-      {!hideHeader && <AppNavigation />}
+    <ProtectedRoute>
+      <AppNavigationWrapper />
       <main className="flex-1">
         {children}
       </main>

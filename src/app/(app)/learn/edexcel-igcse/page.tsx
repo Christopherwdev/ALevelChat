@@ -51,7 +51,7 @@ const App = () => {
   // Function to handle subject card click (similar to previous component)
   const handleSubjectClick = useCallback((subjectId: string) => {
     // In a real application, this would navigate to the subject-specific revision page
-    window.location.href = `/learn/edexcel-IGCSE/${subjectId}`;
+    window.location.href = `/learn/edexcel-igcse/${subjectId}`;
   }, []);
 
   // Handler for revision tool buttons
@@ -220,9 +220,9 @@ const App = () => {
         `}
       </style>
 
-      <AppHeader isAuthenticated={true} />
+      {/* <AppHeader isAuthenticated={true} /> */}
 
-      <div className="max-w-5xl mx-auto px-4 py-8 rounded-sm">
+      <div className="max-w-5xl mx-auto px-4 py-8 rounded-sm pt-20">
         {/* Breadcrumbs */}
         <nav className="inline-block text-gray-500 text-sm mb-6 font-light border-[1px] bg-[#00000010] border-[#00000020] px-3 py-1 rounded-lg">
         
