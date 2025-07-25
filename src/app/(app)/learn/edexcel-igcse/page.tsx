@@ -10,14 +10,7 @@ const IGCSEPage = () => {
 
   return (
     <div className="min-h-screen bg-white p-0">
-      <div className="max-w-5xl mx-auto px-4 py-8 rounded-sm pt-20">
-        {/* Breadcrumbs */}
-        <nav className="inline-block text-gray-500 text-sm mb-6 font-light border-[1px] bg-[#00000010] border-[#00000020] px-3 py-1 rounded-lg">
-          <Link href="/" className="transition duration-300 hover:underline hover:text-[#ff3b30]">Learn</Link>
-          <span className="mx-2">/</span>
-          <span>Edexcel IGCSE</span>
-        </nav>
-
+      <div className="max-w-5xl mx-auto px-4 py-8 rounded-sm">
         {/* Page Title */}
         <h1 className="text-5xl font-bold text-black mb-8">
           Edexcel IGCSE <span className="font-medium text-[black]">Revision</span>
