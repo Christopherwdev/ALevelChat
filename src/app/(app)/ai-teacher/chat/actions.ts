@@ -9,7 +9,7 @@ export async function sendMessage(teacherId: string, message: string, conversati
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Cookie: cookies().toString(),
+        Cookie: (await cookies()).toString(),
       },
       body: JSON.stringify({
         teacherId,
