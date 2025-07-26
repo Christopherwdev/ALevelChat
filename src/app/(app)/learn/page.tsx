@@ -1,6 +1,5 @@
 import { BookText, Settings, MessageCircle } from 'lucide-react'; // Importing Lucide React icons
 // import AppHeader from '@/components/app/header';
-import MySubjectsSection from '@/components/app/mysubject';
 import ExamCard, { ExamCardProps } from './exam-card';
 import { createClient } from '@/utils/supabase/server';
 
@@ -129,30 +128,6 @@ const LearnPage = async () => {
             >
               Contact Us
             </a>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-6 items-start w-full hidden">
-            <div className="md:w-5/7 w-full">
-              <MySubjectsSection />
-            </div>
-            {/* Analytics Section */}
-            <div className="md:w-2/7 w-full">
-              <div className="bg-white border-2 border-[#00000020] rounded-2xl shadow-2xl shadow-[#00000010] p-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Analytics</h2>
-                <div className="space-y-3">
-                  <div className="text-lg text-gray-700">Your Progress</div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-3xl font-bold text-black">--</span>
-                    <span className="text-gray-500">Subjects Completed</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-3xl font-bold text-black">--%</span>
-                    <span className="text-gray-500">Average Score</span>
-                  </div>
-                  {/* Add more analytics as needed */}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
