@@ -151,8 +151,8 @@ export function ChatArea({
                   Chat with {teacher.name}
                 </h3>
                 <p className="text-gray-500 max-w-md mx-auto">
-                  Start a conversation with your {teacher.subject_details?.name} teacher. Ask questions, 
-                  get explanations, or discuss any topic related to {teacher.subject_details?.name}.
+                  Start a conversation with your {teacher.subject.name} teacher. Ask questions, 
+                  get explanations, or discuss any topic related to {teacher.subject.name}.
                 </p>
               </div>
             )}
@@ -189,7 +189,7 @@ export function ChatArea({
       <MessageInput
         onSend={handleMessageSend}
         disabled={sendingMessage}
-        placeholder={`Ask ${teacher.name} anything about ${teacher.subject_details?.name}...`}
+        placeholder={`Ask ${teacher.name} anything about ${teacher.subject.name}...`}
       />
     </div>
   );
