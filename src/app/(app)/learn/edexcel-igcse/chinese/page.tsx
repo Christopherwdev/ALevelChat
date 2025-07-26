@@ -1,4 +1,4 @@
-import { BookText, FileText, Lightbulb, Languages } from 'lucide-react';
+import { BookText, FileText, Lightbulb, Languages, Pen } from 'lucide-react';
 import Link from 'next/link';
 import RevisionToolCard from './_components/RevisionToolCard';
 import "./ChinesePage.css";
@@ -6,7 +6,8 @@ import "./ChinesePage.css";
 const revisionTools = [
   { id: 'revision-notes', titleTop: 'Chinese', titleBottom: 'Revision Notes', icon: <BookText className="w-6 h-6 text-[#ff3b30]" /> },
   { id: 'past-papers?examBoard=Edexcel&examLevel=IGCSE&subject=Chinese&paper=Paper+1', titleTop: 'Chinese', titleBottom: 'Past Papers', icon: <FileText className="w-6 h-6 text-[#ff3b30]" /> },
-  { id: 'ai-teacher', titleTop: 'AI Teacher', titleBottom: '& Grading', icon: <Lightbulb className="w-6 h-6 text-[#ff3b30]" /> },
+  { id: 'ai-teacher', titleTop: 'Chinese', titleBottom: 'AI Teacher', icon: <Lightbulb className="w-6 h-6 text-[#ff3b30]" /> },
+  { id: 'mock-test', titleTop: 'Chinese', titleBottom: 'Mock Tests', icon:  <Pen className="w-6 h-6 text-[#ff3b30]" /> },
 ];
 
 const ContinueLessonButton: React.FC = () => {
@@ -39,7 +40,7 @@ const ChinesePage = () => {
         </div>
         <p className="text-gray-700 text-lg max-w-3xl block md:hidden">Welcome to the Chinese Revision Zone!<br></br>You can use the extensive resources below to prepare for your exams.</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-3 gap-6 mt-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-10">
           {revisionTools.map((tool) => (
             <RevisionToolCard key={tool.id} tool={tool} />
           ))}

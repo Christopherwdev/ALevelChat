@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from 'next/navigation';
+import "../ChinesePage.css";
 
 const MockTestContent = () => {
   const router = useRouter();
