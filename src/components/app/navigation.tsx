@@ -41,7 +41,7 @@ export default function AppHeader() {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 w-full z-1000 bg-[rgba(0,0,0,0.8)] backdrop-blur border-b border-[#23232a] shadow-xl shadow-[#00000020] flex items-center justify-between px-4" style={{ height: 50, minHeight: 50, maxHeight: 50, marginBottom: 0 }}>
+    <header className="sticky top-0 left-0 w-full z-1000 bg-[rgba(0,0,0,0.8)] backdrop-blur border-b border-[#23232a] shadow-xl shadow-[#00000020] flex items-center justify-between px-4" style={{ height: 50, minHeight: 50, maxHeight: 50, marginBottom: 0 }}>
       {/* Logo and Title */}
       <div className="flex items-center min-w-[100px]">
         <Image

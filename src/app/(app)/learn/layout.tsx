@@ -3,7 +3,7 @@ import BreadCrumbs from './_components/BreadCrumbs';
 
 const ChineseLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="pt-20">
+    <div className="pt-8">
       <BreadCrumbs />
       {children}
     </div>

@@ -15,6 +15,10 @@ const BreadCrumbs = () => {
     setPathPartNames(rawPathParts.map(part => part.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')));
   }, [currentPath]);
 
+  if (pathParts.length <= 1) {
+    return null; // No breadcrumbs to display if there's only the root path
+  }
+  
   return (
     <div className="rounded-2xl flex items-start justify-start w-full pl-14">
       <nav className="inline-block text-gray-500 text-sm mb-6 font-light border-[1px] bg-[#00000010] border-[#00000020] px-3 py-1 rounded-lg" aria-label="Breadcrumbs">
