@@ -41,23 +41,6 @@ export default function NewChatClient({ initialTeacher, teachers }: NewChatClien
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-4 lg:p-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3 lg:space-x-4 min-w-0 flex-1">
-            <div className="flex items-center space-x-3 min-w-0 flex-1">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-blue-600 font-medium text-sm lg:text-lg">
-                  {initialTeacher.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <div className="min-w-0 flex-1">
-                <h1 className="text-lg lg:text-2xl font-bold text-gray-900 truncate">
-                  New Chat with {initialTeacher.name}
-                </h1>
-                <p className="text-sm text-gray-500 truncate">
-                  {initialTeacher.subject.name} Teacher
-                </p>
-              </div>
-            </div>
-          </div>
           <div className="flex items-center space-x-2 flex-shrink-0">
             {/* Mobile conversations toggle */}
             {initialTeacher.conversations && initialTeacher.conversations.length > 0 && (
@@ -71,12 +54,6 @@ export default function NewChatClient({ initialTeacher, teachers }: NewChatClien
                 </svg>
               </button>
             )}
-            <button
-              onClick={() => router.push('/ai-teacher/chat/new')}
-              className="px-3 py-1.5 lg:px-4 lg:py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm"
-            >
-              Change Teacher
-            </button>
           </div>
         </div>
       </div>
