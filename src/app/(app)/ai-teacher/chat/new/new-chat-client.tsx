@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AiTeacher, AiConversation } from '@/lib/types/ai';
+import { AiTeacher } from '@/lib/types/ai';
 import { ChatWrapper } from '../../components/chat-wrapper';
 import { EmptyState } from '../../components/empty-state';
 
@@ -15,13 +15,13 @@ export default function NewChatClient({ initialTeacher, teachers }: NewChatClien
   const [conversationsSidebarOpen, setConversationsSidebarOpen] = useState(false);
   const router = useRouter();
 
-  const handleConversationCreated = (conversation: AiConversation) => {
-    router.push(`/ai-teacher/chat/${conversation.id}`);
-  };
+  // const handleConversationCreated = (conversation: AiConversation) => {
+  //   router.push(`/ai-teacher/chat/${conversation.id}`);
+  // };
 
-  const handleNewConversation = () => {
-    router.push('/ai-teacher/chat/new');
-  };
+  // const handleNewConversation = () => {
+  //   router.push('/ai-teacher/chat/new');
+  // };
 
   const handleTeacherSelect = (selectedTeacher: AiTeacher) => {
     router.push(`/ai-teacher/chat/new?teacherId=${selectedTeacher.id}`);

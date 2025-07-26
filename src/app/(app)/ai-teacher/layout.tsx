@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 import { fetchTeachersWithConversations } from './actions';
 import ClientLayout from './client-layout';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AiTeacherLayout({
   children,
 }: {

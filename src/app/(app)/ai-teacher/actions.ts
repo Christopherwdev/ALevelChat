@@ -6,7 +6,7 @@ export async function fetchTeachersWithConversations() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Cookie: cookies().toString(),
+        Cookie: (await cookies()).toString(),
       },
       body: JSON.stringify({
         includeConversations: true,

@@ -6,7 +6,7 @@ async function getTeacherData(teacherId?: string) {
   const teachers = await fetchTeachersWithConversations();
   
   if (teacherId) {
-    const teacher = teachers.find(t => t.id === teacherId);
+    const teacher = teachers.find((t: AiTeacher) => t.id === teacherId);
     if (teacher) {
       return { teacher, teachers };
     }
@@ -18,9 +18,9 @@ async function getTeacherData(teacherId?: string) {
 export default async function NewChatPage({
   searchParams,
 }: {
-  searchParams: { teacherId?: string };
+  searchParams: Promise<{ teacherId?: string }>;
 }) {
-  const { teacher, teachers } = await getTeacherData(searchParams.teacherId);
+  const { teacher, teachers } = await getTeacherData((await searchParams).teacherId);
 
   return (
     <NewChatClient 
