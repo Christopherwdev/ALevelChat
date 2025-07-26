@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function AI_Teacher_Page() {
-  // Redirect to the global ai-teacher page for now
-  redirect("/ai-teacher");
+  redirect("/ai-teacher/chat/new?teacherId=1f4369fa-f0e4-444f-bf63-9622fa7d59c3"); // teacher ID is public so this is fine (?)
 };
