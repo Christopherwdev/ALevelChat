@@ -141,20 +141,41 @@ export function ChatArea({
         ) : (
           <>
             {!conversation && (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-blue-600 font-medium text-lg">
-                    {teacher.name.charAt(0).toUpperCase()}
-                  </span>
+              <>
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-blue-600 font-medium text-lg">
+                      {teacher.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Chat with {teacher.name}
+                  </h3>
+                  <p className="text-gray-500 max-w-md mx-auto">
+                    Start a conversation with your {teacher.subject.name} teacher. Ask questions, 
+                    get explanations, or discuss any topic related to {teacher.subject.name}.
+                  </p>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Chat with {teacher.name}
-                </h3>
-                <p className="text-gray-500 max-w-md mx-auto">
-                  Start a conversation with your {teacher.subject.name} teacher. Ask questions, 
-                  get explanations, or discuss any topic related to {teacher.subject.name}.
-                </p>
-              </div>
+
+                {teacher.welcome_message && (
+                  <div className="flex justify-start">
+                    <div className="flex max-w-xs lg:max-w-md xl:max-w-lg flex-row items-start space-x-2">
+                      <div className="flex-shrink-0 mr-2">
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                          <span className="text-gray-600 font-medium text-sm">
+                            {teacher.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-2">
+                        <div className="prose prose-sm">
+                          {teacher.welcome_message}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {messages.map((message) => (

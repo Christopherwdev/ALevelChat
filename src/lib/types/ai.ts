@@ -10,6 +10,7 @@ export interface AiTeacher {
   id: string;
   name: string;
   subject: Subject;
+  welcome_message?: string;
   conversations?: AiConversation[];
 }
 

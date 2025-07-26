@@ -103,6 +103,7 @@ export async function POST(request: NextRequest) {
         .select(`
           id,
           name,
+          welcome_message,
           subject(
             id,
             name,
@@ -123,7 +124,7 @@ export async function POST(request: NextRequest) {
         .order('name');
     }
 
-    const { data: teachers, error } = await query;
+    const { data: teachers, error } = await query.overrideTypes<Array<AiTeacher>>();
 
     if (error) {
       console.error('Error fetching AI teachers with conversations:', error);
