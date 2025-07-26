@@ -57,7 +57,7 @@ export function EmptyState({ teachers, onTeacherSelect }: EmptyStateProps) {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">{teacher.name}</p>
-                      <p className="text-sm text-gray-500">{teacher.subject}</p>
+                      <p className="text-sm text-gray-500">{teacher.subject.name}</p>
                     </div>
                   </div>
                 </button>

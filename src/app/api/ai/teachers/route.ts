@@ -26,7 +26,13 @@ export async function GET() {
       .select(`
         id,
         name,
-        subject
+        subject(
+          id,
+          name,
+          curriculum,
+          exam_board,
+          description
+        )
       `)
       .eq('is_active', true)
       .order('name');
@@ -91,12 +97,19 @@ export async function POST(request: NextRequest) {
 
     if (includeConversations) {
       // Get teachers with recent conversations
+      // @ts-expect-error Static analysis of the query isn't correct
       query = serviceRoleSupabase
         .from('ai_teachers')
         .select(`
           id,
           name,
-          subject,
+          subject(
+            id,
+            name,
+            curriculum,
+            exam_board,
+            description
+          ),
           conversations:ai_chat_conversations(
             id,
             title,

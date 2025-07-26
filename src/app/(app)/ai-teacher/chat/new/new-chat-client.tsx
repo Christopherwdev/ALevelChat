@@ -53,7 +53,7 @@ export default function NewChatClient({ initialTeacher, teachers }: NewChatClien
                   New Chat with {initialTeacher.name}
                 </h1>
                 <p className="text-sm text-gray-500 truncate">
-                  {initialTeacher.subject} Teacher
+                  {initialTeacher.subject.name} Teacher
                 </p>
               </div>
             </div>

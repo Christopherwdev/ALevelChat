@@ -71,7 +71,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TABLE ai_teachers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
-    subject TEXT,
+    subject INT NOT NULL REFERENCES subjects(id) ON DELETE CASCADE, -- Foreign key to subjects
     system_prompt TEXT NOT NULL,
     welcome_message TEXT NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT true,

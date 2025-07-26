@@ -124,7 +124,7 @@ export default function ExploreConversationsPage() {
                   {teacher.name}
                 </h1>
                 <p className="text-sm text-gray-500 truncate">
-                  {teacher.subject} • {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+                  {teacher.subject_details?.name} • {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
                 </p>
               </div>
             </div>

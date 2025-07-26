@@ -1,7 +1,15 @@
+export interface Subject {
+  id: number;
+  name: string;
+  curriculum: string;
+  exam_board: string | null;
+  description: string | null;
+}
+
 export interface AiTeacher {
   id: string;
   name: string;
-  subject: string;
+  subject: Subject;
   conversations?: AiConversation[];
 }
 
@@ -18,4 +26,3 @@ export interface AiMessage {
   content: string;
   created_at: string;
 }
-
