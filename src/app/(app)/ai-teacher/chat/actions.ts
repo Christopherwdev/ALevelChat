@@ -5,7 +5,8 @@ import { AiConversation } from '@/lib/types/ai';
 
 export async function sendMessage(teacherId: string, message: string, conversationId?: string) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/ai/chat`, {
+    const baseUrl = process.env.VERCEL_URL? `https://${process.env.VERCEL_URL}` : process.env.NEXT_PUBLIC_SITE_URL;
+    const response = await fetch(`${baseUrl}/api/ai/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
