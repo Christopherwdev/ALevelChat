@@ -1,11 +1,7 @@
 import { BookText, Settings, MessageCircle } from 'lucide-react'; // Importing Lucide React icons
-import AppHeader from '@/components/app/header';
-import MySubjectsSection from '@/components/app/mysubject';
+// import AppHeader from '@/components/app/header';
 import ExamCard, { ExamCardProps } from './exam-card';
 import { createClient } from '@/utils/supabase/server';
-import { Inter } from 'next/font/google';
-
-const interFont = Inter({ subsets: ['latin'] });
 
 const exams: Array<ExamCardProps> = [
   {
@@ -50,18 +46,12 @@ const LearnPage = async () => {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  let username = 'User';
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('id', user.id)
-      .single();
-    if (profile?.username) {
-      username = profile.username;
-    }
-  }
-
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user?.id)
+    .single();
+  
   return (
     <>
       {/* <AppHeader isAuthenticated={true} /> */}
@@ -70,7 +60,7 @@ const LearnPage = async () => {
           {/* <h1 className="text-5xl text-black text-left mb-10 font-bold">AIToLearn <span className='font-light'>Revision</span></h1> */}
           <h1 className="text-5xl text-black text-left mb-10 font-bold">
             Welcome, <br />
-            <span className='font-light'>{username}</span>
+            <span className='font-light'>{profile.full_name ?? 'user'}</span>
           </h1>
             
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 max-w-4xl">
@@ -89,7 +79,7 @@ const LearnPage = async () => {
               AIToLearn is your all-in-one platform for mastering Edexcel IGCSE, IAL, and IELTS exams. We combine AI-powered tools, instant feedback, and expert resources to help you achieve your academic goals faster and smarter.
             </p>
             <p className="text-base text-gray-500">
-              Whether you're aiming for top grades or just want to study more efficiently, AIToLearn provides everything you need: revision notes, mock tests, past papers, AI teacher, analytics, and more—all in one place.
+              Whether you&apos;re aiming for top grades or just want to study more efficiently, AIToLearn provides everything you need: revision notes, mock tests, past papers, AI teacher, analytics, and more—all in one place.
             </p>
           </div>
 
@@ -138,30 +128,6 @@ const LearnPage = async () => {
             >
               Contact Us
             </a>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-6 items-start w-full hidden">
-            <div className="md:w-5/7 w-full">
-              <MySubjectsSection />
-            </div>
-            {/* Analytics Section */}
-            <div className="md:w-2/7 w-full">
-              <div className="bg-white border-2 border-[#00000020] rounded-2xl shadow-2xl shadow-[#00000010] p-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Analytics</h2>
-                <div className="space-y-3">
-                  <div className="text-lg text-gray-700">Your Progress</div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-3xl font-bold text-black">--</span>
-                    <span className="text-gray-500">Subjects Completed</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-3xl font-bold text-black">--%</span>
-                    <span className="text-gray-500">Average Score</span>
-                  </div>
-                  {/* Add more analytics as needed */}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

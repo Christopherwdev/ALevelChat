@@ -67,7 +67,7 @@ export function TeacherSidebar({
                     {teacher.name}
                   </p>
                   <p className="text-xs text-gray-500 truncate">
-                    {teacher.subject}
+                    {teacher.subject.name}
                   </p>
                 </div>
                 <div className="text-xs text-gray-400">

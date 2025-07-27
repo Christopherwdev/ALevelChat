@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS subjects (
     id SERIAL PRIMARY KEY,  -- small number of subjects, so SERIAL is sufficient
-    name TEXT UNIQUE NOT NULL, -- e.g., "Mathematics", "Physics"
+    name TEXT NOT NULL, -- e.g., "Mathematics", "Physics"
     curriculum TEXT NOT NULL, -- e.g., "GCSE", "A-Level", "IB"
     exam_board TEXT, -- e.g., "AQA", "Edexcel"
     description TEXT,

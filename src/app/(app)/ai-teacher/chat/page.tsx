@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
-export default function AiTeacherPage() {
+export default function NewChatPage() {
   redirect('/ai-teacher/chat/new');
 }

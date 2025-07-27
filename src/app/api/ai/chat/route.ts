@@ -16,6 +16,7 @@ import { createChatCompletion } from '@/lib/ai/openai-client';
  */
 export async function POST(request: NextRequest) {
   try {
+    const time1 = performance.now();
     const supabase = await createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -25,6 +26,8 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
+    const time2 = performance.now();
+    console.log(`Auth check took ${time2 - time1} ms`);
 
     const body = await request.json();
     const { teacherId, message, conversationId } = body;
@@ -36,6 +39,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const time3 = performance.now();
     // Check rate limits
     const usageCheck = await checkUsageLimit(user.id, 'chat');
     if (!usageCheck.allowed) {
@@ -48,6 +52,8 @@ export async function POST(request: NextRequest) {
         { status: 429 }
       );
     }
+    const time4 = performance.now();
+    console.log(`Usage check took ${time4 - time3} ms`);
 
     const serviceRoleSupabase = createServiceRoleClient();
 
@@ -65,6 +71,8 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
+    const time5 = performance.now();
+    console.log(`Teacher fetch took ${time5 - time4} ms`);
 
     // Get or create conversation
     let conversation;
@@ -83,6 +91,8 @@ export async function POST(request: NextRequest) {
         );
       }
       conversation = existingConversation;
+      const time6 = performance.now();
+      console.log(`Conversation fetch took ${time6 - time5} ms`);
     } else {
       // Create new conversation
       const { data: newConversation, error: newConvError } = await serviceRoleSupabase
@@ -96,15 +106,35 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (newConvError || !newConversation) {
+        console.log(JSON.stringify(newConvError));
         return NextResponse.json(
           { error: 'Failed to create conversation' },
           { status: 500 }
         );
       }
       conversation = newConversation;
+      const time7 = performance.now();
+      console.log(`Conversation creation took ${time7 - time5} ms`);
+
+      // Add welcome message for new conversations
+      const { error: welcomeMessageError } = await serviceRoleSupabase
+        .from('ai_chat_messages')
+        .insert({
+          conversation_id: conversation.id,
+          role: 'assistant',
+          content: aiTeacher.welcome_message,
+        });
+
+      if (welcomeMessageError) {
+        console.error('Error sending welcome message:', welcomeMessageError);
+        // Don't return error here, continue with the conversation
+      }
+      const time8 = performance.now();
+      console.log(`Welcome message took ${time8 - time7} ms`);
     }
 
     // Get conversation history
+    const time9 = performance.now();
     const { data: messageHistory, error: historyError } = await supabase
       .from('ai_chat_messages')
       .select('role, content')
@@ -115,6 +145,8 @@ export async function POST(request: NextRequest) {
     if (historyError) {
       console.error('Error fetching message history:', historyError);
     }
+    const time10 = performance.now();
+    console.log(`Message history fetch took ${time10 - time9} ms`);
 
     // NOTE: For better UX, we should only add user message to the history if AI response is generated successfully.
 
@@ -123,10 +155,6 @@ export async function POST(request: NextRequest) {
       {
         role: 'system' as const,
         content: aiTeacher.system_prompt,
-      },
-      {
-        role: 'assistant' as const,
-        content: aiTeacher.welcome_message,
       },
       ...(messageHistory || []).map(msg => ({
         role: msg.role as 'user' | 'assistant',
@@ -151,6 +179,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+    const time11 = performance.now();
+    console.log(`AI response generation took ${time11 - time10} ms`);
 
     // Send user message
     const { error: userMessageError } = await serviceRoleSupabase
@@ -189,6 +219,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+    const time12 = performance.now();
+    console.log(`user and AI message sent in ${time12 - time11} ms`);
 
     // Record usage
     await recordUsage(
@@ -200,6 +232,8 @@ export async function POST(request: NextRequest) {
         conversation_id: conversation.id,
       }
     );
+    const time13 = performance.now();
+    console.log(`Usage recorded in ${time13 - time12} ms`);
 
     return NextResponse.json({
       success: true,

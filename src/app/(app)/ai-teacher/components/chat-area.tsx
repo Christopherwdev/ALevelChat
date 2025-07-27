@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { AiTeacher, AiConversation, AiMessage } from '@/lib/types/ai';
 import { ChatMessage } from './chat-message';
 import { MessageInput } from './message-input';
+import { sendMessage as sendMessageAction } from '../chat/actions';
 
 interface ChatAreaProps {
   teacher: AiTeacher;
@@ -56,13 +57,12 @@ export function ChatArea({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const sendMessage = async (content: string) => {
+  const handleMessageSend = async (content: string) => {
     if (!content.trim()) return;
 
     setSendingMessage(true);
 
     // Optimistic update: add user message immediately to UI
-    // TODO: add sending indicator
     const userMessage: AiMessage = {
       id: `temp-${Date.now()}`,
       role: 'user',
@@ -73,50 +73,25 @@ export function ChatArea({
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      const response = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          teacherId: teacher.id,
-          message: content,
-          conversationId: conversation?.id,
-        }),
-      });
+      const result = await sendMessageAction(teacher.id, content, conversation?.id);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // If this was a new conversation, notify parent
-        if (!conversation && data.conversationId) {
-          const newConversation: AiConversation = {
-            id: data.conversationId,
-            title: content.substring(0, 50) + (content.length > 50 ? '...' : ''),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-          onConversationCreated(newConversation);
-        }
-
-        // Add AI response
-        const aiMessage: AiMessage = {
-          id: `ai-${Date.now()}`,
-          role: 'assistant',
-          content: data.message,
-          created_at: new Date().toISOString(),
-        };
-
-        setMessages(prev => [...prev.slice(0, -1), {
-          ...userMessage,
-          id: `user-${Date.now()}`,
-        }, aiMessage]);
-      } else {
-        // Remove the temporary user message on error
-        setMessages(prev => prev.slice(0, -1));
-        // TODO: handle error gracefully in UI
-        alert(data.error || 'Failed to send message');
+      // If this was a new conversation, notify parent
+      if (!conversation && result.newConversation) {
+        onConversationCreated(result.newConversation);
       }
+
+      // Add AI response
+      const aiMessage: AiMessage = {
+        id: `ai-${Date.now()}`,
+        role: 'assistant',
+        content: result.message,
+        created_at: new Date().toISOString(),
+      };
+
+      setMessages(prev => [...prev.slice(0, -1), {
+        ...userMessage,
+        id: `user-${Date.now()}`,
+      }, aiMessage]);
     } catch (error) {
       // Remove the temporary user message on error
       setMessages(prev => prev.slice(0, -1));
@@ -142,7 +117,7 @@ export function ChatArea({
               {teacher.name}
             </h2>
             <p className="text-sm text-gray-500">
-              {conversation ? conversation.title : 'New Conversation'} • {teacher.subject}
+              {conversation ? conversation.title : 'New Conversation'} • {teacher.subject.name}
             </p>
           </div>
         </div>
@@ -166,20 +141,41 @@ export function ChatArea({
         ) : (
           <>
             {!conversation && (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-blue-600 font-medium text-lg">
-                    {teacher.name.charAt(0).toUpperCase()}
-                  </span>
+              <>
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-blue-600 font-medium text-lg">
+                      {teacher.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Chat with {teacher.name}
+                  </h3>
+                  <p className="text-gray-500 max-w-md mx-auto">
+                    Start a conversation with your {teacher.subject.name} teacher. Ask questions, 
+                    get explanations, or discuss any topic related to {teacher.subject.name}.
+                  </p>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Chat with {teacher.name}
-                </h3>
-                <p className="text-gray-500 max-w-md mx-auto">
-                  Start a conversation with your {teacher.subject} teacher. Ask questions, 
-                  get explanations, or discuss any topic related to {teacher.subject}.
-                </p>
-              </div>
+
+                {teacher.welcome_message && (
+                  <div className="flex justify-start">
+                    <div className="flex max-w-xs lg:max-w-md xl:max-w-lg flex-row items-start space-x-2">
+                      <div className="flex-shrink-0 mr-2">
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                          <span className="text-gray-600 font-medium text-sm">
+                            {teacher.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-2">
+                        <div className="prose prose-sm">
+                          {teacher.welcome_message}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {messages.map((message) => (
@@ -212,9 +208,9 @@ export function ChatArea({
 
       {/* Message Input */}
       <MessageInput
-        onSend={sendMessage}
+        onSend={handleMessageSend}
         disabled={sendingMessage}
-        placeholder={`Ask ${teacher.name} anything about ${teacher.subject}...`}
+        placeholder={`Ask ${teacher.name} anything about ${teacher.subject.name}...`}
       />
     </div>
   );
