@@ -1,19 +1,6 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { BookText, Settings, MessageCircle } from 'lucide-react';
 import ExamCard, { ExamCardProps } from '../(app)/learn/exam-card';
-
-
-interface ServiceCard {
-  id: string;
-  title: string;
-  icon: React.ElementType;
-  description: string;
-  buttonText: string;
-  buttonColor: string;
-  baseColor: string;
-  subjects: string[];
-}
 
 export default function Homepage() {
   const serviceCards: ExamCardProps[] = [
@@ -67,7 +54,7 @@ export default function Homepage() {
           
             <div className="lg:w-3/5 text-center">
               <h1 className="text-4xl lg:text-5xl font-serif font-medium text-gray-900 mb-6 leading-tight">
-              Acclerate your <span>grades</span> with powerful tools to ace every mission!
+              Accelerate your <span>grades</span> with powerful tools to ace every mission!
               </h1>
               
               <p className="text-gray-800 mb-8 text-xl">
@@ -116,7 +103,7 @@ export default function Homepage() {
             AIToLearn is your all-in-one platform for mastering Edexcel IGCSE, IAL, and IELTS exams. We combine AI-powered tools, instant feedback, and expert resources to help you achieve your academic goals faster and smarter.
           </p>
           <p className="text-base text-gray-500">
-            Whether you're aiming for top grades or just want to study more efficiently, AIToLearn provides everything you need: revision notes, mock tests, past papers, AI teacher, analytics, and more—all in one place.
+            Whether you&apos;re aiming for top grades or just want to study more efficiently, AIToLearn provides everything you need: revision notes, mock tests, past papers, AI teacher, analytics, and more—all in one place.
           </p>
         </div>
 
@@ -165,29 +152,6 @@ export default function Homepage() {
           >
             Contact Us
           </a>
-        </div>
-        
-        {/* Subject buttons section - outside exam cards and structured in 3 columns */}
-        
-
-        {/* Testimonial Section */}
-        <div className="hidden flex flex-col items-left text-left border-2 mx-6 mb-12 p-4 border-gray-200 rounded-2xl">
-          <div className="flex flex-row gap-8">
-            <Image 
-              src="/user-testimonial-150x150.jpg"
-              alt="Jessica Wong"
-              width={64}
-              height={64}
-              className="rounded-full"
-            />
-            <div className="flex flex-col text-left">
-              <p className="text-2xl font-bold mb-1">Jessica Wong</p>
-              <p className="text-lg text-grey-600">Edexcel IAL 5A*</p>
-            </div>
-          </div>
-          <p className="text-2xl mt-4">
-            AItoLearn transformed my exams dramatically. The mock test was super useful for my IELTS preparation. I am able to practice past papers and get instant feedback on my answers. The AI teacher is like having a personal tutor available 24/7.
-          </p>
         </div>
       </div>
     </div>
