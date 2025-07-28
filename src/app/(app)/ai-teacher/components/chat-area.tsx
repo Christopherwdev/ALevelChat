@@ -6,6 +6,7 @@ import { ChatMessage } from './chat-message';
 import { MessageInput } from './message-input';
 import { sendMessage as sendMessageAction } from '../chat/actions';
 import { getConversationMessages } from '@/lib/services/ai';
+import { renderMarkdown } from '@/lib/utils/markdown';
 
 interface ChatAreaProps {
   teacher: AiTeacher;
@@ -166,9 +167,10 @@ export function ChatArea({
                         </div>
                       </div>
                       <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-2">
-                        <div className="prose prose-sm">
-                          {teacher.welcome_message}
-                        </div>
+                        <div 
+                          className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+                          dangerouslySetInnerHTML={{ __html: renderMarkdown(teacher.welcome_message) }}
+                        />
                       </div>
                     </div>
                   </div>

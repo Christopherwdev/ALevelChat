@@ -1,6 +1,7 @@
 'use client';
 
 import { AiTeacher, AiMessage } from '@/lib/types/ai';
+import { renderMarkdown } from '@/lib/utils/markdown';
 
 interface ChatMessageProps {
   message: AiMessage;
@@ -35,7 +36,14 @@ export function ChatMessage({ message, teacher }: ChatMessageProps) {
             : 'bg-gray-100 text-gray-900'
         }`}>
           <div className="text-sm whitespace-pre-wrap break-words">
-            {message.content}
+            {isUser ? (
+              message.content
+            ) : (
+              <div 
+                className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }}
+              />
+            )}
           </div>
           <div className={`text-xs mt-1 ${
             isUser ? 'text-blue-200' : 'text-gray-500'
