@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { AiTeacher, AiConversation } from '@/lib/types/ai';
+import { getTeacherById } from '@/lib/services/ai';
 
 export default function ExploreConversationsPage() {
   const [teacher, setTeacher] = useState<AiTeacher | null>(null);
@@ -16,31 +17,15 @@ export default function ExploreConversationsPage() {
   useEffect(() => {
     const fetchTeacherAndConversations = async () => {
       try {
-        const response = await fetch('/api/ai/teachers', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            includeConversations: true,
-            limit: 50, // Get more conversations for this view
-          }),
+        const teacher = await getTeacherById(teacherId, {
+          includeConversations: true,
         });
-
-        if (response.ok) {
-          const data = await response.json();
-          const teachers = data.teachers;
-          
-          const foundTeacher = teachers.find((t: AiTeacher) => t.id === teacherId);
-          
-          if (foundTeacher) {
-            setTeacher(foundTeacher);
-            setConversations(foundTeacher.conversations || []);
-          } else {
-            setError('Teacher not found');
-          }
+        
+        if (teacher) {
+          setTeacher(teacher);
+          setConversations(teacher.conversations || []);
         } else {
-          setError('Failed to load teacher data');
+          setError('Teacher not found');
         }
       } catch (error) {
         console.error('Error fetching teacher and conversations:', error);

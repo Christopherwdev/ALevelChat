@@ -5,6 +5,7 @@ import { AiTeacher, AiConversation, AiMessage } from '@/lib/types/ai';
 import { ChatMessage } from './chat-message';
 import { MessageInput } from './message-input';
 import { sendMessage as sendMessageAction } from '../chat/actions';
+import { getConversationMessages } from '@/lib/services/ai';
 
 interface ChatAreaProps {
   teacher: AiTeacher;
@@ -29,11 +30,8 @@ export function ChatArea({
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/ai/conversations/${conversation.id}/messages`);
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data.messages || []);
-      }
+      const messages = await getConversationMessages(conversation.id);
+      setMessages(messages || []);
     } catch (error) {
       console.error('Error fetching messages:', error);
     } finally {
