@@ -135,7 +135,7 @@ export default function AiTeacherLayout({
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-[calc(100vh-50px)] pt-[50px] bg-gray-50">
       {/* Mobile hamburger menu */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
