@@ -4,7 +4,7 @@
     --subject-primary-color: #ff3b30;
     --subject-primary-color-trans: #ff3b3070;
     /* Default for Chinese */
-    --subject-primary-color-rgb: 255, 107, 107;
+    --subject-primary-color-rgb: 255, 59, 48;
     /* RGB equivalent for rgba usage */
 }
 
@@ -13,6 +13,8 @@ body {
     background-color: #f8f9fa;
     color: #333;
 }
+
+
 
 .btn-primary {
         background-color: #ff3b30;
@@ -67,6 +69,7 @@ body {
     color: white;
     border: 2px solid black;
     /* Highlight active button */
+    transition: none;
 }
 
 /* Styles for inactive unit button and inactive home/subject button */
@@ -76,15 +79,29 @@ body {
     /* gray-100 */
     color: #4b5563;
     /* gray-700 */
-    border: 2px solid #00000010;
+    border: 2px solid #00000005;
+    cursor: pointer;
+    transition: all 0.2s;
     /* Light border for inactive */
+}
+
+.unit-button:not(.active):hover,
+.header-nav-button:not(.active):hover { /* Changed from .home-subject-button:not(.active) */
+    background-color: #ff3b3020;
+    /* gray-100 */
+    color: #ff3b30;
+    /* gray-700 */
+    border: 2px solid #ff3b3020;
+    cursor: pointer;
+    /* Light border for inactive */
+    transition: 0.2s;
 }
 
 
 
 .unit-button,
 .header-nav-button { /* Changed from .home-subject-button */
-    
+ transition: all 0.3s;   
 }
 
 /* Style for section links in sidebar */
@@ -208,8 +225,10 @@ body {
     background-color: #ff3b3010;
     padding: 1rem;
     border: 2px solid #ff3b30;
+    color: var(--subject-primary-color);
     border-radius: 0.5rem;
     margin-bottom: 1rem;
+    padding-top: -50px;
     white-space: pre-wrap;
     word-break: break-word;
     text-indent: 0;
@@ -229,19 +248,15 @@ body {
 
 .markdown-content code {
     font-family: 'Inter', sans-serif;
+    color: var(--subject-primary-color);
 
     /* gray-200 */
-    padding: 0.2rem 0.4rem;
+    /* padding: 0.2rem 0.4rem; */
+
     border-radius: 0.25rem;
 }
 
-.dark .markdown-content code,
-.dark .markdown-content pre {
-    background-color: #4a5568;
-    /* gray-700 */
-    color: #e2e8f0;
-    /* gray-200 */
-}
+
 
 .markdown-content blockquote {
     border-left: 4px solid var(--subject-primary-color);
@@ -497,7 +512,7 @@ body {
     flex-grow: 0; /* Prevent it from growing, fix height */
     
     text-align: center;
-    padding: 1rem;
+    padding: 10px;
     cursor: pointer;
     border: 4px solid black;
     transition: all 0.2s ease-in-out;

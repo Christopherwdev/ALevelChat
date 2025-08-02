@@ -644,7 +644,7 @@ const App: React.FC = () => {
                 `}
             </style>
 
-            <div className="w-full flex flex-col antialiased bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200" style={{ paddingTop: 50, height: 'calc(100vh - 50px)' }}>
+            <div className="w-full flex flex-col antialiased bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200" style={{ paddingTop: 0, height: 'calc(100vh - 50px)' }}>
                 {/* Header */}
 
 

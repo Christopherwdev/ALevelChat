@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { marked } from 'marked'; // Import marked library
+import { ChevronLeft, ChevronRight } from 'lucide-react'; // Import Lucide React chevron icons
 
 import { CHINESE_UNIT_1_CONTENT } from './Unit1.js';
 import { CHINESE_UNIT_2_CONTENT } from './Unit2.js';
@@ -12,6 +13,10 @@ interface UnitContent {
   [key: number]: string;
 }
 import "../ChinesePage.css";
+
+
+
+
 
 const TOTAL_UNITS = 5;
 const UNIT_PREFIX = 'Unit'; // For units like "Unit 1", "Unit 2"
@@ -111,9 +116,12 @@ const RevisionNotesContent = () => {
     try {
       const tokens = marked.lexer(markdownText);
       let renderedHtml = '';
+      let sectionCounter = 0;
       tokens.forEach(token => {
         if (token.type === 'heading' && token.depth === 2) {
-          renderedHtml += `<div class="section-header-container"><h2>${token.text}</h2></div>`;
+          sectionCounter++;
+          const sectionId = `unit-${unitIndex}-section-${sectionCounter}`;
+          renderedHtml += `<div class="section-header-container"><h2 id="${sectionId}">${token.text}</h2></div>`;
         } else if (token.type !== 'heading' || token.depth !== 1) {
           renderedHtml += marked.parse(token.raw);
         }
@@ -146,7 +154,7 @@ const RevisionNotesContent = () => {
     if (activeSectionId && markdownDisplayRef.current) {
       const targetElement = markdownDisplayRef.current.querySelector(`#${activeSectionId}`);
       if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth' });
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
   }, [notesContent, activeSectionId]); // Re-run when notesContent or activeSectionId changes
@@ -155,23 +163,33 @@ const RevisionNotesContent = () => {
     <div className="flex flex-1 overflow-hidden relative">
       {/* Chevron button for collapsing sidebar on desktop (always visible, docked to left of content) */}
       <button
-        className="hidden md:flex items-center justify-center z-40 bg-white rounded-full p-1 absolute top-18 transition-all duration-300"
+        className="hidden md:flex items-center justify-center z-40 bg-[#00000000] rounded-full p-1 absolute top-6 transition-all duration-300 "
         style={{ width: 40, height: 40, marginLeft: sidebarCollapsed ? 0 : 265, left: sidebarCollapsed ? 8 : 0 }}
         onClick={() => setSidebarCollapsed((prev) => !prev)}
         aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
-        <i className={`fas fa-chevron-${sidebarCollapsed ? 'right' : 'left'} text-gray-400 text-2xl`}></i>
+        {sidebarCollapsed ? (
+          <ChevronRight className="w-10 h-10 text-gray-400 ml-[2px]" />
+        ) : (
+          <ChevronLeft className="w-10 h-10 text-gray-400 ml-[2px]" />
+        )}
       </button>
       {/* Sidebar overlay for mobile */}
       <div
         id="left-sidebar"
-        className={`fixed top-0 left-0 h-full z-30 bg-white overflow-x-visible dark:bg-white dark:border-gray-700 overflow-y-auto p-4 transition-transform duration-300 ease-in-out w-64 md:static md:translate-x-0 ${!sidebarCollapsed ? 'translate-x-0' : 'translate-x-full'} md:relative md:h-auto md:w-72 md:block ${sidebarCollapsed ? 'md:-ml-72' : ''} ${!sidebarCollapsed ? 'md:pt-5' : ''} ${!sidebarCollapsed ? 'pt-[120px] md:pt-0' : ''}`}
+        className={`fixed top-0 left-0 h-full z-30 bg-white overflow-x-visible dark:bg-white dark:border-gray-700 overflow-y-auto p-4 transition-transform duration-300 ease-in-out w-64 md:static md:translate-x-0 ${!sidebarCollapsed ? 'translate-x-0' : '-translate-x-full'} md:relative md:h-auto md:w-72 md:block ${sidebarCollapsed ? 'md:-ml-72' : ''} ${!sidebarCollapsed ? ' pt-[60px] md:pt-[16px]' : 'pt-[60px] md:pt-[16px]'} ${!sidebarCollapsed ? 'pt-[60px] md:pt-[16px]' : ''} md:sticky md:top-0 md:max-h-screen md:overflow-y-auto`}
       // style={{ boxShadow: '0 2px 20px rgba(0,0,0,0.08)' }}
       >
         {/* No Home button here, as it's in the main header */}
         {/* Learning Notes Section */}
         <div className="mb-4">
-          <h3 className='mb-4 font-bold'>Revision Notes</h3>
+          {/* <h3 className='mb-4 font-bold'>Revision Notes</h3> */}
+
+          <div className='ml-[0px] mb-[20px]'>
+                                <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Revision Notes</h1>
+                                <span>5 Units / 60%</span>
+                                {/* <span className='font-medium text-[#00000070] text-2xl'>All with AI grading.</span> */}
+                            </div>
           <div id="unit-buttons-container" className="space-y-4">
             {Array.from({ length: TOTAL_UNITS }, (_, i) => i + 1).map(unitIndex => {
               const unitName = `${UNIT_PREFIX} ${unitIndex}`;
@@ -238,7 +256,7 @@ const RevisionNotesContent = () => {
       {/* Overlay for mobile when sidebar is open */}
       {!sidebarCollapsed && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-30 z-20 md:hidden"
+          className="fixed inset-0 bg-[#00000080] backdrop-blur z-20 md:hidden transition-all"
           onClick={() => setSidebarCollapsed(true)}
         ></div>
       )}
@@ -250,12 +268,16 @@ const RevisionNotesContent = () => {
         <div className="max-w-4xl mx-auto markdown-content" style={{ fontSize: '14px', outline: 'none' }} ref={markdownDisplayRef}>
           {/* Mobile chevron above heading in revision notes */}
           <button
-            className="md:hidden flex items-center justify-center bg-white border border-gray-200 rounded-full shadow p-1 mb-4"
-            style={{ width: 50, height: 50 }}
+            className="md:hidden flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-lg mb-4 hover:border-gray-300"
+            style={{ width: 40, height: 40 }}
             onClick={() => setSidebarCollapsed((prev) => !prev)}
             aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <i className={`fas fa-chevron-${sidebarCollapsed ? 'right' : 'left'} text-gray-600 text-2xl`}></i>
+            {sidebarCollapsed ? (
+                <ChevronRight className="w-8 h-8 text-gray-600 ml-[2px]" />
+            ) : (
+              <ChevronLeft className="w-8 h-8 text-gray-600 mr-[2px]" />
+            )}
           </button>
           <div className="flex items-start flex-col justify-between h-auto gap-0 mb-2">
             {/* <h6 className='m-0  font-medium text-[20px] md:text-[30px] text-black pb-0'>Edexcel IGCSE Chinese</h6><br></br> */}

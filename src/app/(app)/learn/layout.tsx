@@ -1,13 +1,15 @@
 import React from 'react';
-import BreadCrumbs from './_components/BreadCrumbs';
+import RevisionSidebar from './_components/RevisionSidebar';
 
-const ChineseLayout = ({ children }: { children: React.ReactNode }) => {
+const LearnLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="pt-8">
-      <BreadCrumbs />
-      {children}
+    <div className="min-h-screen bg-white">
+      <RevisionSidebar />
+      <div className="w-full pl-0 md:pl-18">
+        {children}
+      </div>
     </div>
   );
 };
 
-export default ChineseLayout;
+export default LearnLayout;
