@@ -188,7 +188,7 @@ const chartOptions = {
       titleColor: 'white',
       bodyColor: 'white',
       borderColor: '#ff3b30',
-      borderWidth: 1,
+      borderWidth: 2,
     },
   },
   scales: {
