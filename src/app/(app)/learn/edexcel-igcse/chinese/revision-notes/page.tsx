@@ -154,31 +154,32 @@ const RevisionNotesContent = () => {
     if (activeSectionId && markdownDisplayRef.current) {
       const targetElement = markdownDisplayRef.current.querySelector(`#${activeSectionId}`);
       if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
       }
     }
   }, [notesContent, activeSectionId]); // Re-run when notesContent or activeSectionId changes
   
   return (
-    <div className="flex flex-1 overflow-hidden relative">
+    <div className="flex  overflow-hidden relative" style={{height: 'calc(100vh - 50px)'}}>
       {/* Chevron button for collapsing sidebar on desktop (always visible, docked to left of content) */}
       <button
-        className="hidden md:flex items-center justify-center z-40 bg-[#00000000] rounded-full p-1 absolute top-6 transition-all duration-300 "
-        style={{ width: 40, height: 40, marginLeft: sidebarCollapsed ? 0 : 265, left: sidebarCollapsed ? 8 : 0 }}
+        className="hidden md:flex items-center justify-center text-gray-400 bg-[#00000000] hover:bg-[#ff3b3010] hover:text-[#ff3b30] z-40  rounded-full p-1 absolute top-6 transition-all duration-300 "
+        style={{ width: 40, height: 40, marginLeft: sidebarCollapsed ? 0 : 235, left: sidebarCollapsed ? 8 : 0 }}
         onClick={() => setSidebarCollapsed((prev) => !prev)}
         aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {sidebarCollapsed ? (
-          <ChevronRight className="w-10 h-10 text-gray-400 ml-[2px]" />
+          <ChevronRight className="w-10 h-10 ml-[2px]" />
         ) : (
-          <ChevronLeft className="w-10 h-10 text-gray-400 ml-[2px]" />
+          <ChevronLeft className="w-10 h-10 mr-[2px]" />
         )}
       </button>
       {/* Sidebar overlay for mobile */}
       <div
         id="left-sidebar"
-        className={`fixed top-0 left-0 h-full z-30 bg-white overflow-x-visible dark:bg-white dark:border-gray-700 overflow-y-auto p-4 transition-transform duration-300 ease-in-out w-64 md:static md:translate-x-0 ${!sidebarCollapsed ? 'translate-x-0' : '-translate-x-full'} md:relative md:h-auto md:w-72 md:block ${sidebarCollapsed ? 'md:-ml-72' : ''} ${!sidebarCollapsed ? ' pt-[60px] md:pt-[16px]' : 'pt-[60px] md:pt-[16px]'} ${!sidebarCollapsed ? 'pt-[60px] md:pt-[16px]' : ''} md:sticky md:top-0 md:max-h-screen md:overflow-y-auto`}
-      // style={{ boxShadow: '0 2px 20px rgba(0,0,0,0.08)' }}
+        className={`fixed top-0 left-0  z-30 bg-white overflow-x-visible dark:bg-white border-r-3 border-r-[#00000010] overflow-y-auto p-4 transition-transform duration-300 ease-in-out w-64 md:static md:translate-x-0 ${!sidebarCollapsed ? 'translate-x-0' : '-translate-x-full'} md:relative md:h-auto md:w-72 md:block ${sidebarCollapsed ? 'md:hidden' : ''} ${!sidebarCollapsed ? ' pt-[60px] md:pt-[16px]' : 'pt-[60px] md:pt-[16px]'} ${!sidebarCollapsed ? 'pt-[60px] md:pt-[16px]' : ''} md:sticky md:top-0 md:h-screen md:overflow-y-auto` }
+        style={{height: 'calc(100vh - 50px)'}}
+        // style={{ boxShadow: '0 2px 20px rgba(0,0,0,0.08)' }}
       >
         {/* No Home button here, as it's in the main header */}
         {/* Learning Notes Section */}
@@ -263,7 +264,7 @@ const RevisionNotesContent = () => {
 
       {/* Right Content Area - Notes Display */}
       <div
-        className={`flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900 max-4xl transition-all duration-300`}
+        className={`flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-900 max-4xl transition-all duration-300`} style={{height: 'calc(100vh - 50px)'}}
       >
         <div className="max-w-4xl mx-auto markdown-content" style={{ fontSize: '14px', outline: 'none' }} ref={markdownDisplayRef}>
           {/* Mobile chevron above heading in revision notes */}

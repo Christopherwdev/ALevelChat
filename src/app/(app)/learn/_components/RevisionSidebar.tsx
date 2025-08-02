@@ -91,12 +91,12 @@ const RevisionSidebar = () => {
   return (
     <div 
       className={`
-        fixed top-0 left-0 h-auto  mt-20 z-10000
-        bg-white/80 backdrop-blur-[20px] border-r border-black/10
-        shadow-[0_0_20px_rgba(0,0,0,0.1)] rounded-r-[20px]
+        fixed top-0 left-0 h-full  mt-[50px] z-10000
+        bg-white/80 backdrop-blur-[20px] border border-[#00000010] 
+        shadow-[0_0_20px_rgba(0,0,0,0.1)] 
         overflow-y-auto overflow-x-hidden
         transition-all duration-300 ease-in-out
-        ${isHovered ? 'w-64 shadow-[0_0_30px_rgba(0,0,0,0.15)]' : 'w-18'}
+        ${isHovered ? 'w-65 shadow-[0_0_30px_rgba(0,0,0,0.15)]' : 'w-19'}
         md:block hidden
       `}
       onMouseEnter={() => setIsHovered(true)}
@@ -150,7 +150,7 @@ const RevisionSidebar = () => {
                   {tool.icon}
                 </div>
           
-                  <span className="whitespace-nowrap overflow-hidden text-ellipsis">
+                  <span className={`whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-200       ${!isHovered ? ' opacity-0' : 'opacity-100'}`}>
                     {tool.name}
                   </span>
           
